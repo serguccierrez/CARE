@@ -17,8 +17,7 @@ def read_impact_levels():
 #=============================[CONSTANTS]===========================================#
 CPDS = read_constants()
 IMPACT_LEVELS = read_impact_levels()
-confidence = 0.2
-
+confidence = 0.8
 #========================================[ID DEFINITION]========================================#
 def make_lvar(name, desc, states):
     """
@@ -54,7 +53,7 @@ def create_and_solve_dimension(dimension_name, node_name, display_name):
     # Nodos
     CM = ID.addDecisionNode(make_lvar("CM", "Countermeasure", CPDS["CM"]["states"]))
     threat = ID.addChanceNode(make_lvar("Threat", "Threat", CPDS["Threat"]["states"]))
-    risk = ID.addChanceNode(make_lvar("Risk", "Risk", CPDS["Risk"]["states"]))
+    risk = ID.addChanceNode(make_lvar("Risk", "Risk", CPDS["Risk_given_Threat_by_tactic"]["states"]))
     res = ID.addChanceNode(make_lvar(node_name, f"Residual {dimension_name}", CPDS[node_name]["states"]))
     utility = ID.addUtilityNode(gum.LabelizedVariable(f"U_{dimension_name}", f"Utility {dimension_name}", 1))
     
@@ -67,12 +66,14 @@ def create_and_solve_dimension(dimension_name, node_name, display_name):
     #=================={Asignación de distribuciones de probabilidad}========================#
     ID.cpt(threat)[{}] = [1 - confidence, confidence]
     
+    # Usar distribución por defecto para Risk (por tácticas MITRE en bn_CPDs.json)
+    risk_dist = CPDS["Risk_given_Threat_by_tactic"]["default"]["values"]
     for t_idx, t_lab in enumerate(CPDS["Threat"]["states"]):
-        dist = [CPDS["Risk"]["values"][r_idx][t_idx] for r_idx in range(len(CPDS["Risk"]["states"]))]
+        dist = [risk_dist[r_idx][t_idx] for r_idx in range(len(CPDS["Risk_given_Threat_by_tactic"]["states"]))]
         ID.cpt(risk)[{"Threat": t_lab}] = dist
     
     col = 0
-    for r in CPDS["Risk"]["states"]:
+    for r in CPDS["Risk_given_Threat_by_tactic"]["states"]:
         for cm in CPDS["CM"]["states"]:
             dist = [CPDS[node_name]["values"][i][col] for i in range(len(CPDS[node_name]["states"]))]
             ID.cpt(res)[{"Risk": r, "CM": cm}] = dist
