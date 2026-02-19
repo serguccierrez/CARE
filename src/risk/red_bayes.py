@@ -1,5 +1,6 @@
 #========================================[IMPORTS]========================================#
 from pathlib import Path
+import random
 from pgmpy.models import DiscreteBayesianNetwork
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import VariableElimination
@@ -7,15 +8,33 @@ from pgmpy.inference import VariableElimination
 import json
 
 #========================================[CONFIGURACIÓN]========================================#
-confidence = 0.2
+confidence = 0.8
 
 bn_cpds_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json"
 with open(bn_cpds_path, "r") as data:
     cpd_data = json.load(data)
+    
 
+#========================================[CONSTANTES]========================================#
+MITRE_TACTICS = [
+    "Reconnaissance",
+    "Resource Development",
+    "Initial Access",
+    "Execution",
+    "Persistence",
+    "Privilege Escalation",
+    "Defense Evasion",
+    "Credential Access",
+    "Discovery",
+    "Lateral Movement",
+    "Collection",
+    "Command and Control",
+    "Exfiltration",
+    "Impact"
+]
 
 #========================================[MODELO DE RED BAYESIANA]========================================#
-def bayesian_network_construction():
+def bayesian_network_construction(tactic="default"):
     """
     Construye un modelo de red bayesiana discreta a partir de las CPDs definidas en el archivo JSON.
     
@@ -24,6 +43,9 @@ def bayesian_network_construction():
     - Risk: riesgo resultante de la amenaza
     - CM: contramedida aplicada
     - C_res, I_res, A_res: impactos residuales en las tres dimensiones CIA
+    
+    Args:
+    tactic (str): nombre de la táctica para seleccionar las CPDs específicas de riesgo dado amenaza.
     
     Returns:
         VariableElimination: motor de inferencia para realizar consultas sobre la red
@@ -66,12 +88,12 @@ def bayesian_network_construction():
     #--- Risk: Probabilidad de riesgo dado Threat ---
     cpd_risk = TabularCPD(
         variable="Risk",
-        variable_card=len(cpd_data["Risk"]["states"]),
-        values=cpd_data["Risk"]["values"],
+        variable_card=len(cpd_data["Risk_given_Threat_by_tactic"]["states"]),
+        values=cpd_data["Risk_given_Threat_by_tactic"][tactic]["values"],
         evidence=["Threat"],
         evidence_card=[len(cpd_data["Threat"]["states"])],
         state_names={
-            "Risk": cpd_data["Risk"]["states"],
+            "Risk": cpd_data["Risk_given_Threat_by_tactic"]["states"],
             "Threat": cpd_data["Threat"]["states"]
         }
     )
@@ -82,10 +104,10 @@ def bayesian_network_construction():
         variable_card=len(cpd_data["C_res"]["states"]),
         values=cpd_data["C_res"]["values"],
         evidence=["Risk", "CM"],
-        evidence_card=[len(cpd_data["Risk"]["states"]), len(cpd_data["CM"]["states"])],
+        evidence_card=[len(cpd_data["Risk_given_Threat_by_tactic"]["states"]), len(cpd_data["CM"]["states"])],
         state_names={
             "C_res": cpd_data["C_res"]["states"],
-            "Risk": cpd_data["Risk"]["states"],
+            "Risk": cpd_data["Risk_given_Threat_by_tactic"]["states"],
             "CM": cpd_data["CM"]["states"]
         }
     )
@@ -97,12 +119,12 @@ def bayesian_network_construction():
         values=cpd_data["I_res"]["values"],
         evidence=["Risk", "CM"],
         evidence_card=[
-            len(cpd_data["Risk"]["states"]),
+            len(cpd_data["Risk_given_Threat_by_tactic"]["states"]),
             len(cpd_data["CM"]["states"])
         ],
         state_names={
             "I_res": cpd_data["I_res"]["states"],
-            "Risk": cpd_data["Risk"]["states"],
+            "Risk": cpd_data["Risk_given_Threat_by_tactic"]["states"],
             "CM": cpd_data["CM"]["states"]
         }
     )
@@ -114,12 +136,12 @@ def bayesian_network_construction():
         values=cpd_data["A_res"]["values"],
         evidence=["Risk", "CM"],
         evidence_card=[
-            len(cpd_data["Risk"]["states"]),
+            len(cpd_data["Risk_given_Threat_by_tactic"]["states"]),
             len(cpd_data["CM"]["states"])
         ],
         state_names={
             "A_res": cpd_data["A_res"]["states"],
-            "Risk": cpd_data["Risk"]["states"],
+            "Risk": cpd_data["Risk_given_Threat_by_tactic"]["states"],
             "CM": cpd_data["CM"]["states"]
         }
     )
@@ -188,24 +210,26 @@ def get_cia_res_levels(cia_res_query):
 
 
 #========================================[INICIALIZACIÓN]========================================#
+choice = random.choice(MITRE_TACTICS)
+print(f"Construyendo red bayesiana para táctica: {choice}")
 infer = bayesian_network_construction()
 
 #--- (Ejemplos de uso comentados) ---
-"""
+
 # Obtener distribuciones de impacto residual
-c_res = infer.query(variables=["C_res"])
+c_res = infer.query(variables=["C_res"], evidence={"CM": "none"})
 print("\nP(C_res):")
 print(c_res)
 c_res_levels = get_cia_res_levels(c_res)
 
-i_res = infer.query(variables=["I_res"])
+i_res = infer.query(variables=["I_res"], evidence={"CM": "none"})
 print("\nP(I_res):")
 print(i_res)
 i_res_levels = get_cia_res_levels(i_res)
 
-a_res = infer.query(variables=["A_res"])
+a_res = infer.query(variables=["A_res"], evidence={"CM": "none"})
 print("\nP(A_res):")
 print(a_res)
 a_res_levels = get_cia_res_levels(a_res)
-"""
+
 

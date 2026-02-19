@@ -1,7 +1,9 @@
 #========================================[IMPORTS]============================================#
 import pyagrum as gum
 import json
+import numpy as np
 from pathlib import Path
+from scipy.stats import entropy
 
 
 #=============================[JSON READING]===========================================#
@@ -17,8 +19,7 @@ def read_impact_levels():
 #=============================[CONSTANTS]===========================================#
 CPDS = read_constants()
 IMPACT_LEVELS = read_impact_levels()
-confidence = 0.2
-
+confidence = 0.8
 #========================================[ID DEFINITION]========================================#
 def make_lvar(name, desc, states):
     """
@@ -52,27 +53,29 @@ def create_and_solve_dimension(dimension_name, node_name, display_name):
     ID = gum.InfluenceDiagram()
     
     # Nodos
-    CM = ID.addDecisionNode(make_lvar("CM", "Countermeasure", CPDS["CM"]["states"]))
+    cm = ID.addDecisionNode(make_lvar("CM", "Countermeasure", CPDS["CM"]["states"]))
     threat = ID.addChanceNode(make_lvar("Threat", "Threat", CPDS["Threat"]["states"]))
-    risk = ID.addChanceNode(make_lvar("Risk", "Risk", CPDS["Risk"]["states"]))
+    risk = ID.addChanceNode(make_lvar("Risk", "Risk", CPDS["Risk_given_Threat_by_tactic"]["states"]))
     res = ID.addChanceNode(make_lvar(node_name, f"Residual {dimension_name}", CPDS[node_name]["states"]))
     utility = ID.addUtilityNode(gum.LabelizedVariable(f"U_{dimension_name}", f"Utility {dimension_name}", 1))
     
     #=================={Definición de arcos (dependencias)}========================#
     ID.addArc(threat, risk)
     ID.addArc(risk, res)
-    ID.addArc(CM, res)
+    ID.addArc(cm, res)
     ID.addArc(res, utility)
     
     #=================={Asignación de distribuciones de probabilidad}========================#
     ID.cpt(threat)[{}] = [1 - confidence, confidence]
     
+    # Usar distribución por defecto para Risk (por tácticas MITRE en bn_CPDs.json)
+    risk_dist = CPDS["Risk_given_Threat_by_tactic"]["default"]["values"]
     for t_idx, t_lab in enumerate(CPDS["Threat"]["states"]):
-        dist = [CPDS["Risk"]["values"][r_idx][t_idx] for r_idx in range(len(CPDS["Risk"]["states"]))]
+        dist = [risk_dist[r_idx][t_idx] for r_idx in range(len(CPDS["Risk_given_Threat_by_tactic"]["states"]))]
         ID.cpt(risk)[{"Threat": t_lab}] = dist
     
     col = 0
-    for r in CPDS["Risk"]["states"]:
+    for r in CPDS["Risk_given_Threat_by_tactic"]["states"]:
         for cm in CPDS["CM"]["states"]:
             dist = [CPDS[node_name]["values"][i][col] for i in range(len(CPDS[node_name]["states"]))]
             ID.cpt(res)[{"Risk": r, "CM": cm}] = dist
@@ -83,17 +86,83 @@ def create_and_solve_dimension(dimension_name, node_name, display_name):
         ID.utility(utility)[{node_name: state}] = -IMPACT_LEVELS[state]
     
     #=================={Inferencia y obtención de decisión óptima}========================#
-    ie = gum.ShaferShenoyLIMIDInference(ID)
+    ie = gum.ShaferShenoyLIMIDInference(ID) # Cargaomos el motor de inferencia
     ie.makeInference()
     
-    print(f"\n=== {display_name} ===")
-    print(f"MEU: {ie.MEU()}")
-    print(f"Optimal decision: {ie.optimalDecision(CM)}")
+    return ID, ie
     
-    return ie, CM
+#====================[EXTRACCIÓN DE UTILIDAD ESPERADA POR CM Y VECTOR DE PROBS DE TOMA DE DECISIÓN]========================#
+def softmax(x, T=1.0):
+    """
+    Convierte un vector de utilidades o logits en una distribución de probabilidad normalizada. (distribución de preferencia)
+        
+    Utiliza la función softmax con parámetro de temperatura (T) para controlar la "suavidad"
+    de la distribución resultante. Un valor de T bajo hace la distribución más afilada (one-hot),
+    mientras que un valor de T alto hace la distribución más uniforme.
+    
+    Args:
+        x (list o array): Vector de valores (utilidades, logits, o scores) a normalizar.
+        T (float): Parámetro de temperatura que controla la distribución. Default: 1.0 (softmax estándar).
+        
+    Returns:
+        np.array: Distribución de probabilidades normalizada en el rango [0, 1] que suma a 1.
+    """
+    # Convertir a array numpy de precisión doble para evitar problemas de overflow numérico
+    x = np.array(x, dtype=np.float64)
+    # Restar el máximo para estabilidad numérica (evita exponenciales muy grandes que causen overflow)
+    shifted = (x - np.max(x)) / T
+    # Calcular exponencial de los valores normalizados
+    exp_x = np.exp(shifted)
+    # Normalizar dividiendo por la suma para obtener probabilidades válidas
+    return exp_x / np.sum(exp_x)
+
+
+def expected_utility_per_cm(influence_diagram):
+    """
+    Calcula EU(CM=estado) probando cada contramedida por separado.
+    Devuelve:
+      - EU_by_cm: lista de utilidades esperadas (una por CM)
+      - p_cm: soft policy (softmax de EU_by_cm)
+    """
+    EU_by_cm = []
+
+    for cm_state in CPDS["CM"]["states"]:
+        ie_tmp = gum.ShaferShenoyLIMIDInference(influence_diagram)
+
+        # Fijamos la decisión CM a un estado concreto
+        ie_tmp.addEvidence("CM", cm_state)
+
+        ie_tmp.makeInference()
+
+        EU_by_cm.append(float(ie_tmp.MEU()["mean"]))
+
+    p_cm = softmax(EU_by_cm)
+    h = entropy(p_cm, base=len(p_cm))  
+    return EU_by_cm, p_cm, h
 
 #========================================[INFERENCIA PARA CADA DIMENSIÓN CIA]========================================#
 # Crear soluciones para cada dimensión
-ie_C, _ = create_and_solve_dimension("C", "C_res", "CONFIDENTIALITY")
-ie_I, _ = create_and_solve_dimension("I", "I_res", "INTEGRITY")
-ie_A, _ = create_and_solve_dimension("A", "A_res", "AVAILABILITY")
+influence_diagram_C, ie_C = create_and_solve_dimension("C", "C_res", "CONFIDENTIALITY")
+influence_diagram_I, ie_I= create_and_solve_dimension("I", "I_res", "INTEGRITY")
+influence_diagram_A, ie_A = create_and_solve_dimension("A", "A_res", "AVAILABILITY")
+
+# Calcular EU por CM para cada dimensión
+EU_by_cm_C, p_cm_C, h_C = expected_utility_per_cm(influence_diagram_C)
+EU_by_cm_I, p_cm_I, h_I = expected_utility_per_cm(influence_diagram_I)
+EU_by_cm_A, p_cm_A, h_A = expected_utility_per_cm(influence_diagram_A)
+
+# Imprimir resultados
+print("CONFIDENTIALITY:")
+for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_C, p_cm_C):
+    print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+print(f"  Entropy of policy: {h_C:.4f} ")
+
+print("\nINTEGRITY:")
+for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_I, p_cm_I):
+    print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+print(f"  Entropy of policy: {h_I:.4f} ")
+
+print("\nAVAILABILITY:")
+for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_A, p_cm_A):
+    print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+print(f"  Entropy of policy: {h_A:.4f} ")

@@ -9,14 +9,6 @@
     "values": [0.3333, 0.3333, 0.3333]
   },
 
-  "Risk": {
-    "states": ["low", "high"],
-    "values": [
-      [0.8, 0.2],
-      [0.2, 0.8]
-    ]
-  },
-
   "C_res": {
     "states": ["low", "medium", "high"],
     "values": [
@@ -42,5 +34,115 @@
       [0.15, 0.10, 0.15, 0.4, 0.3, 0.35],
       [0.05, 0.05, 0.10, 0.2, 0.2, 0.20]
     ]
+  },
+
+  "Risk_given_Threat_by_tactic": {
+    "states": ["low", "high"],
+    "default": {
+      "values": [
+        [0.92, 0.50],
+        [0.08, 0.50]
+      ]
+    },
+
+    "Reconnaissance": {
+      "values": [
+        [0.97, 0.88],
+        [0.03, 0.12]
+      ]
+    },
+
+    "Resource Development": {
+      "values": [
+        [0.96, 0.82],
+        [0.04, 0.18]
+      ]
+    },
+
+    "Initial Access": {
+      "values": [
+        [0.93, 0.60],
+        [0.07, 0.40]
+      ]
+    },
+
+    "Execution": {
+      "values": [
+        [0.92, 0.48],
+        [0.08, 0.52]
+      ]
+    },
+
+    "Persistence": {
+      "values": [
+        [0.91, 0.42],
+        [0.09, 0.58]
+      ]
+    },
+
+    "Privilege Escalation": {
+      "values": [
+        [0.90, 0.38],
+        [0.10, 0.62]
+      ]
+    },
+
+    "Defense Evasion": {
+      "values": [
+        [0.89, 0.36],
+        [0.11, 0.64]
+      ]
+    },
+
+    "Credential Access": {
+      "values": [
+        [0.86, 0.28],
+        [0.14, 0.72]
+      ]
+    },
+
+    "Discovery": {
+      "values": [
+        [0.95, 0.72],
+        [0.05, 0.28]
+      ]
+    },
+
+    "Lateral Movement": {
+      "values": [
+        [0.87, 0.30],
+        [0.13, 0.70]
+      ]
+    },
+
+    "Collection": {
+      "values": [
+        [0.90, 0.44],
+        [0.10, 0.56]
+      ]
+    },
+
+    "Command and Control": {
+      "values": [
+        [0.88, 0.34],
+        [0.12, 0.66]
+      ]
+    },
+
+    "Exfiltration": {
+      "values": [
+        [0.84, 0.18],
+        [0.16, 0.82]
+      ]
+    },
+
+    "Impact": {
+      "values": [
+        [0.85, 0.08],
+        [0.15, 0.92]
+      ]
+    }
   }
+
+
 }
