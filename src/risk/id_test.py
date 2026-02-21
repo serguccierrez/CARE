@@ -146,6 +146,11 @@ influence_diagram_C, ie_C = create_and_solve_dimension("C", "C_res", "CONFIDENTI
 influence_diagram_I, ie_I= create_and_solve_dimension("I", "I_res", "INTEGRITY")
 influence_diagram_A, ie_A = create_and_solve_dimension("A", "A_res", "AVAILABILITY")
 
+# Para cada dimensión
+optimal_cm_C = ie_C.optimalDecision("CM")
+optimal_cm_I = ie_I.optimalDecision("CM")
+optimal_cm_A = ie_A.optimalDecision("CM")
+
 # Calcular EU por CM para cada dimensión
 EU_by_cm_C, p_cm_C, h_C = expected_utility_per_cm(influence_diagram_C)
 EU_by_cm_I, p_cm_I, h_I = expected_utility_per_cm(influence_diagram_I)
@@ -153,16 +158,19 @@ EU_by_cm_A, p_cm_A, h_A = expected_utility_per_cm(influence_diagram_A)
 
 # Imprimir resultados
 print("CONFIDENTIALITY:")
+print(f"  Optimal CM: {optimal_cm_C}")
 for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_C, p_cm_C):
     print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
 print(f"  Entropy of policy: {h_C:.4f} ")
 
 print("\nINTEGRITY:")
+print(f"  Optimal CM: {optimal_cm_I}")
 for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_I, p_cm_I):
     print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
 print(f"  Entropy of policy: {h_I:.4f} ")
 
 print("\nAVAILABILITY:")
+print(f"  Optimal CM: {optimal_cm_A}")
 for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_A, p_cm_A):
     print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
 print(f"  Entropy of policy: {h_A:.4f} ")
