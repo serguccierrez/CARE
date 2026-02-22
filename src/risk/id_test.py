@@ -1,4 +1,6 @@
 #========================================[IMPORTS]============================================#
+import random
+
 import pyagrum as gum
 import json
 import numpy as np
@@ -20,6 +22,23 @@ def read_impact_levels():
 CPDS = read_constants()
 IMPACT_LEVELS = read_impact_levels()
 confidence = 0.8
+
+MITRE_TACTICS = [
+    "Reconnaissance",
+    "Resource Development",
+    "Initial Access",
+    "Execution",
+    "Persistence",
+    "Privilege Escalation",
+    "Defense Evasion",
+    "Credential Access",
+    "Discovery",
+    "Lateral Movement",
+    "Collection",
+    "Command and Control",
+    "Exfiltration",
+    "Impact"
+]
 #========================================[ID DEFINITION]========================================#
 def make_lvar(name, desc, states):
     """
@@ -31,7 +50,7 @@ def make_lvar(name, desc, states):
     return v
 
 
-def create_and_solve_dimension(dimension_name, node_name, display_name):
+def create_and_solve_dimension(dimension_name, node_name, tactic):
     """
     Crea un diagrama de influencia para una dimensión CIA (Confidentiality, Integrity, Availability)
     y lo resuelve para encontrar la contramedida (CM) óptima que minimice el impacto residual.
@@ -68,8 +87,8 @@ def create_and_solve_dimension(dimension_name, node_name, display_name):
     #=================={Asignación de distribuciones de probabilidad}========================#
     ID.cpt(threat)[{}] = [1 - confidence, confidence]
     
-    # Usar distribución por defecto para Risk (por tácticas MITRE en bn_CPDs.json)
-    risk_dist = CPDS["Risk_given_Threat_by_tactic"]["default"]["values"]
+    # Usar distribución en función de la táctica para Risk (por tácticas MITRE en bn_CPDs.json)
+    risk_dist = CPDS["Risk_given_Threat_by_tactic"][tactic]["values"]
     for t_idx, t_lab in enumerate(CPDS["Threat"]["states"]):
         dist = [risk_dist[r_idx][t_idx] for r_idx in range(len(CPDS["Risk_given_Threat_by_tactic"]["states"]))]
         ID.cpt(risk)[{"Threat": t_lab}] = dist
@@ -141,10 +160,13 @@ def expected_utility_per_cm(influence_diagram):
     return EU_by_cm, p_cm, h
 
 #========================================[INFERENCIA PARA CADA DIMENSIÓN CIA]========================================#
+choice = random.choice(MITRE_TACTICS)
+print(f"Construyendo diagrama de influencia para táctica: {choice}")
+
 # Crear soluciones para cada dimensión
-influence_diagram_C, ie_C = create_and_solve_dimension("C", "C_res", "CONFIDENTIALITY")
-influence_diagram_I, ie_I= create_and_solve_dimension("I", "I_res", "INTEGRITY")
-influence_diagram_A, ie_A = create_and_solve_dimension("A", "A_res", "AVAILABILITY")
+influence_diagram_C, ie_C = create_and_solve_dimension("C", "C_res", choice)
+influence_diagram_I, ie_I= create_and_solve_dimension("I", "I_res", choice)
+influence_diagram_A, ie_A = create_and_solve_dimension("A", "A_res", choice)
 
 # Para cada dimensión
 optimal_cm_C = ie_C.optimalDecision("CM")
