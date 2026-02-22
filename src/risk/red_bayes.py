@@ -212,7 +212,7 @@ def get_cia_res_levels(cia_res_query):
 #========================================[INICIALIZACIÓN]========================================#
 choice = random.choice(MITRE_TACTICS)
 print(f"Construyendo red bayesiana para táctica: {choice}")
-infer = bayesian_network_construction()
+infer = bayesian_network_construction(choice)
 
 #--- (Ejemplos de uso comentados) ---
 
