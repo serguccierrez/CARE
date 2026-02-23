@@ -285,11 +285,15 @@ def get_infected_nodes(graph: nx.DiGraph, compromised_node: str):
     """
     #=== Inicialización de variables ===#
     affected_nodes_by_level = {} # Dict[int, List[str]]
+    affected_edges_by_level = {} # Dict[int, List[Tuple[str, str]]] (opcional, si queremos también las aristas afectadas)
     visited_nodes = set() # Set[str] de los nodos que ya han sido visitados
     current_level_nodes = {compromised_node} # Nodos del nivel actual que tenemos que procesar( obtener sus dependencias)
     level = 0 # Nivel de salto actual
     affected_nodes_by_level[level] = [compromised_node] # Nivel 0 es el nodo comprometido
+    affected_edges_by_level[level] = []    
     visited_nodes.add(compromised_node) # Marcamos el nodo comprometido como visitado
+
+    
     
     #=== Verificación de existencia del nodo comprometido ===#
     try:
@@ -302,6 +306,7 @@ def get_infected_nodes(graph: nx.DiGraph, compromised_node: str):
     while current_level_nodes: # Mientras haya nodos en el nivel actual
         level += 1
         next_level_nodes = [] #Nodos a procesar para la siguiente iteración
+        edges_current_level = [] # Aristas afectadas en el nivel actual (opcional)
         
         for current_node in current_level_nodes:
             dependent_nodes = list(graph.predecessors(current_node)) # Nodos que dependen del nodo actual
@@ -313,13 +318,24 @@ def get_infected_nodes(graph: nx.DiGraph, compromised_node: str):
                 if dependent_node not in next_level_nodes:
                     next_level_nodes.append(dependent_node) # Añadimos a la lista de nodos para el siguiente nivel
                     visited_nodes.add(dependent_node) # Marcamos el nodo como visitado
+
+                # Obtener datos de la arista directamente con NetworkX
+                edge_data = graph.get_edge_data(dependent_node, current_node)
+                edges_current_level.append({
+                    'from': dependent_node,
+                    'to': current_node,
+                    'dependency_type': edge_data['dependency_type'],
+                    'weight': edge_data['weight']
+                })
+        
         
         if next_level_nodes: # Si hemos encontrado predecesores del nodo actual, los guardamos en el dict
             affected_nodes_by_level[level] = next_level_nodes
+            affected_edges_by_level[level] = edges_current_level
         
-        current_level_nodes = next_level_nodes # Actualizamos los nodos del nivel actual para la siguiente iteración
+        current_level_nodes = next_level_nodes  # Actualizar para la siguiente iteración
     
-    return affected_nodes_by_level  
+    return affected_nodes_by_level, affected_edges_by_level
     
 
 #===============================================[MAIN]===============================================
@@ -327,14 +343,16 @@ def main() -> None:
     """
     Punto de entrada principal del programa.
     """
-    db_path = str(Path(__file__).parent.parent.parent / "tfg_catalog_v1.0.0.db")
+    db_path = str(Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db")
     G_global = build_MDO_graph(db_path) 
     
       # Test
     print("\nEL CODIGO A CONTINUACIÓN ES DE TEST:")
-    affected_nodes = get_infected_nodes(G_global, 'asset_003')
+    affected_nodes, affected_edges = get_infected_nodes(G_global, 'asset_002')
     for level, nodes in affected_nodes.items():
         print(f"Nivel {level}: {nodes}")
+    for level, edges in affected_edges.items():
+        print(f"Nivel {level} - Aristas afectadas: {edges}")
 
 #===============================================[ENTRY_POINT]===============================================
 if __name__ == "__main__":
