@@ -209,34 +209,35 @@ def get_cia_res_levels(cia_res_query):
     return cia_res
 
 
-def get_res_threat_prob(affected_edges_by_level,confidence,index):
+def get_res_threat_prob(affected_edges_by_level,confidence,index,tactic):
     #P(TB​)=P(TA​)⋅P(EA→B​∣TA​)
-    prob1 = affected_edges_by_level[index][0]['probability']
+    prob1 = affected_edges_by_level[index + 1][index][f'probability_({tactic})']
     prob2 = confidence
     return prob1 * prob2
 
 
 #========================================[INICIALIZACIÓN]========================================#
-choice = random.choice(MITRE_TACTICS)
-print(f"Construyendo red bayesiana para táctica: {choice}")
-infer = bayesian_network_construction(choice)
+def main():
+    choice = random.choice(MITRE_TACTICS)
+    print(f"Construyendo red bayesiana para táctica: {choice}")
+    infer = bayesian_network_construction(choice)
 
-#--- (Ejemplos de uso comentados) ---
+    #--- (Ejemplos de uso comentados) ---
 
-# Obtener distribuciones de impacto residual
-c_res = infer.query(variables=["C_res"], evidence={"CM": "none"})
-print("\nP(C_res):")
-print(c_res)
-c_res_levels = get_cia_res_levels(c_res)
+    # Obtener distribuciones de impacto residual
+    c_res = infer.query(variables=["C_res"], evidence={"CM": "none"})
+    print("\nP(C_res):")
+    print(c_res)
+    c_res_levels = get_cia_res_levels(c_res)
 
-i_res = infer.query(variables=["I_res"], evidence={"CM": "none"})
-print("\nP(I_res):")
-print(i_res)
-i_res_levels = get_cia_res_levels(i_res)
+    i_res = infer.query(variables=["I_res"], evidence={"CM": "none"})
+    print("\nP(I_res):")
+    print(i_res)
+    i_res_levels = get_cia_res_levels(i_res)
 
-a_res = infer.query(variables=["A_res"], evidence={"CM": "none"})
-print("\nP(A_res):")
-print(a_res)
-a_res_levels = get_cia_res_levels(a_res)
+    a_res = infer.query(variables=["A_res"], evidence={"CM": "none"})
+    print("\nP(A_res):")
+    print(a_res)
+    a_res_levels = get_cia_res_levels(a_res)
 
 

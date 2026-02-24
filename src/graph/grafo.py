@@ -355,9 +355,9 @@ def get_dependency_probs_by_tactic(tactic, affected_edges_by_level):
             dep_type = edge['dependency_type']
             if dep_type in DEPENDENCY_MATRIX[tactic]:
                 prob = DEPENDENCY_MATRIX[tactic][dep_type]
-                edge['probability'] = prob
+                edge[f'probability_({tactic})'] = prob
             else:
-                edge['probability'] = 0.0 # Si el tipo de dependencia no está definido para la táctica, asignamos probabilidad 0
+                edge[f'probability_({tactic})'] = 0.0 # Si el tipo de dependencia no está definido para la táctica, asignamos probabilidad 0
     
     return affected_edges_by_level
     
