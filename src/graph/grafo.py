@@ -16,11 +16,18 @@ def load_constants() -> dict:
         config = json.load(f)
     return config
 
+def load_dependency_probabilities() -> dict:
+    config_path = Path(__file__).parent.parent.parent / "Configs" / "dependency_matrix.json"
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    return config
+
 # Cargar configuración
 _config = load_constants()
 DOMINIOS = _config["dominios"]
 DEPENDENCIES_TYPES = _config["dependencies_types"]
 ASSET_TYPES = _config["asset_types"]
+DEPENDENCY_MATRIX = load_dependency_probabilities()
 
 
 #===============================================[DATABASE_FUNCTIONS]===============================================
@@ -336,6 +343,23 @@ def get_infected_nodes(graph: nx.DiGraph, compromised_node: str):
         current_level_nodes = next_level_nodes  # Actualizar para la siguiente iteración
     
     return affected_nodes_by_level, affected_edges_by_level
+
+
+def get_dependency_probs_by_tactic(tactic, affected_edges_by_level):
+    if tactic not in DEPENDENCY_MATRIX:
+        print(f"Error: La táctica '{tactic}' no existe en la matriz de dependencias.")
+        return {}
+    
+    for level, edges in affected_edges_by_level.items():
+        for edge in edges:
+            dep_type = edge['dependency_type']
+            if dep_type in DEPENDENCY_MATRIX[tactic]:
+                prob = DEPENDENCY_MATRIX[tactic][dep_type]
+                edge['probability'] = prob
+            else:
+                edge['probability'] = 0.0 # Si el tipo de dependencia no está definido para la táctica, asignamos probabilidad 0
+    
+    return affected_edges_by_level
     
 
 #===============================================[MAIN]===============================================
@@ -353,6 +377,8 @@ def main() -> None:
         print(f"Nivel {level}: {nodes}")
     for level, edges in affected_edges.items():
         print(f"Nivel {level} - Aristas afectadas: {edges}")
+    
+   # print(affected_edges[1][0]['dependency_type'])
 
 #===============================================[ENTRY_POINT]===============================================
 if __name__ == "__main__":

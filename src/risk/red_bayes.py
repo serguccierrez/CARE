@@ -209,6 +209,13 @@ def get_cia_res_levels(cia_res_query):
     return cia_res
 
 
+def get_res_threat_prob(affected_edges_by_level,confidence,index):
+    #P(TB​)=P(TA​)⋅P(EA→B​∣TA​)
+    prob1 = affected_edges_by_level[index][0]['probability']
+    prob2 = confidence
+    return prob1 * prob2
+
+
 #========================================[INICIALIZACIÓN]========================================#
 choice = random.choice(MITRE_TACTICS)
 print(f"Construyendo red bayesiana para táctica: {choice}")
