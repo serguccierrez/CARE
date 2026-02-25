@@ -34,7 +34,7 @@ MITRE_TACTICS = [
 ]
 
 #========================================[MODELO DE RED BAYESIANA]========================================#
-def bayesian_network_construction(tactic="default"):
+def bayesian_network_construction(tactic="default", confidence=0.5):
     """
     Construye un modelo de red bayesiana discreta a partir de las CPDs definidas en el archivo JSON.
     
@@ -244,7 +244,7 @@ def get_res_threat_prob(affected_edges_by_level, confidence, tactic, affected_no
 def main():
     choice = random.choice(MITRE_TACTICS)
     print(f"Construyendo red bayesiana para táctica: {choice}")
-    infer = bayesian_network_construction(choice)
+    infer = bayesian_network_construction(choice, confidence)
 
     #--- (Ejemplos de uso comentados) ---
 

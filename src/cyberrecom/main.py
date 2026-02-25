@@ -50,7 +50,7 @@ def main() -> None:
     print("="*80)
     
     
-    load_data.load_and_insert_data(EXCEL_PATH, DB_PATH)
+    # load_data.load_and_insert_data(EXCEL_PATH, DB_PATH)
     
     
     # ============ PASO 3: Construir grafo MDO ============
@@ -72,7 +72,7 @@ def main() -> None:
     random_threat_vector['asset'] = random_asset
     random_threat_vector['tactic'] = ttp_tactic
     
-    print(f"\nSimulación de amenaza: TTP={random_threat_vector['ttp_id']}, Confidence={random_threat_vector['confidence']:.2f}, Asset={random_threat_vector['asset']}, Tactic={random_threat_vector['tactic']}")
+    print(f"\nSimulación de amenaza: TTP={random_threat_vector['ttp_id']}, Confidence={random_threat_vector['confidence']:.5f}, Asset={random_threat_vector['asset']}, Tactic={random_threat_vector['tactic']}")
   
     
     # ============ PASO 5: Analizar impacto en el grafo MDO ============
@@ -91,7 +91,13 @@ def main() -> None:
     
     
     # ============ PASO 6: Construcción de la red de bayes para el activo atacado ============
-    red_bayes_model = red_bayes.bayesian_network_construction(ttp_tactic)
+    red_bayes_model = red_bayes.bayesian_network_construction(ttp_tactic,random_threat_vector['confidence'])
+    
+    #DEBUG
+    #pregunta: P(Threat)?
+    threat_prob = red_bayes_model.query(variables=["Threat"])
+    print(f"\nP(Threat):")
+    print(threat_prob)
     
     # Pregunta: ¿Cuál es C_res si aplico firewall?
     c_res = red_bayes_model.query(variables=["C_res"], evidence={"CM": "none"})
@@ -147,6 +153,11 @@ def main() -> None:
     
    
    #========================================= PASO 8: Calculo del Threat del siguiente activo dependiente =========================================#
+    print("\n" + "="*80)
+    print("PASO 8: CALCULO DEL THREAT DEL SIGUIENTE ACTIVO DEPENDIENTE")
+    print("="*80)
+    
+   
     if len(affected_nodes) > 1:
         affected_nodes_with_threat_prob = red_bayes.get_res_threat_prob(affected_edges, random_threat_vector['confidence'], ttp_tactic, affected_nodes)
         
@@ -156,7 +167,48 @@ def main() -> None:
             print(f"Nivel {level}:")
             for node_info in nodes_info:
                 print(f"  Nodo: {node_info['node']}, P(Threat)={node_info['probability_(Threat)']:.4f}")
+                
+                
+    #========================================= PASO 9: Construcción de la red de bayes para el siguiente nivel y de los diagramas de influencia =========================================#
+    print("\n" + "="*80)
+    print("PASO 9: CONSTRUCCIÓN DE LA RED DE BAYES PARA EL SIGUIENTE NIVEL Y DE LOS DIAGRAMAS DE INFLUENCIA")
+    print("="*80)
 
+
+    if len(affected_nodes) > 1:
+        for level, infected_nodes in affected_nodes_with_threat_prob.items():
+            print(f"\nConstruyendo red de bayes para nivel {level}")
+            
+            for node in infected_nodes:
+                print(f"  Nodo: {node['node']}, P(Threat)={node['probability_(Threat)']:.5f}")
+                bn = red_bayes.bayesian_network_construction(ttp_tactic, node['probability_(Threat)'])
+                
+                #DEBUG
+                #pregunta: P(Threat)?
+                threat_prob = bn.query(variables=["Threat"])
+                print(f"\nP(Threat):")
+                print(threat_prob)
+                
+                # Pregunta: ¿Cuál es C_res si aplico firewall?
+                c_res = bn.query(variables=["C_res"], evidence={"CM": "none"})
+                print("\nP(C_res | CM=none):")
+                print(c_res)
+                c_res_levels = red_bayes.get_cia_res_levels(c_res)
+                
+                # Pregunta: ¿Cuál es I_res si aplico firewall?
+                i_res = bn.query(variables=["I_res"], evidence={"CM": "none"})
+                print("\nP(I_res | CM=none):")
+                print(i_res)
+                i_res_levels = red_bayes.get_cia_res_levels(i_res)
+
+                # Pregunta: ¿Cuál es A_res si aplico firewall?
+                a_res = bn.query(variables=["A_res"], evidence={"CM": "none"})
+                print("\nP(A_res | CM=none):")
+                print(a_res)
+                a_res_levels = red_bayes.get_cia_res_levels(a_res)
+                
+                
+                
 
 
 #=================================[ENTRY_POINT]===========================================#    
