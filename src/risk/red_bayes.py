@@ -209,11 +209,35 @@ def get_cia_res_levels(cia_res_query):
     return cia_res
 
 
-def get_res_threat_prob(affected_edges_by_level,confidence,index,tactic):
-    #P(TB​)=P(TA​)⋅P(EA→B​∣TA​)
-    prob1 = affected_edges_by_level[index + 1][index][f'probability_({tactic})']
-    prob2 = confidence
-    return prob1 * prob2
+def get_res_threat_prob(affected_edges_by_level, confidence, tactic, affected_nodes_by_level):
+    """
+    Calcula P(Threat) para cada nodo afectado en cada nivel.
+    P(TB) = P(TA) * P(EA→B | TA)
+    """
+    affected_nodes_with_threat_prob = {}
+    
+    # Procesar cada nivel (excepto nivel 0 que viene vacio)
+    for level in range(1, len(affected_edges_by_level)):
+        affected_nodes_with_threat_prob[level] = []
+        
+        # Para cada arista en este nivel
+        for edge_idx, edge in enumerate(affected_edges_by_level[level]):
+            # Obtener probabilidad de la arista
+            prob_edge = edge[f'probability_({tactic})']
+            
+            # Calcular P(Threat) para el nodo destino
+            prob_threat = confidence * prob_edge
+            
+            # Crear diccionario con info del nodo
+            node_info = {
+                'node': edge['from'],
+                f'probability_(Threat)': prob_threat,
+                'level': level
+            }
+            
+            affected_nodes_with_threat_prob[level].append(node_info)
+    
+    return affected_nodes_with_threat_prob
 
 
 #========================================[INICIALIZACIÓN]========================================#

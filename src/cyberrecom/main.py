@@ -148,9 +148,14 @@ def main() -> None:
    
    #========================================= PASO 8: Calculo del Threat del siguiente activo dependiente =========================================#
     if len(affected_nodes) > 1:
-        for index in range(len(affected_nodes)) :
-            prob_threat_next_asset = red_bayes.get_res_threat_prob(affected_edges, random_threat_vector['confidence'], index, ttp_tactic)
-            print(f"Nivel {index}: Threat Probability = {prob_threat_next_asset}")
+        affected_nodes_with_threat_prob = red_bayes.get_res_threat_prob(affected_edges, random_threat_vector['confidence'], ttp_tactic, affected_nodes)
+        
+        print("\nProbabilidades de P(Threat) = yes, para nodos afectados en el siguiente nivel:")
+        
+        for level, nodes_info in affected_nodes_with_threat_prob.items():
+            print(f"Nivel {level}:")
+            for node_info in nodes_info:
+                print(f"  Nodo: {node_info['node']}, P(Threat)={node_info['probability_(Threat)']:.4f}")
 
 
 
