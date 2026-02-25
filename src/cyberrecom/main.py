@@ -118,9 +118,9 @@ def main() -> None:
     a_res_levels = red_bayes.get_cia_res_levels(a_res)
     
     # ================ PASO 7: Construcción y resolución de diagramas de influencia para cada dimensión CIA ===============
-    influence_diagram_C, ie_C = id_test.create_and_solve_dimension("C", "C_res", ttp_tactic)
-    influence_diagram_I, ie_I = id_test.create_and_solve_dimension("I", "I_res", ttp_tactic)
-    influence_diagram_A, ie_A = id_test.create_and_solve_dimension("A", "A_res", ttp_tactic)
+    influence_diagram_C, ie_C = id_test.create_and_solve_dimension("C", "C_res", ttp_tactic, random_threat_vector['confidence'])
+    influence_diagram_I, ie_I = id_test.create_and_solve_dimension("I", "I_res", ttp_tactic, random_threat_vector['confidence'])
+    influence_diagram_A, ie_A = id_test.create_and_solve_dimension("A", "A_res", ttp_tactic, random_threat_vector['confidence'])
     
     # Para cada dimensión
     optimal_cm_C = ie_C.optimalDecision("CM")
@@ -179,7 +179,10 @@ def main() -> None:
         for level, infected_nodes in affected_nodes_with_threat_prob.items():
             print(f"\nConstruyendo red de bayes para nivel {level}")
             
+            
             for node in infected_nodes:
+                
+                #{Construcción de la red de bayes para cada nodo infectado en este nivel}
                 print(f"  Nodo: {node['node']}, P(Threat)={node['probability_(Threat)']:.5f}")
                 bn = red_bayes.bayesian_network_construction(ttp_tactic, node['probability_(Threat)'])
                 
@@ -208,6 +211,39 @@ def main() -> None:
                 a_res_levels = red_bayes.get_cia_res_levels(a_res)
                 
                 
+                #{Construcción y resolución de diagramas de influencia para cada dimensión CIA}
+                influence_diagram_C, ie_C = id_test.create_and_solve_dimension("C", "C_res", ttp_tactic, node['probability_(Threat)'])
+                influence_diagram_I, ie_I = id_test.create_and_solve_dimension("I", "I_res", ttp_tactic, node['probability_(Threat)'])
+                influence_diagram_A, ie_A = id_test.create_and_solve_dimension("A", "A_res", ttp_tactic, node['probability_(Threat)'])
+                
+                # Para cada dimensión
+                optimal_cm_C = ie_C.optimalDecision("CM")
+                optimal_cm_I = ie_I.optimalDecision("CM")
+                optimal_cm_A = ie_A.optimalDecision("CM")
+
+                # Calcular EU por CM para cada dimensión
+                EU_by_cm_C, p_cm_C, h_C = id_test.expected_utility_per_cm(influence_diagram_C)
+                EU_by_cm_I, p_cm_I, h_I = id_test.expected_utility_per_cm(influence_diagram_I)
+                EU_by_cm_A, p_cm_A, h_A = id_test.expected_utility_per_cm(influence_diagram_A)
+                
+                # Imprimir resultados
+                print("CONFIDENTIALITY:")
+                print(f"  Optimal CM: {optimal_cm_C}")
+                for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_C, p_cm_C):
+                    print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+                print(f"  Entropy of policy: {h_C:.4f} ")
+
+                print("\nINTEGRITY:")
+                print(f"  Optimal CM: {optimal_cm_I}")
+                for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_I, p_cm_I):
+                    print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+                print(f"  Entropy of policy: {h_I:.4f} ")
+
+                print("\nAVAILABILITY:")
+                print(f"  Optimal CM: {optimal_cm_A}")
+                for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_A, p_cm_A):
+                    print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+                print(f"  Entropy of policy: {h_A:.4f} ") 
                 
 
 

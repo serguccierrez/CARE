@@ -50,7 +50,7 @@ def make_lvar(name, desc, states):
     return v
 
 
-def create_and_solve_dimension(dimension_name, node_name, tactic):
+def create_and_solve_dimension(dimension_name, node_name, tactic, confidence):
     """
     Crea un diagrama de influencia para una dimensión CIA (Confidentiality, Integrity, Availability)
     y lo resuelve para encontrar la contramedida (CM) óptima que minimice el impacto residual.
