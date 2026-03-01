@@ -8,7 +8,7 @@
     "management_control": 0.40,
     "physical_env": 0.10
   },
-  "resource_development": {
+  "resource-development": {
     "data_flow": 0.10,
     "comm_link": 0.10,
     "identity_authz": 0.10,
@@ -17,7 +17,7 @@
     "management_control": 0.10,
     "physical_env": 0.10
   },
-  "initial_access": {
+  "initial-access": {
     "data_flow": 0.40,
     "comm_link": 0.50,
     "identity_authz": 0.50,
@@ -44,7 +44,7 @@
     "management_control": 0.60,
     "physical_env": 0.10
   },
-  "privilege_escalation": {
+  "privilege-escalation": {
     "data_flow": 0.30,
     "comm_link": 0.20,
     "identity_authz": 0.70,
@@ -53,7 +53,7 @@
     "management_control": 0.70,
     "physical_env": 0.10
   },
-  "defense_evasion": {
+  "defense-evasion": {
     "data_flow": 0.20,
     "comm_link": 0.30,
     "identity_authz": 0.40,
@@ -62,7 +62,7 @@
     "management_control": 0.60,
     "physical_env": 0.10
   },
-  "credential_access": {
+  "credential-access": {
     "data_flow": 0.40,
     "comm_link": 0.20,
     "identity_authz": 0.90,
@@ -80,7 +80,7 @@
     "management_control": 0.40,
     "physical_env": 0.10
   },
-  "lateral_movement": {
+  "lateral-movement": {
     "data_flow": 0.40,
     "comm_link": 0.70,
     "identity_authz": 0.60,
@@ -98,7 +98,7 @@
     "management_control": 0.20,
     "physical_env": 0.10
   },
-  "command_and_control": {
+  "command-and-control": {
     "data_flow": 0.30,
     "comm_link": 0.90,
     "identity_authz": 0.20,

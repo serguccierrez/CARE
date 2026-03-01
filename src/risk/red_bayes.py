@@ -34,7 +34,7 @@ MITRE_TACTICS = [
 ]
 
 #========================================[MODELO DE RED BAYESIANA]========================================#
-def bayesian_network_construction(tactic="default"):
+def bayesian_network_construction(tactic="default", confidence=0.5):
     """
     Construye un modelo de red bayesiana discreta a partir de las CPDs definidas en el archivo JSON.
     
@@ -209,27 +209,66 @@ def get_cia_res_levels(cia_res_query):
     return cia_res
 
 
+def get_res_threat_prob(affected_edges_by_level, confidence, tactic, affected_nodes_by_level):
+    """
+    Calcula P(Threat) para cada nodo afectado en cada nivel.
+    P(TB) = P(TA) * P(EA→B | TA)
+    """
+    affected_nodes_with_threat_prob = {}
+    
+    node_info = {
+        'node': affected_nodes_by_level[0][0],  # Nodo raíz del nivel 0
+        f'probability_(Threat)': confidence,  # P(Threat) para el nodo raíz
+        'level': 0
+    }
+    affected_nodes_with_threat_prob[0] = [node_info]
+    
+    # Procesar cada nivel (excepto nivel 0 que viene vacio)
+    for level in range(1, len(affected_edges_by_level)):
+        affected_nodes_with_threat_prob[level] = []
+        
+        # Para cada arista en este nivel
+        for edge_idx, edge in enumerate(affected_edges_by_level[level]):
+            # Obtener probabilidad de la arista
+            prob_edge = edge[f'probability_({tactic})']
+            
+            # Calcular P(Threat) para el nodo destino
+            prob_threat = confidence * prob_edge
+            
+            # Crear diccionario con info del nodo
+            node_info = {
+                'node': edge['from'],
+                f'probability_(Threat)': prob_threat,
+                'level': level
+            }
+            
+            affected_nodes_with_threat_prob[level].append(node_info)
+    
+    return affected_nodes_with_threat_prob
+
+
 #========================================[INICIALIZACIÓN]========================================#
-choice = random.choice(MITRE_TACTICS)
-print(f"Construyendo red bayesiana para táctica: {choice}")
-infer = bayesian_network_construction(choice)
+def main():
+    choice = random.choice(MITRE_TACTICS)
+    print(f"Construyendo red bayesiana para táctica: {choice}")
+    infer = bayesian_network_construction(choice, confidence)
 
-#--- (Ejemplos de uso comentados) ---
+    #--- (Ejemplos de uso comentados) ---
 
-# Obtener distribuciones de impacto residual
-c_res = infer.query(variables=["C_res"], evidence={"CM": "none"})
-print("\nP(C_res):")
-print(c_res)
-c_res_levels = get_cia_res_levels(c_res)
+    # Obtener distribuciones de impacto residual
+    c_res = infer.query(variables=["C_res"], evidence={"CM": "none"})
+    print("\nP(C_res):")
+    print(c_res)
+    c_res_levels = get_cia_res_levels(c_res)
 
-i_res = infer.query(variables=["I_res"], evidence={"CM": "none"})
-print("\nP(I_res):")
-print(i_res)
-i_res_levels = get_cia_res_levels(i_res)
+    i_res = infer.query(variables=["I_res"], evidence={"CM": "none"})
+    print("\nP(I_res):")
+    print(i_res)
+    i_res_levels = get_cia_res_levels(i_res)
 
-a_res = infer.query(variables=["A_res"], evidence={"CM": "none"})
-print("\nP(A_res):")
-print(a_res)
-a_res_levels = get_cia_res_levels(a_res)
+    a_res = infer.query(variables=["A_res"], evidence={"CM": "none"})
+    print("\nP(A_res):")
+    print(a_res)
+    a_res_levels = get_cia_res_levels(a_res)
 
 

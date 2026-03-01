@@ -47,17 +47,30 @@ def get_ttp_details_from_ttp_id(ttp_id: str):
 
     # Imprimir tabla
     print(tabulate(table_data, tablefmt="simple"))
+    
+    return ttp_kill_chain_phases
    
     
 def ttp_simulation():
     '''
-    Simula la llegada de un TTP sobe un activo con un cierto nivel de confidence
+    Simula la llegada de un TTP sobre un activo con un cierto nivel de confidence.
+    Solo selecciona TTPs que existen realmente en MITRE ATT&CK.
     '''
-    ttp_sim= 'T' + str(random.randint(1001,1681))
-    confidence = random.random()
-    print(f"Simulación de TTP: {ttp_sim}, Confidence: {confidence:.2f}")
+    # Obtener todas las técnicas válidas
+    techniques = MITRE_ATTACK_DATA.get_techniques(remove_revoked_deprecated=True)
     
-    return dict(ttp_id=ttp_sim, confidence=confidence)
+    if not techniques:
+        print("Error: No se encontraron técnicas en MITRE ATT&CK")
+        return None
+    
+    # Seleccionar una técnica aleatoria
+    random_technique = random.choice(techniques)
+    ttp_id = random_technique['external_references'][0]['external_id']  # Ej: T1190
+    confidence = random.random()
+    
+    print(f"Simulación de TTP: {ttp_id}, Confidence: {confidence:.2f}")
+    
+    return dict(ttp_id=ttp_id, confidence=confidence)
     
       
     
@@ -74,7 +87,8 @@ def main():
     #ttp_id = "T1190"
     #get_ttp_details_from_ttp_id(ttp_id)
     ttp_sim = ttp_simulation()
-    get_ttp_details_from_ttp_id(ttp_sim['ttp_id'])
+    ttp_tactic = get_ttp_details_from_ttp_id(ttp_sim['ttp_id'])
+    print(f"TTP {ttp_sim['ttp_id']} belongs to tactic: {ttp_tactic}")
     
 
 if __name__ == "__main__":
