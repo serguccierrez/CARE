@@ -1,5 +1,6 @@
 #=============================[IMPORTS]===========================================#
 from datetime import datetime
+import json
 import random
 import networkx as nx
 from pathlib import Path
@@ -8,6 +9,9 @@ import src.database.load_data as load_data
 import src.cyberrecom.mitre as mitre
 import src.graph.grafo as grafo
 import src.database.create_db as create_db
+
+
+import src.reporting.report as report
 
 
 
@@ -77,6 +81,9 @@ def main() -> None:
     
     print(f"\nSimulación de amenaza: TTP={random_threat_vector['ttp_id']}, Confidence={random_threat_vector['confidence']:.5f}, Asset={random_threat_vector['asset']}, Tactic={random_threat_vector['tactic']}")
   
+  
+    #{Inicializo JSON de reporte}
+    report_data = report.initialize_simulation_data(random_threat_vector)
     
     # ============ PASO 5: Analizar impacto en el grafo MDO ============
     print("\n" + "="*80)
@@ -85,6 +92,9 @@ def main() -> None:
     
     affected_nodes, affected_edges = grafo.get_infected_nodes(G_global, random_threat_vector['asset'])
     affected_edges =grafo.get_dependency_probs_by_tactic(ttp_tactic, affected_edges)
+    
+    #{Añado nodos y aristas afectadas al reporte}
+    report_data = report.include_affected_nodes_and_edges(report_data, affected_nodes, affected_edges)
     
     for level, nodes in affected_nodes.items():
         print(f"Nivel {level}: {nodes}")
@@ -135,6 +145,10 @@ def main() -> None:
     EU_by_cm_I, p_cm_I, h_I = id_test.expected_utility_per_cm(influence_diagram_I)
     EU_by_cm_A, p_cm_A, h_A = id_test.expected_utility_per_cm(influence_diagram_A)
     
+    
+
+    
+    
     # Imprimir resultados
     print("CONFIDENTIALITY:")
     print(f"  Optimal CM: {optimal_cm_C}")
@@ -178,11 +192,14 @@ def main() -> None:
     print("PASO 9: CONSTRUCCIÓN DE LA RED DE BAYES PARA EL SIGUIENTE NIVEL Y DE LOS DIAGRAMAS DE INFLUENCIA")
     print("="*80)
 
-
+    #{Cargamos sus datos en el JSON de reporte}
+    report_data = report.include_levels_analysis(report_data, affected_nodes_with_threat_prob, affected_nodes[0], affected_nodes_with_threat_prob[0][0]['probability_(Threat)'], c_res_levels, i_res_levels, a_res_levels, str(optimal_cm_C), str(optimal_cm_I), str(optimal_cm_A), EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, level=0)
+    
     if len(affected_nodes) > 1:
         for level, infected_nodes in affected_nodes_with_threat_prob.items():
             if level == 0:
                 continue  # El nivel 0 es el nodo raíz, ya lo procesamos en el paso anterior
+            
             print(f"\nConstruyendo red de bayes para nivel {level}")
             
             
@@ -251,6 +268,9 @@ def main() -> None:
                     print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
                 print(f"  Entropy of policy: {h_A:.4f} ") 
                 
+                #{Cargamos sus datos en el JSON de reporte}
+                report_data = report.include_levels_analysis(report_data, affected_nodes_with_threat_prob, node['node'], node['probability_(Threat)'], c_res_levels, i_res_levels, a_res_levels, str(optimal_cm_C), str(optimal_cm_I), str(optimal_cm_A), EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, level)
+
                 
     #========================================= PASO 10: exporte a JSON =========================================#    
     print("\n" + "="*80)
@@ -265,8 +285,15 @@ def main() -> None:
                
         #{Creamos la estructura de datos para exportar a JSON}
         
+        
+    
+    #{Exportamos a JSON el reporte de la simulación}
+    reporting_path = Path(__file__).parent.parent / "reporting"
+    reporting_path.mkdir(exist_ok=True)
+    with open(reporting_path / "report.json", "w") as f:
+        json.dump(report_data, f, indent=2)
 
-
+'''
     print('prueba de que contienen las variables:')
     print(f"random_threat_vector: {random_threat_vector}")        
     print(f"affected_nodes: {affected_nodes}")
@@ -279,7 +306,7 @@ def main() -> None:
     print(string_to_print)
     print(f"EU_by_cm_C: {EU_by_cm_C}")
     print(f"h_C: {h_C}")
-
+'''
 
 #=================================[ENTRY_POINT]===========================================#    
 if __name__ == "__main__":
