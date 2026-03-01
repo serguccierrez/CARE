@@ -1,4 +1,5 @@
 #=============================[IMPORTS]===========================================#
+from datetime import datetime
 import random
 import networkx as nx
 from pathlib import Path
@@ -17,6 +18,29 @@ import src.risk.id_test as id_test
 DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
 EXCEL_PATH = Path(__file__).parent.parent.parent / "data" / "asset_catalog_validado_v1.0.0_ajustado.xlsx"
 CPDS = id_test.read_constants()
+
+
+#===============================[JSON FUNCTIONS]===========================================#
+def initialize_simulation_data(threat_vector: dict) -> dict:
+    """Inicializa la estructura de datos para almacenar resultados de simulación"""
+    
+    return {
+        "metadata": {
+            "timestamp": datetime.now().isoformat(),
+            "version": "1.0.0",
+            "threat_ttp_id": threat_vector['ttp_id'],
+            "threat_confidence": float(threat_vector['confidence']),
+            "initial_asset": threat_vector['asset'],
+            "tactic": threat_vector['tactic'],
+            "db_path": str(DB_PATH),
+            "excel_source": str(EXCEL_PATH)
+        },
+        "threat_vector": threat_vector,
+        "affected_nodes": {},
+        "affected_edges": {},
+        "levels_analysis": {}
+    }
+
 #==============================[MAIN FUNCTION]===========================================#
 
 def main() -> None:
@@ -158,9 +182,10 @@ def main() -> None:
     print("="*80)
     
    
-    if len(affected_nodes) > 1:
-        affected_nodes_with_threat_prob = red_bayes.get_res_threat_prob(affected_edges, random_threat_vector['confidence'], ttp_tactic, affected_nodes)
+   
+    affected_nodes_with_threat_prob = red_bayes.get_res_threat_prob(affected_edges, random_threat_vector['confidence'], ttp_tactic, affected_nodes)
         
+    if len(affected_nodes) > 1:
         print("\nProbabilidades de P(Threat) = yes, para nodos afectados en el siguiente nivel:")
         
         for level, nodes_info in affected_nodes_with_threat_prob.items():
@@ -177,6 +202,8 @@ def main() -> None:
 
     if len(affected_nodes) > 1:
         for level, infected_nodes in affected_nodes_with_threat_prob.items():
+            if level == 0:
+                continue  # El nivel 0 es el nodo raíz, ya lo procesamos en el paso anterior
             print(f"\nConstruyendo red de bayes para nivel {level}")
             
             
@@ -245,6 +272,34 @@ def main() -> None:
                     print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
                 print(f"  Entropy of policy: {h_A:.4f} ") 
                 
+                
+    #========================================= PASO 10: exporte a JSON =========================================#    
+    print("\n" + "="*80)
+    print("PASO 10: EXPORTE A JSON")
+    print("="*80)
+        # Aquí se implementaría la lógica para exportar los resultados a JSON, incluyendo:
+        #metadatos de la simulación (fecha, hora, etc.) --> var simulation_metadata
+        # - Detalles de la amenaza simulada (TTP, activo afectado, etc.) --> var random_threat_vector
+        # - Nodos y aristas afectados en el grafo MDO --> var affected_nodes, affected_edges, affected_nodes_with_threat_prob
+        # - Resultados de las consultas a la red de bayes para cada nodo afectado ---> crear una variable para guardar los resultados de cada nodo
+        # - Resultados de los diagramas de influencia para cada nodo afectado --> crear una variable para guardar los resultados de cada nodo
+               
+        #{Creamos la estructura de datos para exportar a JSON}
+        
+
+
+    print('prueba de que contienen las variables:')
+    print(f"random_threat_vector: {random_threat_vector}")        
+    print(f"affected_nodes: {affected_nodes}")
+    print(f"affected_edges: {affected_edges}")
+    print(f"affected_nodes_with_threat_prob: {affected_nodes_with_threat_prob}")
+    print(f"a_res_levels: {a_res_levels}")
+    print(f"EU_by_cm_A: {EU_by_cm_A}")
+    print(f"h_A: {h_A}")
+    string_to_print = f"optimal_cm_C: str({optimal_cm_C})"
+    print(string_to_print)
+    print(f"EU_by_cm_C: {EU_by_cm_C}")
+    print(f"h_C: {h_C}")
 
 
 #=================================[ENTRY_POINT]===========================================#    

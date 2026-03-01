@@ -216,6 +216,13 @@ def get_res_threat_prob(affected_edges_by_level, confidence, tactic, affected_no
     """
     affected_nodes_with_threat_prob = {}
     
+    node_info = {
+        'node': affected_nodes_by_level[0][0],  # Nodo raíz del nivel 0
+        f'probability_(Threat)': confidence,  # P(Threat) para el nodo raíz
+        'level': 0
+    }
+    affected_nodes_with_threat_prob[0] = [node_info]
+    
     # Procesar cada nivel (excepto nivel 0 que viene vacio)
     for level in range(1, len(affected_edges_by_level)):
         affected_nodes_with_threat_prob[level] = []
