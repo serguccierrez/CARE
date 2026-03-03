@@ -377,6 +377,8 @@ def main() -> None:
         print(f"Nivel {level}: {nodes}")
     for level, edges in affected_edges.items():
         print(f"Nivel {level} - Aristas afectadas: {edges}")
+        
+    print(G_global.nodes['asset_002']) # Datos del nodo comprometido
     
    # print(affected_edges[1][0]['dependency_type'])
 

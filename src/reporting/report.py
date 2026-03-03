@@ -3,6 +3,7 @@ from datetime import datetime
 from ..cyberrecom.main import DB_PATH, EXCEL_PATH
 from ..risk.id_test import read_constants
 
+
 CPDS = read_constants()
 
 
@@ -38,7 +39,7 @@ def include_affected_nodes_and_edges(report_data,affected_nodes_by_level, affect
     
     return report_data
 
-def include_levels_analysis(report_data, affected_nodes_with_threat_prob, node, p_threat, c_res_levels, i_res_levels, a_res_levels, optimal_cm_C, optimal_cm_I, optimal_cm_A, EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, level):
+def include_levels_analysis(report_data, node, p_threat, c_res_levels, i_res_levels, a_res_levels, optimal_cm_C, optimal_cm_I, optimal_cm_A, EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, G_global, level):
     """Incluye el análisis por niveles en la estructura de datos del reporte"""
     
     # Enriquecer EU y p_cm con nombres de contramedidas
@@ -81,6 +82,8 @@ def include_levels_analysis(report_data, affected_nodes_with_threat_prob, node, 
     report_data['levels_analysis'][level]["results"].append({
         "node": node,
         "P(Threat)": p_threat,
+        "Asset_weights": G_global.nodes[node],
+        "Global_Risk": calculate_global_risk_by_asset(node, eu_cm_c, eu_cm_i, eu_cm_a, G_global),
         "bayesian_inference": {
             "c_res": c_res_levels,
             "i_res": i_res_levels,
@@ -107,3 +110,10 @@ def include_levels_analysis(report_data, affected_nodes_with_threat_prob, node, 
 
     
     return report_data
+
+def calculate_global_risk_by_asset(node, eu_cm_c, eu_cm_i, eu_cm_a, G_global):
+    """Calcula el riesgo global por activo basado en los resultados de la simulación"""
+    node_data = G_global.nodes[node]
+    global_node_risk = node_data['criticality'] * (node_data['cia_c'] * eu_cm_c[0]['residual_risk'] + node_data['cia_i'] * eu_cm_i[0]['residual_risk'] + node_data['cia_a'] * eu_cm_a[0]['residual_risk'])
+    
+    return global_node_risk
