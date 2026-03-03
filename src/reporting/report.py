@@ -50,13 +50,16 @@ def include_levels_analysis(report_data, affected_nodes_with_threat_prob, node, 
     p_cm_a_mapped = []
     
     for cm, eu in zip(CPDS["CM"]["states"], EU_by_cm_C):
-        eu_cm_c.append({'cm': cm, 'eu': eu})
+        eu_cm_c.append({'cm': cm, 'residual_risk': abs(eu)})
+    optimal_cm_C = min(eu_cm_c, key=lambda x: x['residual_risk'])['cm'] 
     
     for cm, eu in zip(CPDS["CM"]["states"], EU_by_cm_I):
-        eu_cm_i.append({'cm': cm, 'eu': eu})
+        eu_cm_i.append({'cm': cm, 'residual_risk': abs(eu)})
+    optimal_cm_I = min(eu_cm_i, key=lambda x: x['residual_risk'])['cm'] 
     
     for cm, eu in zip(CPDS["CM"]["states"], EU_by_cm_A):
-        eu_cm_a.append({'cm': cm, 'eu': eu})
+        eu_cm_a.append({'cm': cm, 'residual_risk': abs(eu)})
+    optimal_cm_A = min(eu_cm_a, key=lambda x: x['residual_risk'])['cm'] 
     
     # Convertir p_cm a lista si es numpy array
     p_cm_c_list = p_cm_C.tolist() 
