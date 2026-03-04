@@ -286,6 +286,7 @@ def main() -> None:
         #{Creamos la estructura de datos para exportar a JSON}
         
         
+    report_data = report.calculate_system_global_risk(report_data)
     
     #{Exportamos a JSON el reporte de la simulación}
     reporting_path = Path(__file__).parent.parent / "reporting"

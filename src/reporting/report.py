@@ -6,6 +6,8 @@ from ..risk.id_test import read_constants
 
 CPDS = read_constants()
 
+global_system_risk = 0.0
+
 
 
 
@@ -28,7 +30,8 @@ def initialize_simulation_data(threat_vector: dict) -> dict:
         "threat_vector": threat_vector,
         "affected_nodes": {},
         "affected_edges": {},
-        "levels_analysis": {}
+        "levels_analysis": {},
+        "Summary": {}
     }
     
 def include_affected_nodes_and_edges(report_data,affected_nodes_by_level, affected_edges_by_level):
@@ -83,7 +86,12 @@ def include_levels_analysis(report_data, node, p_threat, c_res_levels, i_res_lev
         "node": node,
         "P(Threat)": p_threat,
         "Asset_weights": G_global.nodes[node],
+        "Contextual_awareness_risk":{
         "Global_Risk": calculate_global_risk_by_asset(node, eu_cm_c, eu_cm_i, eu_cm_a, G_global),
+        "Confidentiality_Risk": calculate_confidentiality_risk_by_asset(node, eu_cm_c, G_global),
+        "Integrity_Risk": calculate_integrity_risk_by_asset(node, eu_cm_i, G_global),
+        "Availability_Risk": calculate_availability_risk_by_asset(node, eu_cm_a, G_global),
+        },
         "bayesian_inference": {
             "c_res": c_res_levels,
             "i_res": i_res_levels,
@@ -117,3 +125,59 @@ def calculate_global_risk_by_asset(node, eu_cm_c, eu_cm_i, eu_cm_a, G_global):
     global_node_risk = node_data['criticality'] * (node_data['cia_c'] * eu_cm_c[0]['residual_risk'] + node_data['cia_i'] * eu_cm_i[0]['residual_risk'] + node_data['cia_a'] * eu_cm_a[0]['residual_risk'])
     
     return global_node_risk
+
+def calculate_confidentiality_risk_by_asset(node, eu_cm_c, G_global):
+    """Calcula el riesgo de confidencialidad por activo basado en los resultados de la simulación"""
+    node_data = G_global.nodes[node]
+    confidentiality_risk = node_data['criticality'] * node_data['cia_c'] * eu_cm_c[0]['residual_risk']
+    
+    return confidentiality_risk
+
+def calculate_integrity_risk_by_asset(node, eu_cm_i, G_global):
+    """Calcula el riesgo de integridad por activo basado en los resultados de la simulación"""
+    node_data = G_global.nodes[node]
+    integrity_risk = node_data['criticality'] * node_data['cia_i'] * eu_cm_i[0]['residual_risk']
+    
+    return integrity_risk
+
+def calculate_availability_risk_by_asset(node, eu_cm_a, G_global):
+    """Calcula el riesgo de disponibilidad por activo basado en los resultados de la simulación"""
+    node_data = G_global.nodes[node]
+    availability_risk = node_data['criticality'] * node_data['cia_a'] * eu_cm_a[0]['residual_risk']
+    
+    return availability_risk
+
+def calculate_system_global_risk(report_data):
+    """Calcula el riesgo global del sistema sumando todos los Global_Risk de cada nodo"""
+    
+    total_system_risk = 0.0
+    total_confidentiality_risk = 0.0
+    total_integrity_risk = 0.0
+    total_availability_risk = 0.0
+    
+    total_criticality = 0.0
+    
+    # Iterar por cada nivel
+    for level, level_data in report_data['levels_analysis'].items():
+        # Iterar por cada nodo en el nivel
+        for result in level_data['results']:
+            total_system_risk += result['Contextual_awareness_risk']['Global_Risk']
+            total_confidentiality_risk += result['Contextual_awareness_risk']['Confidentiality_Risk']
+            total_integrity_risk += result['Contextual_awareness_risk']['Integrity_Risk']
+            total_availability_risk += result['Contextual_awareness_risk']['Availability_Risk']
+            
+            total_criticality += result['Asset_weights']['criticality']
+
+            
+            
+    report_data['Summary'] = {
+        "Contextual_awareness_risk": {
+            "Total_Global_Risk": total_system_risk,
+            "Total_Confidentiality_Risk": total_confidentiality_risk,
+            "Total_Integrity_Risk": total_integrity_risk,
+            "Total_Availability_Risk": total_availability_risk
+        },
+        "System_Risk_Score_1_10":total_system_risk / total_criticality
+    }
+    
+    return report_data
