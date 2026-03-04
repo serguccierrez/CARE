@@ -3,7 +3,10 @@ from datetime import datetime
 from ..cyberrecom.main import DB_PATH, EXCEL_PATH
 from ..risk.id_test import read_constants
 
+
 CPDS = read_constants()
+
+global_system_risk = 0.0
 
 
 
@@ -27,7 +30,8 @@ def initialize_simulation_data(threat_vector: dict) -> dict:
         "threat_vector": threat_vector,
         "affected_nodes": {},
         "affected_edges": {},
-        "levels_analysis": {}
+        "levels_analysis": {},
+        "Summary": {}
     }
     
 def include_affected_nodes_and_edges(report_data,affected_nodes_by_level, affected_edges_by_level):
@@ -38,7 +42,7 @@ def include_affected_nodes_and_edges(report_data,affected_nodes_by_level, affect
     
     return report_data
 
-def include_levels_analysis(report_data, affected_nodes_with_threat_prob, node, p_threat, c_res_levels, i_res_levels, a_res_levels, optimal_cm_C, optimal_cm_I, optimal_cm_A, EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, level):
+def include_levels_analysis(report_data, node, p_threat, c_res_levels, i_res_levels, a_res_levels, optimal_cm_C, optimal_cm_I, optimal_cm_A, EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, G_global, level):
     """Incluye el análisis por niveles en la estructura de datos del reporte"""
     
     # Enriquecer EU y p_cm con nombres de contramedidas
@@ -50,13 +54,16 @@ def include_levels_analysis(report_data, affected_nodes_with_threat_prob, node, 
     p_cm_a_mapped = []
     
     for cm, eu in zip(CPDS["CM"]["states"], EU_by_cm_C):
-        eu_cm_c.append({'cm': cm, 'eu': eu})
+        eu_cm_c.append({'cm': cm, 'residual_risk': abs(eu)})
+    optimal_cm_C = min(eu_cm_c, key=lambda x: x['residual_risk'])['cm'] 
     
     for cm, eu in zip(CPDS["CM"]["states"], EU_by_cm_I):
-        eu_cm_i.append({'cm': cm, 'eu': eu})
+        eu_cm_i.append({'cm': cm, 'residual_risk': abs(eu)})
+    optimal_cm_I = min(eu_cm_i, key=lambda x: x['residual_risk'])['cm'] 
     
     for cm, eu in zip(CPDS["CM"]["states"], EU_by_cm_A):
-        eu_cm_a.append({'cm': cm, 'eu': eu})
+        eu_cm_a.append({'cm': cm, 'residual_risk': abs(eu)})
+    optimal_cm_A = min(eu_cm_a, key=lambda x: x['residual_risk'])['cm'] 
     
     # Convertir p_cm a lista si es numpy array
     p_cm_c_list = p_cm_C.tolist() 
@@ -78,6 +85,13 @@ def include_levels_analysis(report_data, affected_nodes_with_threat_prob, node, 
     report_data['levels_analysis'][level]["results"].append({
         "node": node,
         "P(Threat)": p_threat,
+        "Asset_weights": G_global.nodes[node],
+        "Contextual_awareness_risk":{
+        "Global_Risk": calculate_global_risk_by_asset(node, eu_cm_c, eu_cm_i, eu_cm_a, G_global),
+        "Confidentiality_Risk": calculate_confidentiality_risk_by_asset(node, eu_cm_c, G_global),
+        "Integrity_Risk": calculate_integrity_risk_by_asset(node, eu_cm_i, G_global),
+        "Availability_Risk": calculate_availability_risk_by_asset(node, eu_cm_a, G_global),
+        },
         "bayesian_inference": {
             "c_res": c_res_levels,
             "i_res": i_res_levels,
@@ -102,5 +116,68 @@ def include_levels_analysis(report_data, affected_nodes_with_threat_prob, node, 
         },   
     })
 
+    
+    return report_data
+
+def calculate_global_risk_by_asset(node, eu_cm_c, eu_cm_i, eu_cm_a, G_global):
+    """Calcula el riesgo global por activo basado en los resultados de la simulación"""
+    node_data = G_global.nodes[node]
+    global_node_risk = node_data['criticality'] * (node_data['cia_c'] * eu_cm_c[0]['residual_risk'] + node_data['cia_i'] * eu_cm_i[0]['residual_risk'] + node_data['cia_a'] * eu_cm_a[0]['residual_risk'])
+    
+    return global_node_risk
+
+def calculate_confidentiality_risk_by_asset(node, eu_cm_c, G_global):
+    """Calcula el riesgo de confidencialidad por activo basado en los resultados de la simulación"""
+    node_data = G_global.nodes[node]
+    confidentiality_risk = node_data['criticality'] * node_data['cia_c'] * eu_cm_c[0]['residual_risk']
+    
+    return confidentiality_risk
+
+def calculate_integrity_risk_by_asset(node, eu_cm_i, G_global):
+    """Calcula el riesgo de integridad por activo basado en los resultados de la simulación"""
+    node_data = G_global.nodes[node]
+    integrity_risk = node_data['criticality'] * node_data['cia_i'] * eu_cm_i[0]['residual_risk']
+    
+    return integrity_risk
+
+def calculate_availability_risk_by_asset(node, eu_cm_a, G_global):
+    """Calcula el riesgo de disponibilidad por activo basado en los resultados de la simulación"""
+    node_data = G_global.nodes[node]
+    availability_risk = node_data['criticality'] * node_data['cia_a'] * eu_cm_a[0]['residual_risk']
+    
+    return availability_risk
+
+def calculate_system_global_risk(report_data):
+    """Calcula el riesgo global del sistema sumando todos los Global_Risk de cada nodo"""
+    
+    total_system_risk = 0.0
+    total_confidentiality_risk = 0.0
+    total_integrity_risk = 0.0
+    total_availability_risk = 0.0
+    
+    total_criticality = 0.0
+    
+    # Iterar por cada nivel
+    for level, level_data in report_data['levels_analysis'].items():
+        # Iterar por cada nodo en el nivel
+        for result in level_data['results']:
+            total_system_risk += result['Contextual_awareness_risk']['Global_Risk']
+            total_confidentiality_risk += result['Contextual_awareness_risk']['Confidentiality_Risk']
+            total_integrity_risk += result['Contextual_awareness_risk']['Integrity_Risk']
+            total_availability_risk += result['Contextual_awareness_risk']['Availability_Risk']
+            
+            total_criticality += result['Asset_weights']['criticality']
+
+            
+            
+    report_data['Summary'] = {
+        "Contextual_awareness_risk": {
+            "Total_Global_Risk": total_system_risk,
+            "Total_Confidentiality_Risk": total_confidentiality_risk,
+            "Total_Integrity_Risk": total_integrity_risk,
+            "Total_Availability_Risk": total_availability_risk
+        },
+        "System_Risk_Score_1_10":total_system_risk / total_criticality
+    }
     
     return report_data

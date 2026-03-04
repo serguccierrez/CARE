@@ -23,7 +23,6 @@ DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
 EXCEL_PATH = Path(__file__).parent.parent.parent / "data" / "asset_catalog_validado_v1.0.0_ajustado.xlsx"
 CPDS = id_test.read_constants()
 
-
 #==============================[MAIN FUNCTION]===========================================#
 
 def main() -> None:
@@ -35,6 +34,7 @@ def main() -> None:
     4. Cargar TTPs MITRE ATT&CK
     5. Realizar simulaciones de ataque TTP
     """   
+    
     print("\n" + "#"*80)
     print("# Motor de recomendacion de contramedidas en entornos MDO - TFG V1.0.0")
     print("#"*80)
@@ -193,7 +193,7 @@ def main() -> None:
     print("="*80)
 
     #{Cargamos sus datos en el JSON de reporte}
-    report_data = report.include_levels_analysis(report_data, affected_nodes_with_threat_prob, affected_nodes[0], affected_nodes_with_threat_prob[0][0]['probability_(Threat)'], c_res_levels, i_res_levels, a_res_levels, str(optimal_cm_C), str(optimal_cm_I), str(optimal_cm_A), EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, level=0)
+    report_data = report.include_levels_analysis(report_data, affected_nodes[0][0], affected_nodes_with_threat_prob[0][0]['probability_(Threat)'], c_res_levels, i_res_levels, a_res_levels, str(optimal_cm_C), str(optimal_cm_I), str(optimal_cm_A), EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, G_global, level=0)
     
     if len(affected_nodes) > 1:
         for level, infected_nodes in affected_nodes_with_threat_prob.items():
@@ -269,7 +269,7 @@ def main() -> None:
                 print(f"  Entropy of policy: {h_A:.4f} ") 
                 
                 #{Cargamos sus datos en el JSON de reporte}
-                report_data = report.include_levels_analysis(report_data, affected_nodes_with_threat_prob, node['node'], node['probability_(Threat)'], c_res_levels, i_res_levels, a_res_levels, str(optimal_cm_C), str(optimal_cm_I), str(optimal_cm_A), EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, level)
+                report_data = report.include_levels_analysis(report_data, node['node'], node['probability_(Threat)'], c_res_levels, i_res_levels, a_res_levels, str(optimal_cm_C), str(optimal_cm_I), str(optimal_cm_A), EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, G_global, level)
 
                 
     #========================================= PASO 10: exporte a JSON =========================================#    
@@ -286,12 +286,13 @@ def main() -> None:
         #{Creamos la estructura de datos para exportar a JSON}
         
         
+    report_data = report.calculate_system_global_risk(report_data)
     
     #{Exportamos a JSON el reporte de la simulación}
     reporting_path = Path(__file__).parent.parent / "reporting"
     reporting_path.mkdir(exist_ok=True)
-    with open(reporting_path / "report.json", "w") as f:
-        json.dump(report_data, f, indent=2)
+    with open(reporting_path / "report.json", "w", encoding="utf-8") as f:
+        json.dump(report_data, f, indent=2, ensure_ascii=False)
 
 '''
     print('prueba de que contienen las variables:')
