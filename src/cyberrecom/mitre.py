@@ -75,9 +75,9 @@ def ttp_simulation():
         ttp_id = technique['external_references'][0]['external_id']
         confidence = random.uniform(0.3, 1.0)
         ttp_data[ttp_id] = {
-            'Name': technique['name'],
-            'Confidence': confidence,
-            'Tactic': get_ttp_details_from_ttp_id(ttp_id)
+            'name': technique['name'],
+            'confidence': confidence,
+            'tactic': get_ttp_details_from_ttp_id(ttp_id)
         }
     
     print(f"Simulación de TTPs: {ttp_data}")
