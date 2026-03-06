@@ -34,9 +34,10 @@ def initialize_simulation_data(threat_vector):
 def include_affected_nodes_and_edges(report_data,affected_nodes_by_level, affected_edges_by_level):
     """Incluye los nodos y aristas afectados en la estructura de datos del reporte"""
     
-    report_data['affected_nodes'] = affected_nodes_by_level
-    report_data['affected_edges'] = affected_edges_by_level
-    
+    # Recibimos dos diccionarios, uno con nodos afectados por cada TTP y otro con aristas afectadas por cada TTP, ambos organizados por niveles de propagación (nivel 1, nivel 2, etc.)
+    for ttp_id in affected_nodes_by_level.keys():
+        report_data['threat_vectors'][ttp_id]['affected_nodes'] = affected_nodes_by_level[ttp_id]
+        report_data['threat_vectors'][ttp_id]['affected_edges'] = affected_edges_by_level[ttp_id]
     return report_data
 
 def include_levels_analysis(report_data, node, p_threat, c_res_levels, i_res_levels, a_res_levels, optimal_cm_C, optimal_cm_I, optimal_cm_A, EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, G_global, level):

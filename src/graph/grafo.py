@@ -297,7 +297,6 @@ def get_infected_nodes(graph: nx.DiGraph, compromised_node: str):
     current_level_nodes = {compromised_node} # Nodos del nivel actual que tenemos que procesar( obtener sus dependencias)
     level = 0 # Nivel de salto actual
     affected_nodes_by_level[level] = [compromised_node] # Nivel 0 es el nodo comprometido
-    affected_edges_by_level[level] = []    
     visited_nodes.add(compromised_node) # Marcamos el nodo comprometido como visitado
 
     
@@ -328,6 +327,7 @@ def get_infected_nodes(graph: nx.DiGraph, compromised_node: str):
 
                 # Obtener datos de la arista directamente con NetworkX
                 edge_data = graph.get_edge_data(dependent_node, current_node)
+                
                 edges_current_level.append({
                     'from': dependent_node,
                     'to': current_node,
