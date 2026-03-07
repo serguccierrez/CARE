@@ -14,6 +14,9 @@ bn_cpds_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json"
 with open(bn_cpds_path, "r") as data:
     cpd_data = json.load(data)
     
+dependency_type_probabilities_path = Path(__file__).parent.parent.parent / "configs" / "dependency_matrix.json"
+with open(dependency_type_probabilities_path, "r") as data:
+    dependency_type_probabilities = json.load(data)    
 
 #========================================[CONSTANTES]========================================#
 MITRE_TACTICS = [
@@ -209,42 +212,67 @@ def get_cia_res_levels(cia_res_query):
     return cia_res
 
 
-def get_res_threat_prob(affected_edges_by_level, confidence, tactic, affected_nodes_by_level):
+def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random_threat_vectors):
     """
     Calcula P(Threat) para cada nodo afectado en cada nivel.
     P(TB) = P(TA) * P(EA→B | TA)
     """
-    affected_nodes_with_threat_prob = {}
+    # Diccionario con clave nombre del nodo y valor datos de threat
+    nodes_threat_prob = {}
     
-    node_info = {
-        'node': affected_nodes_by_level[0][0],  # Nodo raíz del nivel 0
-        f'probability_(Threat)': confidence,  # P(Threat) para el nodo raíz
-        'level': 0
-    }
-    affected_nodes_with_threat_prob[0] = [node_info]
-    
-    # Procesar cada nivel (excepto nivel 0 que viene vacio)
-    for level in range(1, len(affected_edges_by_level)):
-        affected_nodes_with_threat_prob[level] = []
+    for ttp_id, threat_vector in random_threat_vectors.items():
+        confidence = threat_vector['confidence']
+        ttp_tactic = threat_vector['tactic']
         
-        # Para cada arista en este nivel
-        for edge_idx, edge in enumerate(affected_edges_by_level[level]):
-            # Obtener probabilidad de la arista
-            prob_edge = edge[f'probability_({tactic})']
-            
-            # Calcular P(Threat) para el nodo destino
-            prob_threat = confidence * prob_edge
-            
-            # Crear diccionario con info del nodo
-            node_info = {
-                'node': edge['from'],
-                f'probability_(Threat)': prob_threat,
-                'level': level
+        # Obtener datos para este TTP
+        try:
+            nodes_data = affected_nodes_by_level.get(ttp_id, {})
+            edges_data = affected_edges_by_level.get(ttp_id, {})
+        except KeyError:
+            print(f"Error: No se encontraron datos para TTP {ttp_id} en nodos o aristas afectados.")
+            continue
+        
+        # Procesar edges: agregar P(trans) y eliminar weight
+        for level, edge_list in edges_data.items():
+            for edge_info in edge_list:
+                dependency_type = edge_info['dependency_type']
+                edge_info[f'P(trans_{ttp_tactic}|Threat = yes)'] = dependency_type_probabilities[ttp_tactic][dependency_type]
+                edge_info.pop('weight', None)
+        
+        # NIVEL 0: P(Threat) = confidence
+        for asset in nodes_data.get(0, []):
+            nodes_threat_prob[asset] = {
+                'P(Threat)': confidence,
+                'level': 0,
+                'ttp': ttp_id
             }
             
-            affected_nodes_with_threat_prob[level].append(node_info)
+            
+        
+        # NIVELES > 0: P(Threat asset_from {hijo}) = P(Threat asset_to {padre}) * P(dependency_type|threat=yes)
+        for level in range(0, len(nodes_data)):
+            for asset_from in nodes_data.get(level, []):
+                # Buscar el edge donde este nodo es el dependiente (from) para ese nivel
+                for edge in edges_data.get(level, []):
+                    if edge['from'] == asset_from:
+                        asset_to = edge['to']  # El nodo del que depende
+                        p_trans_key = f'P(trans_{ttp_tactic}|Threat = yes)'
+                        p_trans = edge.get(p_trans_key, 0)
+                        
+                        # P(Threat) del nodo del que depende
+                        if asset_to in nodes_threat_prob:
+                            p_threat_parent = nodes_threat_prob[asset_to]['P(Threat)']
+                            nodes_threat_prob[asset_from] = {
+                                'P(Threat)': p_threat_parent * p_trans,
+                                'level': level,
+                                'ttp': ttp_id,
+                                'depends_on': asset_to
+                            }
+                            print(f"Calculando P(Threat) para {asset_from} (nivel {level}): P(Threat)({asset_to})={p_threat_parent} * P(trans|Threat = yes)={p_trans} = {nodes_threat_prob[asset_from]['P(Threat)']}") 
+                        break
+                
     
-    return affected_nodes_with_threat_prob
+    return nodes_threat_prob
 
 
 #========================================[INICIALIZACIÓN]========================================#
