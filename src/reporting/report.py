@@ -26,7 +26,8 @@ def initialize_simulation_data(threat_vector):
     }
     
     # Podemos recibir más de un TTP en el threat_vector, así que añadimos una sección para almacenar todos los TTPs simulados
-    report_data['threat_vectors'] = threat_vector  
+    report_data['threat_vectors'] = threat_vector
+    report_data['nodes_analysis'] = []
     
     return report_data
        
@@ -114,6 +115,13 @@ def include_levels_analysis(report_data, node, p_threat, c_res_levels, i_res_lev
         },   
     })
 
+    
+    return report_data
+
+def include_node_analysis(report_data, res_threat_prob):
+    """Incluye el análisis por nodo en la estructura de datos del reporte"""
+    
+    report_data['nodes_analysis'].append(res_threat_prob)
     
     return report_data
 

@@ -244,7 +244,8 @@ def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random
             nodes_threat_prob[asset] = {
                 'P(Threat)': confidence,
                 'level': 0,
-                'ttp': ttp_id
+                'ttp': ttp_id,
+                'root': True
             }
             
             
