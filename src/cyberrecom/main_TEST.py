@@ -120,39 +120,44 @@ def main() -> None:
     
     for ttp_id, threat_vector in random_threat_vectors.items():
         for asset, info_asset in res_threat_prob.items():
-            print(f"\nCalculando red de Bayes para TTP {ttp_id} - Asset {asset}...")
-            
-            # Crear modelo de red bayesiana con tactic y confidence del asset
-            red_bayes_model = red_bayes.bayesian_network_construction(threat_vector['tactic'], info_asset['P(Threat)'])
-            print(f"Red de Bayes construida para TTP {ttp_id}")
-            
-            # Realizar queries
+            if ttp_id not in info_asset.get('threats_by_ttp', {}):
+                continue
+
+            print(f"Calculando red de Bayes para TTP {ttp_id} - Asset {asset}...") 
+
+
+            red_bayes_model = red_bayes.bayesian_network_construction(
+                threat_vector['tactic'],
+                info_asset['threats_by_ttp'][ttp_id]['P(Threat)']
+            )
+
+            # Hacemos las queries
             threat_prob = red_bayes_model.query(variables=["Threat"])
             c_res = red_bayes_model.query(variables=["C_res"], evidence={"CM": "none"})
             c_res_levels = red_bayes.get_cia_res_levels(c_res)
-            
+
             i_res = red_bayes_model.query(variables=["I_res"], evidence={"CM": "none"})
             i_res_levels = red_bayes.get_cia_res_levels(i_res)
-            
+
             a_res = red_bayes_model.query(variables=["A_res"], evidence={"CM": "none"})
             a_res_levels = red_bayes.get_cia_res_levels(a_res)
-            
-            # Agregar modelo y resultados de inferencia al asset
-            info_asset['bayesian_network_inference'] = {
+
+            # Guardar resultados por TTP, para no sobreescribitr si hay varios TTPs afectando al mismo activo
+            info_asset.setdefault('bayesian_network_inference_by_ttp', {})
+            info_asset['bayesian_network_inference_by_ttp'][ttp_id] = {
                 'queries': {
                     'c_res_levels': c_res_levels,
                     'i_res_levels': i_res_levels,
                     'a_res_levels': a_res_levels
                 }
             }
-            
-            print(f"Inferencia almacenada para {asset}")
+
+            print(f"Inferencia almacenada para {asset} - {ttp_id}")
             print(f"P(C_res | CM=none): {c_res_levels}")
             print(f"P(I_res | CM=none): {i_res_levels}")
             print(f"P(A_res | CM=none): {a_res_levels}")
-    
-        report_data = report.include_node_analysis(report_data, res_threat_prob)
-        
+
+    report_data = report.include_node_analysis(report_data, res_threat_prob)
             
     
     

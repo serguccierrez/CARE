@@ -59,7 +59,7 @@ def ttp_simulation():
     # Obtener todas las técnicas válidas
     techniques = MITRE_ATTACK_DATA.get_techniques(remove_revoked_deprecated=True)
     
-    n_ttps = random.randint(1, 2)  # Simular entre 1 y 2 TTPs
+    n_ttps = random.randint(1, 3)  # Simular entre 1 y 3 TTPs
 
     if not techniques:
         print("Error: No se encontraron técnicas en MITRE ATT&CK")
