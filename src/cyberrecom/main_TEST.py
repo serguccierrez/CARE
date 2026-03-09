@@ -112,7 +112,7 @@ def main() -> None:
     print("PASO 8: CALCULO DEL THREAT DEL SIGUIENTE ACTIVO DEPENDIENTE")
     print("="*80)
     
-    res_threat_prob = red_bayes.get_res_threat_prob(affected_edges, affected_nodes, random_threat_vectors)
+    res_threat_prob = red_bayes.get_res_threat_prob(affected_edges, affected_nodes, random_threat_vectors, G_global)
     print(f"\nProbabilidades de amenaza calculadas para los activos afectados: {res_threat_prob}")
     
     
@@ -236,7 +236,7 @@ def main() -> None:
 
     report_data = report.include_node_analysis(report_data, res_threat_prob)
             
-    
+    report_data = report.include_cia_risk(report_data, G_global)
     
     
     

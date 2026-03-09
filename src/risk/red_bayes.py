@@ -212,7 +212,7 @@ def get_cia_res_levels(cia_res_query):
     return cia_res
 
 
-def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random_threat_vectors):
+def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random_threat_vectors, grafo):
     """
     Calcula P(Threat) para cada nodo afectado en cada nivel.
     P(TB) = P(TA) * P(EA→B | TA)
@@ -249,6 +249,8 @@ def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random
                     'level': 0,
                     'root': True
                 }
+
+                nodes_threat_prob[asset]['node_data'] = grafo.nodes[asset]
                 
             else: # No es el primer TTP que ataca al nodo
                 
@@ -278,13 +280,18 @@ def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random
                                     'level': level,
                                     'depends_on': asset_to
                                 }}
+
                             }
+
+                            nodes_threat_prob[asset_from]['node_data'] = grafo.nodes[asset_from]
+                        
                         else:
                             nodes_threat_prob[asset_from]['threats_by_ttp'][ttp_id] = {
                             'P(Threat)': p_threat_parent * p_trans,
                             'level': level,
                             'depends_on': asset_to
                             }
+
                             
     #nodes_threat_prob = add_noisy_or_prob(nodes_threat_prob)
                             

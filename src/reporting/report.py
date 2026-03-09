@@ -125,6 +125,9 @@ def include_node_analysis(report_data, res_threat_prob):
     
     return report_data
 
+
+
+
 def calculate_global_risk_by_asset(node, eu_cm_c, eu_cm_i, eu_cm_a, G_global):
     """Calcula el riesgo global por activo basado en los resultados de la simulación"""
     node_data = G_global.nodes[node]
@@ -152,6 +155,44 @@ def calculate_availability_risk_by_asset(node, eu_cm_a, G_global):
     availability_risk = node_data['criticality'] * node_data['cia_a'] * eu_cm_a[0]['residual_risk']
     
     return availability_risk
+
+
+def include_cia_risk(report_data, G_global):
+    """Añade risk_C, risk_I y risk_A a cada activo y TTP dentro del reporte"""
+
+    for block in report_data.get("nodes_analysis", []):
+        for node, node_info in block.items():
+
+            threats_by_ttp = node_info.get("threats_by_ttp", {})
+            influence_by_ttp = node_info.get("influence_diagram_results_by_ttp", {})
+
+            for ttp, threat_info in threats_by_ttp.items():
+
+                influence_info = influence_by_ttp.get(ttp, {})
+
+                expected_utility_by_cm = influence_info.get("expected_utility_by_cm", {})
+
+                # Usar el valor de "none" (sin contramedidas) para calcular el riesgo residual
+                eu_c_dict = expected_utility_by_cm.get("C", {})
+                eu_i_dict = expected_utility_by_cm.get("I", {})
+                eu_a_dict = expected_utility_by_cm.get("A", {})
+                
+                # Extraer el valor de "none" si es un diccionario, si no usar el valor como está
+                eu_c = eu_c_dict.get("none", 0.0) 
+                eu_i = eu_i_dict.get("none", 0.0) 
+                eu_a = eu_a_dict.get("none", 0.0) 
+
+                eu_cm_c = [{"residual_risk": eu_c}]
+                eu_cm_i = [{"residual_risk": eu_i}]
+                eu_cm_a = [{"residual_risk": eu_a}]
+
+                threat_info["risk_C"] = calculate_confidentiality_risk_by_asset(node, eu_cm_c, G_global)
+                threat_info["risk_I"] = calculate_integrity_risk_by_asset(node, eu_cm_i, G_global)
+                threat_info["risk_A"] = calculate_availability_risk_by_asset(node, eu_cm_a, G_global)
+
+    return report_data
+    
+
 
 def calculate_system_global_risk(report_data):
     """Calcula el riesgo global del sistema sumando todos los Global_Risk de cada nodo"""
