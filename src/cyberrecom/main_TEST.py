@@ -157,6 +157,83 @@ def main() -> None:
             print(f"P(I_res | CM=none): {i_res_levels}")
             print(f"P(A_res | CM=none): {a_res_levels}")
 
+
+            #========================================== PASO 10: Análisis con diagrama de influencia =========================================#
+            influence_diagram_C, ie_C = id_test.create_and_solve_dimension("C", "C_res",  threat_vector['tactic'], info_asset['threats_by_ttp'][ttp_id]['P(Threat)'])
+            influence_diagram_I, ie_I = id_test.create_and_solve_dimension("I", "I_res",  threat_vector['tactic'], info_asset['threats_by_ttp'][ttp_id]['P(Threat)'])
+            influence_diagram_A, ie_A = id_test.create_and_solve_dimension("A", "A_res",  threat_vector['tactic'], info_asset['threats_by_ttp'][ttp_id]['P(Threat)'])
+
+            # Para cada dimensión
+            optimal_cm_C = ie_C.optimalDecision("CM")
+            optimal_cm_I = ie_I.optimalDecision("CM")
+            optimal_cm_A = ie_A.optimalDecision("CM")
+
+            
+
+            # Calcular EU por CM para cada dimensión
+            EU_by_cm_C, p_cm_C, h_C = id_test.expected_utility_per_cm(influence_diagram_C)
+            EU_by_cm_I, p_cm_I, h_I = id_test.expected_utility_per_cm(influence_diagram_I)
+            EU_by_cm_A, p_cm_A, h_A = id_test.expected_utility_per_cm(influence_diagram_A)
+
+
+            # Lo transformamos en algo que podamos meter en el reporte en formato JSON
+            best_cm_C = CPDS["CM"]["states"][EU_by_cm_C.index(max(EU_by_cm_C))]
+            best_cm_I = CPDS["CM"]["states"][EU_by_cm_I.index(max(EU_by_cm_I))]
+            best_cm_A = CPDS["CM"]["states"][EU_by_cm_A.index(max(EU_by_cm_A))]
+
+            # Devolvemos la utilidad a un valor > 0
+            EU_by_cm_C = [abs(x) for x in EU_by_cm_C]
+            EU_by_cm_I = [abs(x) for x in EU_by_cm_I]
+            EU_by_cm_A = [abs(x) for x in EU_by_cm_A]
+
+
+            # Guardar resultados ID por TTP
+            info_asset.setdefault('influence_diagram_results_by_ttp', {})
+            info_asset['influence_diagram_results_by_ttp'][ttp_id] = {
+        
+                'optimal_cm': {
+                    'C': best_cm_C,
+                    'I': best_cm_I,
+                    'A': best_cm_A
+                },
+                'expected_utility_by_cm': {
+                    'C':dict(zip(CPDS["CM"]["states"], EU_by_cm_C)),
+                    'I': dict(zip(CPDS["CM"]["states"], EU_by_cm_I)),
+                    'A': dict(zip(CPDS["CM"]["states"], EU_by_cm_A))
+                },
+                'p_cm': {
+                    'C':dict(zip(CPDS["CM"]["states"], p_cm_C.tolist())),
+                    'I': dict(zip(CPDS["CM"]["states"], p_cm_I.tolist())),
+                    'A': dict(zip(CPDS["CM"]["states"], p_cm_A.tolist()))
+                },
+                'policy_entropy': {
+                    'C': h_C,
+                    'I': h_I,
+                    'A': h_A
+                }
+            }
+
+            
+            
+            # Imprimir resultados
+            print("CONFIDENTIALITY:")
+            print(f"  Optimal CM: {optimal_cm_C}")
+            for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_C, p_cm_C):
+                print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+            print(f"  Entropy of policy: {h_C:.4f} ")
+
+            print("\nINTEGRITY:")
+            print(f"  Optimal CM: {optimal_cm_I}")
+            for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_I, p_cm_I):
+                print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+            print(f"  Entropy of policy: {h_I:.4f} ")
+
+            print("\nAVAILABILITY:")
+            print(f"  Optimal CM: {optimal_cm_A}")
+            for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_A, p_cm_A):
+                print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+            print(f"  Entropy of policy: {h_A:.4f} ")
+
     report_data = report.include_node_analysis(report_data, res_threat_prob)
             
     
