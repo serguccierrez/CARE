@@ -1,5 +1,8 @@
 #==============================[IMPORTS]===========================================#
 from datetime import datetime
+import json
+
+from pathlib import Path
 from ..cyberrecom.main import DB_PATH, EXCEL_PATH
 from ..risk.id_test import read_constants
 
@@ -41,82 +44,6 @@ def include_affected_nodes_and_edges(report_data,affected_nodes_by_level, affect
         report_data['threat_vectors'][ttp_id]['affected_edges'] = affected_edges_by_level[ttp_id]
     return report_data
 
-def include_levels_analysis(report_data, node, p_threat, c_res_levels, i_res_levels, a_res_levels, optimal_cm_C, optimal_cm_I, optimal_cm_A, EU_by_cm_C, EU_by_cm_I, EU_by_cm_A, p_cm_C, p_cm_I, p_cm_A, G_global, level):
-    """Incluye el análisis por niveles en la estructura de datos del reporte"""
-    
-    # Enriquecer EU y p_cm con nombres de contramedidas
-    eu_cm_c = []
-    eu_cm_i = []
-    eu_cm_a = []
-    p_cm_c_mapped = []
-    p_cm_i_mapped = []
-    p_cm_a_mapped = []
-    
-    for cm, eu in zip(CPDS["CM"]["states"], EU_by_cm_C):
-        eu_cm_c.append({'cm': cm, 'residual_risk': abs(eu)})
-    optimal_cm_C = min(eu_cm_c, key=lambda x: x['residual_risk'])['cm'] 
-    
-    for cm, eu in zip(CPDS["CM"]["states"], EU_by_cm_I):
-        eu_cm_i.append({'cm': cm, 'residual_risk': abs(eu)})
-    optimal_cm_I = min(eu_cm_i, key=lambda x: x['residual_risk'])['cm'] 
-    
-    for cm, eu in zip(CPDS["CM"]["states"], EU_by_cm_A):
-        eu_cm_a.append({'cm': cm, 'residual_risk': abs(eu)})
-    optimal_cm_A = min(eu_cm_a, key=lambda x: x['residual_risk'])['cm'] 
-    
-    # Convertir p_cm a lista si es numpy array
-    p_cm_c_list = p_cm_C.tolist() 
-    p_cm_i_list = p_cm_I.tolist() 
-    p_cm_a_list = p_cm_A.tolist() 
-    
-    for cm, p in zip(CPDS["CM"]["states"], p_cm_c_list):
-        p_cm_c_mapped.append({'cm': cm, 'p': p})
-    
-    for cm, p in zip(CPDS["CM"]["states"], p_cm_i_list):
-        p_cm_i_mapped.append({'cm': cm, 'p': p})
-    
-    for cm, p in zip(CPDS["CM"]["states"], p_cm_a_list):
-        p_cm_a_mapped.append({'cm': cm, 'p': p})
-    
-    if level not in report_data['levels_analysis']:
-        report_data['levels_analysis'][level] = {"results": []}
-    
-    report_data['levels_analysis'][level]["results"].append({
-        "node": node,
-        "P(Threat)": p_threat,
-        "Asset_weights": G_global.nodes[node],
-        "Contextual_awareness_risk":{
-        "Global_Risk": calculate_global_risk_by_asset(node, eu_cm_c, eu_cm_i, eu_cm_a, G_global),
-        "Confidentiality_Risk": calculate_confidentiality_risk_by_asset(node, eu_cm_c, G_global),
-        "Integrity_Risk": calculate_integrity_risk_by_asset(node, eu_cm_i, G_global),
-        "Availability_Risk": calculate_availability_risk_by_asset(node, eu_cm_a, G_global),
-        },
-        "bayesian_inference": {
-            "c_res": c_res_levels,
-            "i_res": i_res_levels,
-            "a_res": a_res_levels,
-        },
-        "influence_diagram_inference": {
-            "Confidentiality": {
-                "EU_by_cm": eu_cm_c,
-                "p_cm": p_cm_c_mapped,
-                "optimal_cm": optimal_cm_C
-            },
-            "Integrity": {
-                "EU_by_cm": eu_cm_i,
-                "p_cm": p_cm_i_mapped,
-                "optimal_cm": optimal_cm_I
-            },
-            "Availability": {
-                "EU_by_cm": eu_cm_a,
-                "p_cm": p_cm_a_mapped,
-                "optimal_cm": optimal_cm_A
-            }
-        },   
-    })
-
-    
-    return report_data
 
 def include_node_analysis(report_data, res_threat_prob):
     """Incluye el análisis por nodo en la estructura de datos del reporte"""
@@ -126,39 +53,15 @@ def include_node_analysis(report_data, res_threat_prob):
     return report_data
 
 
-
-
 def calculate_global_risk_by_asset(node, eu_cm_c, eu_cm_i, eu_cm_a, G_global):
     """Calcula el riesgo global por activo basado en los resultados de la simulación"""
     node_data = G_global.nodes[node]
-    global_node_risk = node_data['criticality'] * (node_data['cia_c'] * eu_cm_c[0]['residual_risk'] + node_data['cia_i'] * eu_cm_i[0]['residual_risk'] + node_data['cia_a'] * eu_cm_a[0]['residual_risk'])
+    global_node_risk = node_data['cia_c'] * eu_cm_c[0]['residual_risk'] + node_data['cia_i'] * eu_cm_i[0]['residual_risk'] + node_data['cia_a'] * eu_cm_a[0]['residual_risk']
     
     return global_node_risk
 
-def calculate_confidentiality_risk_by_asset(node, eu_cm_c, G_global):
-    """Calcula el riesgo de confidencialidad por activo basado en los resultados de la simulación"""
-    node_data = G_global.nodes[node]
-    confidentiality_risk = node_data['criticality'] * node_data['cia_c'] * eu_cm_c[0]['residual_risk']
-    
-    return confidentiality_risk
-
-def calculate_integrity_risk_by_asset(node, eu_cm_i, G_global):
-    """Calcula el riesgo de integridad por activo basado en los resultados de la simulación"""
-    node_data = G_global.nodes[node]
-    integrity_risk = node_data['criticality'] * node_data['cia_i'] * eu_cm_i[0]['residual_risk']
-    
-    return integrity_risk
-
-def calculate_availability_risk_by_asset(node, eu_cm_a, G_global):
-    """Calcula el riesgo de disponibilidad por activo basado en los resultados de la simulación"""
-    node_data = G_global.nodes[node]
-    availability_risk = node_data['criticality'] * node_data['cia_a'] * eu_cm_a[0]['residual_risk']
-    
-    return availability_risk
-
-
-def include_cia_risk(report_data, G_global):
-    """Añade risk_C, risk_I y risk_A a cada activo y TTP dentro del reporte"""
+def calculate_incident_risk(report_data):
+    """Añade incident_risk_C, incident_risk_I, incident_risk_A y total_incident_risk"""
 
     for block in report_data.get("nodes_analysis", []):
         for node, node_info in block.items():
@@ -169,62 +72,131 @@ def include_cia_risk(report_data, G_global):
             for ttp, threat_info in threats_by_ttp.items():
 
                 influence_info = influence_by_ttp.get(ttp, {})
-
                 expected_utility_by_cm = influence_info.get("expected_utility_by_cm", {})
 
-                # Usar el valor de "none" (sin contramedidas) para calcular el riesgo residual
-                eu_c_dict = expected_utility_by_cm.get("C", {})
-                eu_i_dict = expected_utility_by_cm.get("I", {})
-                eu_a_dict = expected_utility_by_cm.get("A", {})
-                
-                # Extraer el valor de "none" si es un diccionario, si no usar el valor como está
-                eu_c = eu_c_dict.get("none", 0.0) 
-                eu_i = eu_i_dict.get("none", 0.0) 
-                eu_a = eu_a_dict.get("none", 0.0) 
+                # Riesgo residual usando la opción "none"
+                residual_risk_c = expected_utility_by_cm.get("C", {}).get("none", 0.0)
+                residual_risk_i = expected_utility_by_cm.get("I", {}).get("none", 0.0)
+                residual_risk_a = expected_utility_by_cm.get("A", {}).get("none", 0.0)
 
-                eu_cm_c = [{"residual_risk": eu_c}]
-                eu_cm_i = [{"residual_risk": eu_i}]
-                eu_cm_a = [{"residual_risk": eu_a}]
+                threat_info["incident_risk_C"] = residual_risk_c
+                threat_info["incident_risk_I"] = residual_risk_i
+                threat_info["incident_risk_A"] = residual_risk_a
 
-                threat_info["risk_C"] = calculate_confidentiality_risk_by_asset(node, eu_cm_c, G_global)
-                threat_info["risk_I"] = calculate_integrity_risk_by_asset(node, eu_cm_i, G_global)
-                threat_info["risk_A"] = calculate_availability_risk_by_asset(node, eu_cm_a, G_global)
+                threat_info["total_incident_risk"] = (node_info["node_data"]["cia_c"] * residual_risk_c) + (node_info["node_data"]["cia_i"] * residual_risk_i) + (node_info["node_data"]["cia_a"] * residual_risk_a)
 
     return report_data
     
+def total_risk_by_asset(report_data):
+    """
+    Calcula el riesgo total por activo como la media aritmética de los incidentes
+    asociados a ese activo, tanto global como por cada dimensión CIA.
+    """
 
+    asset_risk_summary = {}
 
-def calculate_system_global_risk(report_data):
-    """Calcula el riesgo global del sistema sumando todos los Global_Risk de cada nodo"""
-    
-    total_system_risk = 0.0
-    total_confidentiality_risk = 0.0
-    total_integrity_risk = 0.0
-    total_availability_risk = 0.0
-    
-    total_criticality = 0.0
-    
-    # Iterar por cada nivel
-    for level, level_data in report_data['levels_analysis'].items():
-        # Iterar por cada nodo en el nivel
-        for result in level_data['results']:
-            total_system_risk += result['Contextual_awareness_risk']['Global_Risk']
-            total_confidentiality_risk += result['Contextual_awareness_risk']['Confidentiality_Risk']
-            total_integrity_risk += result['Contextual_awareness_risk']['Integrity_Risk']
-            total_availability_risk += result['Contextual_awareness_risk']['Availability_Risk']
-            
-            total_criticality += result['Asset_weights']['criticality']
+    # Primera pasada: acumular riesgos por activo
+    for block in report_data.get("nodes_analysis", []):
+        for node, node_info in block.items():
 
+            threats_by_ttp = node_info.get("threats_by_ttp", {})
+
+            for ttp, threat_info in threats_by_ttp.items():
+                
+                total_incident_risk = threat_info.get("total_incident_risk", 0.0)
+                incident_risk_C = threat_info.get("incident_risk_C", 0.0)
+                incident_risk_I = threat_info.get("incident_risk_I", 0.0)
+                incident_risk_A = threat_info.get("incident_risk_A", 0.0)   
+                
+
+                if node not in asset_risk_summary:
+                    asset_risk_summary[node] = {
+                        "total_incident_risk": 0.0,
+                        "total_incident_risk_C": 0.0,
+                        "total_incident_risk_I": 0.0,
+                        "total_incident_risk_A": 0.0,
+                        "incident_count": 0
+                    }
+
+                asset_risk_summary[node]["total_incident_risk"] += total_incident_risk
+                asset_risk_summary[node]["total_incident_risk_C"] += incident_risk_C
+                asset_risk_summary[node]["total_incident_risk_I"] += incident_risk_I
+                asset_risk_summary[node]["total_incident_risk_A"] += incident_risk_A
+                asset_risk_summary[node]["incident_count"] += 1
+
+    # Segunda pasada: escribir resultados en cada activo
+    for block in report_data.get("nodes_analysis", []):
+        for node, node_info in block.items():
+
+            risk_info = asset_risk_summary.get(node, None)
+
+            if risk_info and risk_info["incident_count"] > 0:
+                n = risk_info["incident_count"]
+
+                node_info["asset_incident_count"] = n
+                node_info["asset_average_risk"] = risk_info["total_incident_risk"] / n
+                node_info["asset_confidentiality_risk"] = risk_info["total_incident_risk_C"] / n
+                node_info["asset_integrity_risk"] = risk_info["total_incident_risk_I"] / n
+                node_info["asset_availability_risk"] = risk_info["total_incident_risk_A"] / n
+            else:
+                node_info["asset_incident_count"] = 0
+                node_info["asset_average_risk"] = 0.0
+                node_info["asset_confidentiality_risk"] = 0.0
+                node_info["asset_integrity_risk"] = 0.0
+                node_info["asset_availability_risk"] = 0.0
+
+    return report_data
+    
+    
+
+def calculate_global_system_risk(report_data):
+    """ Calcula el reisgo global del sistema"""
+
+    risk_score_c = 0.0
+    risk_score_i = 0.0
+    risk_score_a = 0.0
+    risk_score = 0.0
+    system_criticality = 0.0
+
+    for block in report_data.get("nodes_analysis", []):
+        for node, node_info in block.items():
+
+            c_risk = node_info.get("asset_confidentiality_risk", 0.0)
+            i_risk = node_info.get("asset_integrity_risk", 0.0)
+            a_risk = node_info.get("asset_availability_risk", 0.0)
             
+            node_criticality = node_info["node_data"].get("criticality", 0.0)
             
-    report_data['Summary'] = {
-        "Contextual_awareness_risk": {
-            "Total_Global_Risk": total_system_risk,
-            "Total_Confidentiality_Risk": total_confidentiality_risk,
-            "Total_Integrity_Risk": total_integrity_risk,
-            "Total_Availability_Risk": total_availability_risk
-        },
-        "System_Risk_Score_1_10":total_system_risk / total_criticality
+            system_criticality += node_info["node_data"].get("criticality", 0.0)
+            
+            risk_score_c += c_risk * node_criticality
+            risk_score_i += i_risk * node_criticality
+            risk_score_a += a_risk * node_criticality
+            
+            risk_score += node_info.get("asset_average_risk", 0.0) * node_criticality
+           
+                
+    risk_score_c = risk_score_c / system_criticality 
+    risk_score_i = risk_score_i / system_criticality
+    risk_score_a = risk_score_a / system_criticality
+    risk_score = risk_score / system_criticality
+    
+    report_data['global_system_risk'] = {
+        "confidentiality_risk": risk_score_c,
+        "integrity_risk": risk_score_i,
+        "availability_risk": risk_score_a,
+        "overall_risk": risk_score
     }
     
     return report_data
+
+def export_report_to_json(report_data, output_filename="report.json"):
+    """Exporta la estructura de datos del reporte a un archivo JSON"""
+    reporting_path = Path(__file__).parent / output_filename
+    reporting_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    with open(reporting_path, "w", encoding="utf-8") as f:
+        json.dump(report_data, f, indent=2, ensure_ascii=False)
+    
+    print(f"Reporte exportado a: {reporting_path}")
+    return reporting_path

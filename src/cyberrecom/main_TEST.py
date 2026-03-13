@@ -235,26 +235,16 @@ def main() -> None:
             print(f"  Entropy of policy: {h_A:.4f} ")
 
     report_data = report.include_node_analysis(report_data, res_threat_prob)
-            
-    report_data = report.include_cia_risk(report_data, G_global)
+    
+    report_data = report.calculate_incident_risk(report_data)
+    report_data = report.total_risk_by_asset(report_data)
+    report_data = report.calculate_global_system_risk(report_data)
     
     
-    
-    
-    
-    
-                
-   
-    
-   
     
     print(f"\nEstructura inicial del reporte: {report_data}")
     
-     #{Exportamos a JSON el reporte de la simulación}
-    reporting_path = Path(__file__).parent.parent / "reporting"
-    reporting_path.mkdir(exist_ok=True)
-    with open(reporting_path / "report.json", "w", encoding="utf-8") as f:
-        json.dump(report_data, f, indent=2, ensure_ascii=False)
+    report.export_report_to_json(report_data)
     
     
 #=================================[ENTRY_POINT]===========================================#    
