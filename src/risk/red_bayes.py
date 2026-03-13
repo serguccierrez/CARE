@@ -14,6 +14,9 @@ bn_cpds_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json"
 with open(bn_cpds_path, "r") as data:
     cpd_data = json.load(data)
     
+dependency_type_probabilities_path = Path(__file__).parent.parent.parent / "configs" / "dependency_matrix.json"
+with open(dependency_type_probabilities_path, "r") as data:
+    dependency_type_probabilities = json.load(data)    
 
 #========================================[CONSTANTES]========================================#
 MITRE_TACTICS = [
@@ -209,43 +212,114 @@ def get_cia_res_levels(cia_res_query):
     return cia_res
 
 
-def get_res_threat_prob(affected_edges_by_level, confidence, tactic, affected_nodes_by_level):
+def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random_threat_vectors, grafo):
     """
     Calcula P(Threat) para cada nodo afectado en cada nivel.
     P(TB) = P(TA) * P(EA→B | TA)
     """
-    affected_nodes_with_threat_prob = {}
+    # Diccionario con clave nombre del nodo y valor datos de threat
+    nodes_threat_prob = {}
     
-    node_info = {
-        'node': affected_nodes_by_level[0][0],  # Nodo raíz del nivel 0
-        f'probability_(Threat)': confidence,  # P(Threat) para el nodo raíz
-        'level': 0
-    }
-    affected_nodes_with_threat_prob[0] = [node_info]
-    
-    # Procesar cada nivel (excepto nivel 0 que viene vacio)
-    for level in range(1, len(affected_edges_by_level)):
-        affected_nodes_with_threat_prob[level] = []
+    for ttp_id, threat_vector in random_threat_vectors.items():
+        confidence = threat_vector['confidence']
+        ttp_tactic = threat_vector['tactic']
         
-        # Para cada arista en este nivel
-        for edge_idx, edge in enumerate(affected_edges_by_level[level]):
-            # Obtener probabilidad de la arista
-            prob_edge = edge[f'probability_({tactic})']
-            
-            # Calcular P(Threat) para el nodo destino
-            prob_threat = confidence * prob_edge
-            
-            # Crear diccionario con info del nodo
-            node_info = {
-                'node': edge['from'],
-                f'probability_(Threat)': prob_threat,
-                'level': level
-            }
-            
-            affected_nodes_with_threat_prob[level].append(node_info)
-    
-    return affected_nodes_with_threat_prob
+        # Obtener datos para este TTP
+        try:
+            nodes_data = affected_nodes_by_level.get(ttp_id, {})
+            edges_data = affected_edges_by_level.get(ttp_id, {})
+        except KeyError:
+            print(f"Error: No se encontraron datos para TTP {ttp_id} en nodos o aristas afectados.")
+            continue
+        
+        # Procesar edges: agregar P(trans) y eliminar weight
+        for level, edge_list in edges_data.items():
+            for edge_info in edge_list:
+                dependency_type = edge_info['dependency_type']
+                edge_info[f'P(trans_{ttp_tactic}|Threat = yes)'] = dependency_type_probabilities[ttp_tactic][dependency_type]
+                edge_info.pop('weight', None)
+                
+        
+        # NIVEL 0: P(Threat) = confidence
+        for asset in nodes_data.get(0, []):
+            if asset not in nodes_threat_prob:  # Comprobamos si es el primer TTP que ataca a este nodo
+                
+                nodes_threat_prob[asset] = {
+                    'threats_by_ttp': {ttp_id: {'P(Threat)': confidence} },
+                    'level': 0,
+                    'root': True
+                }
 
+                nodes_threat_prob[asset]['node_data'] = grafo.nodes[asset]
+                
+            else: # No es el primer TTP que ataca al nodo
+                
+                nodes_threat_prob[asset]['threats_by_ttp'][ttp_id] = {
+                'P(Threat)': confidence
+                }
+                
+        
+        # NIVELES > 0: P(Threat asset_from {hijo}) = P(Threat asset_to {padre}) * P(dependency_type|threat=yes)
+        for level in range(1, len(nodes_data)):
+            for asset_from in nodes_data.get(level, []):
+                # Buscar el edge donde este nodo es el dependiente (from) para ese nivel
+                for edge in edges_data.get(level, []):
+                    if edge['from'] == asset_from:
+                        asset_to = edge['to']  # El nodo del que depende
+                        p_trans_key = f'P(trans_{ttp_tactic}|Threat = yes)'
+                        p_trans = edge.get(p_trans_key, 0)
+                        
+                        p_threat_parent = nodes_threat_prob[asset_to]['threats_by_ttp'][ttp_id]['P(Threat)']
+                            
+                            
+                        
+                        if asset_from not in nodes_threat_prob:
+                            nodes_threat_prob[asset_from] = {
+                                'threats_by_ttp': {ttp_id: {
+                                    'P(Threat)': p_threat_parent * p_trans,
+                                    'level': level,
+                                    'depends_on': asset_to
+                                }}
+
+                            }
+
+                            nodes_threat_prob[asset_from]['node_data'] = grafo.nodes[asset_from]
+                        
+                        else:
+                            nodes_threat_prob[asset_from]['threats_by_ttp'][ttp_id] = {
+                            'P(Threat)': p_threat_parent * p_trans,
+                            'level': level,
+                            'depends_on': asset_to
+                            }
+
+                            
+    #nodes_threat_prob = add_noisy_or_prob(nodes_threat_prob)
+                            
+    return nodes_threat_prob
+
+'''
+def add_noisy_or_prob(nodes_threat_prob):
+    """
+    Añade a cada nodo la probabilidad combinada
+    P(Threat_combined_noisy_or) a partir de las probabilidades
+    individuales P(Threat) de cada TTP.
+
+    Si solo hay un TTP, el Noisy OR será esa misma probabilidad.
+    """
+
+    for asset, asset_data in nodes_threat_prob.items():
+        threats_by_ttp = asset_data.get('threats_by_ttp', {})
+
+        product = 1.0
+
+        for ttp_id, ttp_data in threats_by_ttp.items():
+            p = ttp_data.get('P(Threat)', 0.0)
+            product *= (1 - p)
+
+        asset_data['Total_Threat_Probability'] = 1 - product
+
+    return nodes_threat_prob
+'''
 
 #========================================[INICIALIZACIÓN]========================================#
 def main():

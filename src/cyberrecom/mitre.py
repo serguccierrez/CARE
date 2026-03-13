@@ -59,18 +59,30 @@ def ttp_simulation():
     # Obtener todas las técnicas válidas
     techniques = MITRE_ATTACK_DATA.get_techniques(remove_revoked_deprecated=True)
     
+    n_ttps = random.randint(1, 3)  # Simular entre 1 y 3 TTPs
+
     if not techniques:
         print("Error: No se encontraron técnicas en MITRE ATT&CK")
         return None
     
     # Seleccionar una técnica aleatoria
-    random_technique = random.choice(techniques)
-    ttp_id = random_technique['external_references'][0]['external_id']  # Ej: T1190
-    confidence = random.random()
+    random_techniques = random.sample(techniques, n_ttps)
     
-    print(f"Simulación de TTP: {ttp_id}, Confidence: {confidence:.2f}")
     
-    return dict(ttp_id=ttp_id, confidence=confidence)
+    #Si tenemos más de un TTP, debemos tener más parámetros de confidence, uno para cada TTP
+    ttp_data = {}
+    for technique in random_techniques:
+        ttp_id = technique['external_references'][0]['external_id']
+        confidence = random.uniform(0.3, 1.0)
+        ttp_data[ttp_id] = {
+            'name': technique['name'],
+            'confidence': confidence,
+            'tactic': get_ttp_details_from_ttp_id(ttp_id)
+        }
+    
+    print(f"Simulación de TTPs: {ttp_data}")
+    
+    return ttp_data  
     
       
     
@@ -87,8 +99,10 @@ def main():
     #ttp_id = "T1190"
     #get_ttp_details_from_ttp_id(ttp_id)
     ttp_sim = ttp_simulation()
-    ttp_tactic = get_ttp_details_from_ttp_id(ttp_sim['ttp_id'])
-    print(f"TTP {ttp_sim['ttp_id']} belongs to tactic: {ttp_tactic}")
+   # ttp_tactic = get_ttp_details_from_ttp_id(ttp_sim['ttp_id'])
+    
+    for ttp_id in ttp_sim.keys():
+        print(f"TTP ID: {ttp_id}, Confidence: {ttp_sim[ttp_id]['Confidence']}, Tactic: {ttp_sim[ttp_id]['Tactic']}")
     
 
 if __name__ == "__main__":
