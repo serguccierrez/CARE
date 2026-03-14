@@ -309,9 +309,9 @@ def generate_incident_scenarios(report_data):
                 }
                 
                 # Creamos un escenario para cada contramedida candidata
-                for idx, cm in enumerate(cms_for_ttp, 1):
+                for cm in cms_for_ttp:
                     cm_risk = calculate_risk_for_countermeasure(asset_info, ttp, cm)
-                    asset_info["incidents"][incident_key]["scenarios"][f"scenario_{idx}"] = {
+                    asset_info["incidents"][incident_key]["scenarios"][f"cm_{cm}"] = {
                         "countermeasure": cm,
                         **cm_risk
                     }
@@ -348,7 +348,6 @@ def generate_asset_scenario_combinations(report_data):
             
             # Inicializamos estructura de escenarios del activo
             asset_info["asset_scenarios"] = {}
-            scenario_counter = 1
             
             # Para cada contramedida única, aplicamos globalmente a todos los incidentes
             for cm in unique_cms:
@@ -357,8 +356,7 @@ def generate_asset_scenario_combinations(report_data):
                 if cm == "none":
                     scenario_key = "baseline"
                 else:
-                    scenario_key = f"scenario_{scenario_counter}"
-                    scenario_counter += 1
+                    scenario_key = f"cm_{cm}"
                 
                 # Acumulamos riesgos cuando se aplica esta CM a todos los incidentes
                 total_risk_c = 0.0
