@@ -240,6 +240,21 @@ def main() -> None:
     report_data = report.total_risk_by_asset(report_data)
     report_data = report.calculate_global_system_risk(report_data)
     
+    #========================================== PASO 11: EVALUACION DE ESCENARIOS DE CONTRAMEDIDAS PARA EL PROBLEMA DE OPTIMIZACION =========================================#
+    print("\n" + "="*80)
+    print("PASO 11: EVALUACION DE ESCENARIOS DE CONTRAMEDIDAS PARA EL PROBLEMA DE OPTIMIZACION")
+    print("="*80)
+    
+    # Extrae las contramedidas candidatas del diagrama de influencia para cada incidente
+    report_data = report.generate_incident_scenarios(report_data)
+    print("\nEscenarios de incidente generados correctamente")
+    
+    # Genera todas las combinaciones de escenarios posibles para cada activo
+    report_data = report.generate_asset_scenario_combinations(report_data)
+    print("Combinaciones de escenarios por activo generadas correctamente")
+    
+   
+    
     
     
     print(f"\nEstructura inicial del reporte: {report_data}")
