@@ -322,87 +322,89 @@ def generate_incident_scenarios(report_data):
 
 
 def generate_asset_scenario_combinations(report_data):
-    """Genera todas las combinaciones de escenarios posibles para cada activo con múltiples incidentes"""
+    """Genera escenarios de evaluación a nivel de activo: una sola contramedida aplicada globalmente a todos sus incidentes"""
     
     for block in report_data.get("nodes_analysis", []):
         for asset, asset_info in block.items():
             
             incidents = asset_info.get("incidents", {})
             
-            # Si el activo no tiene incidentes o solo tiene 1, saltamos (no hay combinaciones)
-            if not incidents or len(incidents) < 2:
+            # Si el activo no tiene incidentes, saltamos
+            if not incidents:
                 continue
+            
+            # Extraemos todas las contramedidas únicas del activo (de todos sus incidentes)
+            unique_cms = set()
+            unique_cms.add("none")  # Siempre incluimos la opción baseline
+            
+            for incident_key, incident_data in incidents.items():
+                for scenario_name, scenario_data in incident_data["scenarios"].items():
+                    cm = scenario_data["countermeasure"]
+                    if cm and cm != "none":
+                        unique_cms.add(cm)
             
             # Preparamos los identificadores de incidentes ordenados
             incident_keys = sorted(incidents.keys())
             
-            # Para cada incidente obtenemos sus escenarios disponibles
-            scenario_names_per_incident = []
-            for incident_key in incident_keys:
-                scenario_names = list(incidents[incident_key]["scenarios"].keys())
-                scenario_names_per_incident.append(scenario_names)
+            # Inicializamos estructura de escenarios del activo
+            asset_info["asset_scenarios"] = {}
+            scenario_counter = 1
             
-            # Generamos todas las combinaciones posibles (producto cartesiano)
-            all_combinations = product(*scenario_names_per_incident)
-            
-            # Inicializamos lista de combinaciones del activo
-            asset_info["asset_scenario_combinations"] = []
-            combination_counter = 1
-            
-            # Procesamos cada combinación
-            for combo in all_combinations:
+            # Para cada contramedida única, aplicamos globalmente a todos los incidentes
+            for cm in unique_cms:
                 
-                combination_id = f"comb_{combination_counter}"
+                # Creamos identificador del escenario
+                if cm == "none":
+                    scenario_key = "baseline"
+                else:
+                    scenario_key = f"scenario_{scenario_counter}"
+                    scenario_counter += 1
                 
-                # Estructuras para guardar información de la combinación
-                incidents_scenarios = {}
-                countermeasures_applied = {}
+                # Acumulamos riesgos cuando se aplica esta CM a todos los incidentes
                 total_risk_c = 0.0
                 total_risk_i = 0.0
                 total_risk_a = 0.0
                 total_risk = 0.0
+                incidents_with_cm = {}
                 
-                # Procesamos cada incidente en esta combinación
-                for idx, incident_key in enumerate(incident_keys):
-                    scenario_name = combo[idx]
-                    scenario_data = incidents[incident_key]["scenarios"][scenario_name]
+                # Para cada incidente, buscamos el escenario con esta CM
+                for incident_key in incident_keys:
+                    incident_data = incidents[incident_key]
                     
-                    # Guardamos qué escenario se usa en este incidente
-                    incidents_scenarios[incident_key] = scenario_name
-                    countermeasures_applied[incident_key] = scenario_data["countermeasure"]
+                    # Buscamos el escenario con esta CM en este incidente
+                    found_scenario = None
+                    for scenario_name, scenario_data in incident_data["scenarios"].items():
+                        if scenario_data["countermeasure"] == cm:
+                            found_scenario = scenario_name
+                            break
                     
-                    # Acumulamos los riesgos
-                    total_risk_c += scenario_data["incident_risk_C"]
-                    total_risk_i += scenario_data["incident_risk_I"]
-                    total_risk_a += scenario_data["incident_risk_A"]
-                    total_risk += scenario_data["total_incident_risk"]
+                    # Si encontramos el escenario con esta CM, lo usamos
+                    if found_scenario:
+                        scenario_data = incident_data["scenarios"][found_scenario]
+                        incidents_with_cm[incident_key] = found_scenario
+                        
+                        # Acumulamos riesgos
+                        total_risk_c += scenario_data["incident_risk_C"]
+                        total_risk_i += scenario_data["incident_risk_I"]
+                        total_risk_a += scenario_data["incident_risk_A"]
+                        total_risk += scenario_data["total_incident_risk"]
                 
-                # Creamos nombre descriptivo de la combinación
-                name_parts = []
-                for incident_key, scenario_name in incidents_scenarios.items():
-                    name_parts.append(f"{incident_key}_{scenario_name}")
-                combination_name = " + ".join(name_parts)
-                
-                # Calculamos el promedio de riesgos (igual que en total_risk_by_asset)
+                # Calculamos promedios de riesgos
                 num_incidents = len(incident_keys)
                 avg_risk_c = total_risk_c / num_incidents
                 avg_risk_i = total_risk_i / num_incidents
                 avg_risk_a = total_risk_a / num_incidents
                 avg_total_risk = total_risk / num_incidents
                 
-                # Agregamos la combinación a la lista
-                asset_info["asset_scenario_combinations"].append({
-                    "combination_id": combination_id,
-                    "name": combination_name,
-                    "incidents_scenarios": incidents_scenarios,
-                    "countermeasures_applied": countermeasures_applied,
+                # Almacenamos el escenario del activo
+                asset_info["asset_scenarios"][scenario_key] = {
+                    "countermeasure_applied": cm,
+                    "incidents_scenarios": incidents_with_cm,
                     "asset_risk_C": avg_risk_c,
                     "asset_risk_I": avg_risk_i,
                     "asset_risk_A": avg_risk_a,
                     "total_asset_risk": avg_total_risk
-                })
-                
-                combination_counter += 1
+                }
     
     return report_data
 
