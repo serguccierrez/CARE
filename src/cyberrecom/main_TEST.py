@@ -18,6 +18,8 @@ import src.reporting.report as report
 import src.risk.red_bayes as red_bayes
 import src.risk.id_test as id_test
 
+import src.risk.optimization as optimization
+
 #=============================[CONSTANTS]===========================================#
 DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
 EXCEL_PATH = Path(__file__).parent.parent.parent / "data" / "asset_catalog_validado_v1.0.0_ajustado.xlsx"
@@ -261,6 +263,16 @@ def main() -> None:
     
     report.export_report_to_json(report_data)
     
+    
+ #===========================================================[PASO 12: LP PROBLEM OPTIMIZATION]=============================================
+ # Configuramos el problema de optimización
+    print("\n" + "="*80)
+    print("PASO 12: CONFIGURACION DEL PROBLEMA DE OPTIMIZACION")
+    print("="*80)
+    assets_scenarios_data, decision_vars, model = optimization.setup_optimization_problem(report_data, budget=100000)
+    
+# Resolvemos el problema
+    solution = optimization.solve_optimization_problem(decision_vars, assets_scenarios_data, model, budget=100000)
     
 #=================================[ENTRY_POINT]===========================================#    
 if __name__ == "__main__":

@@ -1,5 +1,12 @@
 {
   "countermeasures": {
+    "none": {
+      "name": "No Countermeasure",
+      "description": "No se implementa ninguna contramedida",
+      "cost": 0,
+      "time_to_deploy_hours": 0,
+      "type": "none"
+    },
     "firewall": {
       "name": "Firewall",
       "description": "Sistema de cortafuegos para control de tráfico de red",
@@ -13,13 +20,6 @@
       "cost": 12000,
       "time_to_deploy_hours": 21,
       "type": "monitoring_detection"
-    },
-    "waf": {
-      "name": "Web Application Firewall",
-      "description": "Cortafuegos de aplicaciones web para protección de aplicaciones",
-      "cost": 18000,
-      "time_to_deploy_hours": 10,
-      "type": "application_security"
     }
   },
   "metadata": {

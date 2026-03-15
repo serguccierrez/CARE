@@ -405,6 +405,3 @@ def generate_asset_scenario_combinations(report_data):
                 }
     
     return report_data
-
-
-#===============================[OPTIMIZATION PROBLEM PREPARATION]===========================================#
