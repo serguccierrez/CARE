@@ -21,7 +21,7 @@ def load_countermeasures_config():
 
 
 #===========================================[OPTIMIZATION PROBLEM PREPARATION]===========================================
-def extract_asset_scenarios_info(report_data, cm_config: dict):
+def extract_asset_scenarios_info(report_data, cm_config):
     """
     Extrae información de escenarios por activo y enriquece con propiedades de contramedidas.
     
