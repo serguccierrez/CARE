@@ -198,6 +198,16 @@ def budget_constraint(decision_vars, assets_scenarios_data, budget, model):
     model += total_cost <= budget, "Budget_Constraint"
     
     
+def time_constraint(decision_vars, assets_scenarios_data, max_time_hours, model):
+    for asset_name, asset_info in assets_scenarios_data.items():
+        for scenario_name, scenario_data in asset_info["scenarios"].items():
+            time_hours = scenario_data["time_hours"]
+            
+            # Si excede el límite, no se puede seleccionar
+            if time_hours > max_time_hours:
+                model += decision_vars[asset_name][scenario_name] == 0, f"Time_Limit_{asset_name}_{scenario_name}"
+    
+    
     
 #==============================================[OPTIMIZATION PROBLEM SOLVING]=============================================
 def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budget, report_data = None):
@@ -278,15 +288,35 @@ def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budg
                 solution["total_cost"] += scenario_data["cost"]
     solution["total_cost_used_percent"] = str((solution["total_cost"] / budget) * 100 if budget != 0 else 0) + "%"
    
-                
+    # Mostrar resumen de contramedidas seleccionadas
+    print("\n" + "="*80)
+    print("RESUMEN DE CONTRAMEDIDAS SELECCIONADAS")
+    print("="*80)
+    cms_count = {}
+    for asset_name, decision in solution["assets_decisions"].items():
+        cm = decision["countermeasure"]
+        if cm not in cms_count:
+            cms_count[cm] = []
+        cms_count[cm].append(asset_name)
+    
+    for cm, assets in sorted(cms_count.items()):
+        print(f"\n{cm.upper()}: {len(assets)} activos")
+        for asset in assets:
+            cost = solution["assets_decisions"][asset]["cost"]
+            time = solution["assets_decisions"][asset]["time_hours"]
+            risk = solution["assets_decisions"][asset]["risk_total"]
+            print(f"  - {asset}: Riesgo={risk:.4f}, Costo=${cost:,}, Tiempo={time}h")
+    
+    print("\n" + "="*80)
     print("La solución óptima encontrada es:")
+    print("="*80)
     print(json.dumps(solution, indent=4))
                 
     return solution
 
 
 #======================================================[LP INTEGRATION]======================================================
-def build_optimization_problem(assets_scenarios_data, decision_vars, budget = 50000):
+def build_optimization_problem(assets_scenarios_data, decision_vars, budget = 50000, max_time_hours = 210):
     """
     Ejecuta el proceso completo de optimización: creación de variables, definición de función objetivo, adición de restricciones y resolución del problema.
     
@@ -294,7 +324,7 @@ def build_optimization_problem(assets_scenarios_data, decision_vars, budget = 50
         assets_scenarios_data: Diccionario con escenarios de cada activo enriquecidos con coste y tiempo
         decision_vars: Variables de decisión para cada activo y escenario
         budget: Presupuesto total disponible para las contramedidas
-        
+        max_time_hours: Tiempo máximo total disponible para desplegar las contramedidas (en horas) por cm 
     Returns:
     """
     # Primero creamos el problema de optimización
@@ -306,10 +336,11 @@ def build_optimization_problem(assets_scenarios_data, decision_vars, budget = 50
     # Añadimos las restricciones
     unique_cm_per_asset_constraint(decision_vars, model)
     budget_constraint(decision_vars, assets_scenarios_data, budget, model)
+    time_constraint(decision_vars, assets_scenarios_data, max_time_hours, model)
     
     return model
 
-def setup_optimization_problem( report_data, budget = 50000):
+def setup_optimization_problem( report_data, budget = 50000, max_time_hours = 210):
     
     if report_data is None:
         report_data = load_report_data()
@@ -320,7 +351,7 @@ def setup_optimization_problem( report_data, budget = 50000):
     
     decision_vars = create_decision_variables(assets_scenarios_data)
     
-    model = build_optimization_problem(assets_scenarios_data, decision_vars, budget)
+    model = build_optimization_problem(assets_scenarios_data, decision_vars, budget, max_time_hours)
     
     return assets_scenarios_data, decision_vars, model
 
