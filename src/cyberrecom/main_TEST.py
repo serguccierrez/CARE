@@ -87,6 +87,7 @@ def main() -> None:
     
     #{Inicializo JSON de reporte}
     report_data = report.initialize_simulation_data(random_threat_vectors)
+    report_data = report.add_graph_metadata(report_data, G_global)
     
     # ============ PASO 5: Analizar impacto en el grafo MDO ============
     print("\n" + "="*80)
