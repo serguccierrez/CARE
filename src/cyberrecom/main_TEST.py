@@ -272,8 +272,9 @@ def main() -> None:
     assets_scenarios_data, decision_vars, model = optimization.setup_optimization_problem(report_data, budget=100000)
     
 # Resolvemos el problema
-    solution = optimization.solve_optimization_problem(decision_vars, assets_scenarios_data, model, budget=100000)
+    solution = optimization.solve_optimization_problems(assets_scenarios_data, decision_vars, budget=100,max_time_hours=100, objective_type="confidentiality")
     
+    optimization.save_solution(solution)
 #=================================[ENTRY_POINT]===========================================#    
 if __name__ == "__main__":
     main()

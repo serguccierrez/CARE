@@ -73,9 +73,9 @@ def extract_asset_scenarios_info(report_data, cm_config):
                 scenarios[scenario_key] = {
                     "countermeasure": cm_name,
                     "risk_total": scenario_data["total_asset_risk"],
-                    "risk_C": scenario_data["asset_risk_C"],
-                    "risk_I": scenario_data["asset_risk_I"],
-                    "risk_A": scenario_data["asset_risk_A"],
+                    "asset_risk_C": scenario_data["asset_risk_C"],
+                    "asset_risk_I": scenario_data["asset_risk_I"],
+                    "asset_risk_A": scenario_data["asset_risk_A"],
                     "cost": cost,
                     "time_hours": time_hours
                 }
@@ -117,8 +117,8 @@ def create_decision_variables(assets_scenarios_data):
     
     return decision_vars
 
-#===============================================[OBJECTIVE FUNCTION]=============================================
-def define_objective_function(decision_vars, assets_scenarios_data, model):
+#===============================================[OBJECTIVE FUNCTIONs]=============================================
+def define_global_objective_function(decision_vars, assets_scenarios_data, model):
     """
     Define la función objetivo para minimizar el riesgo total ponderado por criticidad.
     
@@ -146,10 +146,75 @@ def define_objective_function(decision_vars, assets_scenarios_data, model):
             
             objective += (criticality * risk_value) * decision_vars[asset_name][scenario_name]
 
+        
+    model += objective, "Minimize_Risk_Weighted_by_Criticality"
+    
+    
+    
+def define_confidentiality_objective_function(decision_vars, assets_scenarios_data, model):
+    
+    
+    objective = 0
+    
+    for asset_name, asset_data in assets_scenarios_data.items():
+        
+        criticality = asset_data.get("criticality", 1.0 )
+        
+        for scenario_name, scenario_info in asset_data["scenarios"].items():
+            
+            risk_value = scenario_info["asset_risk_C"]
+            
+            
+            objective += (criticality * risk_value) * decision_vars[asset_name][scenario_name]
+
             
         
         
-    model += objective, "Minimize_Risk_Weighted_by_Criticality"
+    model += objective, "Minimize_Confidentiality_Risk_Weighted_by_Criticality"
+    
+    
+def define_integrity_objective_function(decision_vars, assets_scenarios_data, model):
+    
+    
+    objective = 0
+    
+    for asset_name, asset_data in assets_scenarios_data.items():
+        
+        criticality = asset_data.get("criticality", 1.0 )
+        
+        for scenario_name, scenario_info in asset_data["scenarios"].items():
+            
+            risk_value = scenario_info["asset_risk_I"]
+            
+            
+            objective += (criticality * risk_value) * decision_vars[asset_name][scenario_name]
+
+            
+        
+        
+    model += objective, "Minimize_Integrity_Risk_Weighted_by_Criticality"
+    
+
+def define_availability_objective_function(decision_vars, assets_scenarios_data, model):
+    
+    objective = 0
+    
+    for asset_name, asset_data in assets_scenarios_data.items():
+        
+        criticality = asset_data.get("criticality", 1.0 )
+        
+        for scenario_name, scenario_info in asset_data["scenarios"].items():
+            
+            risk_value = scenario_info["asset_risk_A"]
+            
+            
+            objective += (criticality * risk_value) * decision_vars[asset_name][scenario_name]
+
+            
+        
+        
+    model += objective, "Minimize_Availability_Risk_Weighted_by_Criticality"
+    
 
 
 #===============================================[CONSTRAINTS]=============================================
@@ -276,9 +341,9 @@ def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budg
                     "scenario": scenario_name,
                     "countermeasure": scenario_data["countermeasure"],
                     "risk_total": scenario_data["risk_total"],
-                    "risk_C": scenario_data["risk_C"],
-                    "risk_I": scenario_data["risk_I"],
-                    "risk_A": scenario_data["risk_A"],
+                    "asset_risk_C": scenario_data["asset_risk_C"],
+                    "asset_risk_I": scenario_data["asset_risk_I"],
+                    "asset_risk_A": scenario_data["asset_risk_A"],
                     "criticality": criticality,
                     "weighted_risk": scenario_data["risk_total"] * criticality,
                     "cost": scenario_data["cost"],
@@ -305,7 +370,7 @@ def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budg
             cost = solution["assets_decisions"][asset]["cost"]
             time = solution["assets_decisions"][asset]["time_hours"]
             risk = solution["assets_decisions"][asset]["risk_total"]
-            print(f"  - {asset}: Riesgo={risk:.4f}, Costo=${cost:,}, Tiempo={time}h")
+            print(f"  - {asset}: Riesgo={risk:.4f}, Coste=${cost:,}, Tiempo={time}h")
     
     print("\n" + "="*80)
     print("La solución óptima encontrada es:")
@@ -331,7 +396,7 @@ def build_optimization_problem(assets_scenarios_data, decision_vars, budget = 50
     model = pulp.LpProblem("Minimize_Global_Risk", pulp.LpMinimize)
     
     # Definimos la función objetivo
-    define_objective_function( decision_vars, assets_scenarios_data, model)
+    define_global_objective_function( decision_vars, assets_scenarios_data, model)
     
     # Añadimos las restricciones
     unique_cm_per_asset_constraint(decision_vars, model)
@@ -354,5 +419,127 @@ def setup_optimization_problem( report_data, budget = 50000, max_time_hours = 21
     model = build_optimization_problem(assets_scenarios_data, decision_vars, budget, max_time_hours)
     
     return assets_scenarios_data, decision_vars, model
+
+
+#===============================================[MULTI-OBJECTIVE OPTIMIZATION]=============================================
+def build_optimization_problem_with_objective(assets_scenarios_data, decision_vars, objective_func, budget=50000, max_time_hours=210):
+    """
+    Construye un problema de optimización con una función objetivo específica.
+    
+    Args:
+        assets_scenarios_data: Escenarios de cada activo
+        decision_vars: Variables de decisión
+        objective_func: Función objetivo a utilizar (ej: define_global_objective_function)
+        budget: Presupuesto total
+        max_time_hours: Tiempo máximo de despliegue
+    
+    Returns:
+        Modelo de optimización configurado
+    """
+    model = pulp.LpProblem("Optimization_Problem", pulp.LpMinimize)
+    
+    # Aplicar la función objetivo específica
+    objective_func(decision_vars, assets_scenarios_data, model)
+    
+    # Añadir restricciones (comunes a todos los objetivos)
+    unique_cm_per_asset_constraint(decision_vars, model)
+    budget_constraint(decision_vars, assets_scenarios_data, budget, model)
+    time_constraint(decision_vars, assets_scenarios_data, max_time_hours, model)
+    
+    return model
+
+
+def solve_optimization_problems(assets_scenarios_data, decision_vars, objective_type="all", budget=50000, max_time_hours=210):
+    """
+    Resuelve uno o múltiples problemas de optimización según el objetivo especificado.
+    
+    Args:
+        assets_scenarios_data: Diccionario con escenarios de cada activo
+        decision_vars: Variables de decisión originales (no se usan directamente)
+        objective_type: "all" (resuelve los 4), o "global", "confidentiality", "integrity", "availability"
+        budget: Presupuesto total disponible
+        max_time_hours: Tiempo máximo de despliegue
+    
+    Returns:
+        Diccionario con la/las solución/soluciones
+    """
+    
+    # Creamos un diccionario para hacer mapeo con todos los objetivos disponibles para poder seleccionar dinámicamente cual resolver
+    objectives_map = {
+        "global": define_global_objective_function,
+        "confidentiality": define_confidentiality_objective_function,
+        "integrity": define_integrity_objective_function,
+        "availability": define_availability_objective_function
+    }
+    
+    # Inicializamos el diccionario donde guardaremos todas nuestras soluciones
+    results = {}
+    
+    # Si el usuario nos pide resolver TODOS los objetivos simultáneamente
+    if objective_type == "all":
+        print("\n" + "="*80)
+        print("RESOLVIENDO LOS 4 PROBLEMAS DE OPTIMIZACIÓN")
+        print("="*80)
+        
+        # Iteramos sobre cada uno de los 4 objetivos
+        for obj_name, obj_func in objectives_map.items():
+            print(f"\n>>> Resolviendo: {obj_name.upper()}")
+            print("-"*80)
+            
+            # Creamos NUEVAS variables de decisión para este problema específico
+            # no reutilizamos las variables, porque cada modelo necesita sus propias
+            decision_vars_copy = create_decision_variables(assets_scenarios_data)
+            
+            # Construimos el modelo de optimización con ese objetivo específico
+            model = build_optimization_problem_with_objective(
+                assets_scenarios_data, decision_vars_copy, obj_func, budget, max_time_hours
+            )
+            
+            # Resolvemos el problema y guardamos la solución en nuestro diccionario de resultados
+            results[obj_name] = solve_optimization_problem(
+                decision_vars_copy, assets_scenarios_data, model, budget
+            )
+    
+        
+    # Si el usuario nos pide resolver UN objetivo específico
+    else:
+        # Comprobamos que el objetivo solicitado existe en nuestro mapeo de objetivos
+        if objective_type not in objectives_map:
+            raise ValueError(f"Objetivo no válido: {objective_type}. Opciones: {list(objectives_map.keys())}")
+        
+        print(f"\n Resolviendo: {objective_type.upper()}")
+        print("-"*80)
+        
+        # Creamos nuevas variables de decisión para nuestro problema
+        decision_vars_copy = create_decision_variables(assets_scenarios_data)
+        
+        # Construimos y resolvemos el modelo con el objetivo que hemos solicitado
+        model = build_optimization_problem_with_objective(
+            assets_scenarios_data, decision_vars_copy, objectives_map[objective_type], 
+            budget, max_time_hours
+        )
+        results[objective_type] = solve_optimization_problem(
+            decision_vars_copy, assets_scenarios_data, model, budget
+        )
+    
+    # Devolvemos nuestros resultados al código que nos llamó
+    return results
+
+
+def save_solution(results):
+    """
+    Guarda una comparativa de todas las soluciones en JSON.
+    
+    Args:
+        results: Diccionario con todas las soluciones
+    """
+    comparison_path = Path(__file__).parent.parent / "reporting" / "optimization_solution.json"
+    
+    with open(comparison_path, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=4)
+    
+    print(f"\nSolución guardada en: {comparison_path}")
+ 
+ 
 
 
