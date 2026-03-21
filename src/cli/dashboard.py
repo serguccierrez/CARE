@@ -125,8 +125,7 @@ def extract_report_data(report_data) -> dict:
     
     # Extraemos riesgo general del sistema
     overall_risk = report_data.get("global_system_risk", {}).get("overall_risk", "N/A")
-    initial_compromised = [ttp.get("asset", "N/A") for ttp in ttps_list]
-    
+    initial_compromised = list(dict.fromkeys([ttp.get("asset", "N/A") for ttp in ttps_list]))
     # Compilamos resumen con toda la información procesada
     info["summary"] = {
         "initial_compromised_assets": initial_compromised,
