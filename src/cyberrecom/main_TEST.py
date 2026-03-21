@@ -18,6 +18,8 @@ import src.reporting.report as report
 import src.risk.red_bayes as red_bayes
 import src.risk.id_test as id_test
 
+import src.risk.optimization as optimization
+
 #=============================[CONSTANTS]===========================================#
 DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
 EXCEL_PATH = Path(__file__).parent.parent.parent / "data" / "asset_catalog_validado_v1.0.0_ajustado.xlsx"
@@ -240,6 +242,21 @@ def main() -> None:
     report_data = report.total_risk_by_asset(report_data)
     report_data = report.calculate_global_system_risk(report_data)
     
+    #========================================== PASO 11: EVALUACION DE ESCENARIOS DE CONTRAMEDIDAS PARA EL PROBLEMA DE OPTIMIZACION =========================================#
+    print("\n" + "="*80)
+    print("PASO 11: EVALUACION DE ESCENARIOS DE CONTRAMEDIDAS PARA EL PROBLEMA DE OPTIMIZACION")
+    print("="*80)
+    
+    # Extrae las contramedidas candidatas del diagrama de influencia para cada incidente
+    report_data = report.generate_incident_scenarios(report_data)
+    print("\nEscenarios de incidente generados correctamente")
+    
+    # Genera todas las combinaciones de escenarios posibles para cada activo
+    report_data = report.generate_asset_scenario_combinations(report_data)
+    print("Combinaciones de escenarios por activo generadas correctamente")
+    
+   
+    
     
     
     print(f"\nEstructura inicial del reporte: {report_data}")
@@ -247,6 +264,17 @@ def main() -> None:
     report.export_report_to_json(report_data)
     
     
+ #===========================================================[PASO 12: LP PROBLEM OPTIMIZATION]=============================================
+ # Configuramos el problema de optimización
+    print("\n" + "="*80)
+    print("PASO 12: CONFIGURACION DEL PROBLEMA DE OPTIMIZACION")
+    print("="*80)
+    assets_scenarios_data, decision_vars, model = optimization.setup_optimization_problem(report_data, budget=100000)
+    
+# Resolvemos el problema
+    solution = optimization.solve_optimization_problems(assets_scenarios_data, decision_vars, budget=100,max_time_hours=100, objective_type="confidentiality")
+    
+    optimization.save_solution(solution)
 #=================================[ENTRY_POINT]===========================================#    
 if __name__ == "__main__":
     main()
