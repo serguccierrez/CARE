@@ -4,6 +4,7 @@ Este script recoge los datos de la DB creada en create_db.py y los usa para repr
 from pathlib import Path
 import sqlite3
 import json
+from matplotlib.pylab import rint
 import networkx as nx
 
 #===============================================[CONSTANTS]===============================================
@@ -31,42 +32,61 @@ DEPENDENCY_MATRIX = load_dependency_probabilities()
 
 
 #===============================================[DATABASE_FUNCTIONS]===============================================
-def get_domain_assets(db_path: str, domain: str):
+def get_domain_assets(db_path: str, scenario_pk: int, domain: str):
     """
-    Obtiene y retorna los activos del dominio especificado desde la base de datos SQLite.
-    Retorna tuplas: (asset_pk, asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state)
-    """
-    con = sqlite3.connect(db_path)
-    try:
-        cur = con.cursor()
-        cur.execute("SELECT * FROM assets WHERE domain = ?;", (domain,))
-        rows = cur.fetchall()
-        return rows
-    finally:
-        con.close()
-
-def get_domain_intra_dependencies(db_path: str, domain: str):
-    """
-    Obtiene y retorna las dependencias internas del dominio desde la base de datos SQLite.
-    Retorna tuplas: (dep_pk, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
+    Obtiene y retorna los activos del dominio especificado para un escenario concreto.
+    Retorna tuplas:
+    (asset_pk, scenario_fk, asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state)
     """
     con = sqlite3.connect(db_path)
     try:
         cur = con.cursor()
         cur.execute("""
-            SELECT * FROM dependencies
-            WHERE from_asset IN (SELECT asset_id FROM assets WHERE domain = ?)
-            AND to_asset IN (SELECT asset_id FROM assets WHERE domain = ?);
-        """, (domain, domain))
+            SELECT *
+            FROM assets
+            WHERE scenario_fk = ? AND domain = ?;
+        """, (scenario_pk, domain))
+        rows = cur.fetchall()
+        return rows
+    finally:
+        con.close()
+
+def get_domain_intra_dependencies(db_path: str, scenario_pk: int, domain: str):
+    """
+    Obtiene y retorna las dependencias internas del dominio para un escenario concreto.
+    Retorna tuplas:
+    (dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
+    """
+    con = sqlite3.connect(db_path)
+    try:
+        cur = con.cursor()
+        cur.execute("""
+            SELECT *
+            FROM dependencies
+            WHERE scenario_fk = ?
+              AND from_asset IN (
+                  SELECT asset_id
+                  FROM assets
+                  WHERE scenario_fk = ? AND domain = ?
+              )
+              AND to_asset IN (
+                  SELECT asset_id
+                  FROM assets
+                  WHERE scenario_fk = ? AND domain = ?
+              );
+        """, (scenario_pk, scenario_pk, domain, scenario_pk, domain))
         rows = cur.fetchall()
         return rows
     finally:
         con.close()
         
-def get_domain_inter_dependencies(db_path: str, domain: str):
+def get_domain_inter_dependencies(db_path: str, scenario_pk: int, domain: str):
     """
-    Obtiene y retorna las dependencias inter-dominio que involucran al dominio especificado.
-    Retorna tuplas: (dep_pk, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
+    Obtiene y retorna las dependencias inter-dominio que involucran al dominio especificado
+    para un escenario concreto.
+    Retorna tuplas:
+    (dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type,
+     cia_couple_c, cia_couple_i, cia_couple_a, from_domain, to_domain)
     """
     con = sqlite3.connect(db_path)
     try:
@@ -74,15 +94,83 @@ def get_domain_inter_dependencies(db_path: str, domain: str):
         cur.execute("""
             SELECT d.*, a1.domain as from_domain, a2.domain as to_domain
             FROM dependencies d
-            LEFT JOIN assets a1 ON d.from_asset = a1.asset_id
-            LEFT JOIN assets a2 ON d.to_asset = a2.asset_id
-            WHERE (d.from_asset IN (SELECT asset_id FROM assets WHERE domain = ?)
-            AND d.to_asset NOT IN (SELECT asset_id FROM assets WHERE domain = ?))
-            OR (d.to_asset IN (SELECT asset_id FROM assets WHERE domain = ?)
-            AND d.from_asset NOT IN (SELECT asset_id FROM assets WHERE domain = ?));
-        """, (domain, domain, domain, domain))
+            LEFT JOIN assets a1
+              ON d.scenario_fk = a1.scenario_fk AND d.from_asset = a1.asset_id
+            LEFT JOIN assets a2
+              ON d.scenario_fk = a2.scenario_fk AND d.to_asset = a2.asset_id
+            WHERE d.scenario_fk = ?
+              AND (
+                    (a1.domain = ? AND a2.domain <> ?)
+                 OR (a2.domain = ? AND a1.domain <> ?)
+              );
+        """, (scenario_pk, domain, domain, domain, domain))
         rows = cur.fetchall()
         return rows
+    finally:
+        con.close()
+        
+        
+        
+def list_scenarios(db_path: str):
+    """
+    Retorna todos los escenarios disponibles en la base de datos.
+    """
+    con = sqlite3.connect(db_path)
+    try:
+        cur = con.cursor()
+        cur.execute("""
+            SELECT scenario_pk, scenario_name, description, source_file, created_at
+            FROM scenarios
+            ORDER BY scenario_pk;
+        """)
+        rows = cur.fetchall()
+        return rows
+    finally:
+        con.close()
+        
+        
+def get_scenario_pk(db_path: str, scenario_name: str = None):
+    """
+    Obtiene el scenario_pk:
+    - Si se proporciona scenario_name, busca ese escenario.
+    - Si no se proporciona, devuelve el último escenario creado.
+    """
+    con = sqlite3.connect(db_path)
+    try:
+        cur = con.cursor()
+
+        # Caso 1: NO se pasa nombre → coger el último escenario
+        if not scenario_name:
+            cur.execute("""
+                SELECT scenario_pk, scenario_name
+                FROM scenarios
+                ORDER BY created_at DESC
+                LIMIT 1;
+            """)
+            row = cur.fetchone()
+
+            if row is None:
+                raise ValueError("No hay escenarios en la base de datos.")
+
+            scenario_pk, scenario_name = row
+            print(f"[INFO] Usando último escenario: '{scenario_name}' (pk={scenario_pk})")
+
+            return scenario_pk
+
+        # Caso 2: se pasa nombre → buscarlo
+        cur.execute("""
+            SELECT scenario_pk
+            FROM scenarios
+            WHERE scenario_name = ?;
+        """, (scenario_name,))
+
+        row = cur.fetchone()
+
+        if row is None:
+            raise ValueError(f"El escenario '{scenario_name}' no existe en la base de datos.")
+
+        return row[0]
+
     finally:
         con.close()
         
@@ -91,14 +179,14 @@ def build_intra_domain_graph(domain: str, assets_rows, deps_rows) -> nx.DiGraph:
     """
     Construye y retorna un grafo dirigido de NetworkX para el dominio especificado.
     
-    Assets tupla: (asset_pk, asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state)
+    Assets tupla: (asset_pk, scenario_fk, asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state)
     Deps tupla: (dep_pk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
     """
     G = nx.DiGraph(domain=domain)
 
     # Agregar nodos desde tuplas de assets
     for asset in assets_rows:
-        asset_pk, asset_id, name, asset_type, dom, criticality, cia_c, cia_i, cia_a, operational_state = asset
+        asset_pk, scenario_fk ,asset_id, name, asset_type, dom, criticality, cia_c, cia_i, cia_a, operational_state = asset
         
         G.add_node(
             asset_id,
@@ -114,8 +202,8 @@ def build_intra_domain_graph(domain: str, assets_rows, deps_rows) -> nx.DiGraph:
         
     # Agregar aristas desde tuplas de dependencias
     for dep in deps_rows:
-        # La BD retorna: (dep_pk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
-        dep_pk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a = dep[:8]
+        # La BD retorna: (dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
+        dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a = dep[:9]
         
         cc = float(cia_couple_c)
         ci = float(cia_couple_i)
@@ -139,14 +227,14 @@ def build_MDO_global_graph(all_assets, all_deps) -> nx.DiGraph:
     """
     Construye y retorna un grafo dirigido de NetworkX con todos los activos y dependencias.
     
-    Assets tupla: (asset_pk, asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state)
-    Deps tupla: (dep_pk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
+    Assets tupla: (asset_pk, scenario_fk, asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state)
+    Deps tupla: (dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
     """
     G = nx.DiGraph(domain="MDO Global")
 
     # Agregar nodos desde tuplas de assets
     for asset in all_assets:
-        asset_pk, asset_id, name, asset_type, dom, criticality, cia_c, cia_i, cia_a, operational_state = asset
+        asset_pk, scenario_fk, asset_id, name, asset_type, dom, criticality, cia_c, cia_i, cia_a, operational_state = asset
         
         G.add_node(
             asset_id,
@@ -162,8 +250,8 @@ def build_MDO_global_graph(all_assets, all_deps) -> nx.DiGraph:
         
     # Agregar aristas desde tuplas de dependencias
     for dep in all_deps:
-        # Tomar solo los primeros 8 elementos (ignorar los dominios si vienen al final)
-        dep_pk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a = dep[:8]
+        # Tomar solo los primeros 9 elementos (ignorar los dominios si vienen al final)
+        dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a = dep[:9]
         
         cc = float(cia_couple_c)
         ci = float(cia_couple_i)
@@ -184,7 +272,7 @@ def build_MDO_global_graph(all_assets, all_deps) -> nx.DiGraph:
     return G
     
     
-def process_and_build_graph_domain(db_path: str, domain: str, all_assets: list, all_deps_dict: dict) -> nx.DiGraph:
+def process_and_build_graph_domain(db_path: str,scenario_pk: int,domain: str,all_assets: list,all_deps_dict: dict) -> nx.DiGraph:
     """
     Procesa un dominio individual: obtiene activos, dependencias internas e inter-dominio,
     construye el grafo intra-dominio y acumula los datos en las estructuras globales.
@@ -196,12 +284,12 @@ def process_and_build_graph_domain(db_path: str, domain: str, all_assets: list, 
     print(f"Activos en el dominio '{domain}':")
     print(f"{'='*60}")
     
-    assets = get_domain_assets(db_path, domain)
+    assets = get_domain_assets(db_path, scenario_pk, domain)
     
     if assets:
         for asset in assets:
             # asset[1] = asset_id, asset[2] = name
-            print(f"  - {asset[1]}: {asset[2]}")
+            print(f"  - {asset[2]}: {asset[3]}")
             # Acumular en all_assets
             all_assets.append(asset)
     else:
@@ -212,11 +300,11 @@ def process_and_build_graph_domain(db_path: str, domain: str, all_assets: list, 
     print(f"Dependencias internas en '{domain}':")
     print(f"{'-'*60}")
     
-    intraDomainDeps = get_domain_intra_dependencies(db_path, domain)
+    intraDomainDeps = get_domain_intra_dependencies(db_path, scenario_pk, domain)
     
     if intraDomainDeps:
         for dep in intraDomainDeps:
-            print(f"  {dep[1]} --> {dep[2]} ({dep[3]})")
+            print(f"  {dep[3]} --> {dep[4]} ({dep[5]})")
             # Acumular en all_deps_dict usando dep_pk como clave
             dep_pk = dep[0]
             if dep_pk not in all_deps_dict:
@@ -235,10 +323,10 @@ def process_and_build_graph_domain(db_path: str, domain: str, all_assets: list, 
     print(f"Dependencias inter-dominio que involucran a '{domain}':")
     print(f"{'-'*60}")
     
-    interDomainDeps = get_domain_inter_dependencies(db_path, domain)
+    interDomainDeps = get_domain_inter_dependencies(db_path, scenario_pk, domain)
     if interDomainDeps:
         for dep in interDomainDeps:
-            print(f"  ({dep[7]}){dep[1]} --> ({dep[8]}){dep[2]} ({dep[3]})")
+            print(f"  ({dep[9]}){dep[3]} --> ({dep[10]}){dep[4]} ({dep[5]})")
             # Acumular en all_deps_dict usando dep_pk como clave
             dep_pk = dep[0]
             if dep_pk not in all_deps_dict:
@@ -247,7 +335,7 @@ def process_and_build_graph_domain(db_path: str, domain: str, all_assets: list, 
         print(f"  --> No hay dependencias inter-dominio que involucren a {domain}")
 
 
-def build_MDO_graph(db_path: str) -> nx.DiGraph:
+def build_MDO_graph(db_path: str, scenario_name: str) -> nx.DiGraph:
     """
     Ejecuta el análisis completo del MDO: procesa todos los dominios,
     construye el grafo global y realiza análisis de nodos afectados.
@@ -256,9 +344,11 @@ def build_MDO_graph(db_path: str) -> nx.DiGraph:
     all_assets = []
     all_deps_dict = {}  # Usar dict con dep_pk como clave para evitar duplicados
     
+    scenario_pk = get_scenario_pk(db_path, scenario_name)
+    
     # Procesar cada dominio
     for dominio in DOMINIOS:
-        process_and_build_graph_domain(db_path, dominio, all_assets, all_deps_dict)
+        process_and_build_graph_domain(db_path, scenario_pk, dominio, all_assets, all_deps_dict)
     
     # Convertir dict a lista (ya sin duplicados)
     all_deps = list(all_deps_dict.values())
@@ -367,21 +457,35 @@ def main() -> None:
     """
     Punto de entrada principal del programa.
     """
-    db_path = str(Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db")
-    G_global = build_MDO_graph(db_path) 
-    
-      # Test
+    db_path = str(Path(__file__).parent.parent / "database" / "tfg_catalog.db")
+
+   
+    scenarios = list_scenarios(db_path)
+    print("\nEscenarios disponibles en la BD:")
+    print("-" * 80)
+
+    for scenario in scenarios:
+        scenario_pk, scenario_name, description, source_file, created_at = scenario
+        file_name = Path(source_file).name if source_file else "N/A"
+        print(f"[{scenario_pk:>2}] {scenario_name:<15} | file: {file_name:<30} | {created_at}\n")
+
+    scenario_name = input("Ingrese el nombre del escenario: ")
+
+    G_global = build_MDO_graph(db_path, scenario_name)
+
     print("\nEL CODIGO A CONTINUACIÓN ES DE TEST:")
     affected_nodes, affected_edges = get_infected_nodes(G_global, 'asset_002')
+
     for level, nodes in affected_nodes.items():
         print(f"Nivel {level}: {nodes}")
+
     for level, edges in affected_edges.items():
         print(f"Nivel {level} - Aristas afectadas: {edges}")
-        
-    print(G_global.nodes['asset_002']) # Datos del nodo comprometido
-    
-   # print(affected_edges[1][0]['dependency_type'])
+
+    print(G_global.nodes['asset_002'])
 
 #===============================================[ENTRY_POINT]===============================================
 if __name__ == "__main__":
     main()
+
+
