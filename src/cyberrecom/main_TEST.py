@@ -57,9 +57,24 @@ def main() -> None:
     print("PASO 2: CARGAR DATOS DESDE EXCEL")
     print("="*80)
     
-    scenario_name = input("nombre del escenario a cargar en la BD (ejemplo: 'Escenario de prueba'): ")
-    description = input("descripción del escenario (opcional): ")
-    load_data.load_and_insert_data(EXCEL_PATH, DB_PATH, scenario_name, description)
+    load_new_scenario = input("Cargar nuevo escenario? (yes/no): ").lower() == "yes"
+    
+    if load_new_scenario:
+        scenario_name = input("nombre del escenario a cargar en la BD (ejemplo: 'Escenario de prueba'): ")
+        description = input("descripción del escenario (opcional): ")
+        load_data.load_and_insert_data(EXCEL_PATH, DB_PATH, scenario_name, description)
+    
+    else:
+        scenarios = grafo.list_scenarios(DB_PATH)
+        print("\nEscenarios disponibles en la BD:")
+        print("-" * 80)
+
+        for scenario in scenarios:
+            scenario_pk, scenario_name, description, source_file, created_at = scenario
+            file_name = Path(source_file).name if source_file else "N/A"
+            print(f"[{scenario_pk:>2}] {scenario_name:<15} | file: {file_name:<30} | {created_at}\n")
+
+        scenario_name = input("Ingrese el nombre del escenario: ")
     
     
     # ============ PASO 3: Construir grafo MDO ============
@@ -67,7 +82,7 @@ def main() -> None:
     print("PASO 3: CONSTRUIR GRAFO MDO")
     print("="*80)
     
-    G_global = grafo.build_MDO_graph(str(DB_PATH))
+    G_global = grafo.build_MDO_graph(str(DB_PATH), scenario_name )
     
     
     # ============ PASO 4: Simular llegada de una amenaza ============
