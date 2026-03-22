@@ -19,7 +19,8 @@ import src.risk.red_bayes as red_bayes
 import src.risk.id_test as id_test
 
 #=============================[CONSTANTS]===========================================#
-DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
+#DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
+DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog.db"
 EXCEL_PATH = Path(__file__).parent.parent.parent / "data" / "asset_catalog_validado_v1.0.0_ajustado.xlsx"
 CPDS = id_test.read_constants()
 
@@ -56,8 +57,9 @@ def main() -> None:
     print("PASO 2: CARGAR DATOS DESDE EXCEL")
     print("="*80)
     
-    
-    # load_data.load_and_insert_data(EXCEL_PATH, DB_PATH)
+    scenario_name = input("nombre del escenario a cargar en la BD (ejemplo: 'Escenario de prueba'): ")
+    description = input("descripción del escenario (opcional): ")
+    load_data.load_and_insert_data(EXCEL_PATH, DB_PATH, scenario_name, description)
     
     
     # ============ PASO 3: Construir grafo MDO ============
