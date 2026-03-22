@@ -8,8 +8,6 @@ permitiendo al operador de seguridad comprender de un vistazo el estado de criti
 import json
 from rich.console import Console, Group
 from rich.panel import Panel
-from rich.columns import Columns
-from rich.layout import Layout
 from rich.text import Text
 from rich.progress_bar import ProgressBar
 from rich.align import Align
@@ -192,6 +190,30 @@ def confidence_color(value) -> str:
 console = Console()  # Motor de renderizado terminal 
 
 
+
+
+
+def analysis_row_height(info) -> int:
+    """
+    Calcula la altura conjunta del bloque analítico en función de la tabla con más filas.
+    
+    Se toma como referencia el mayor número de registros entre activos críticos y TTPs
+    para que ambos paneles laterales tengan la misma altura y el contenedor quede ajustado,
+    sin exceso de espacio vacío ni recortes visuales.
+    
+    Args:
+        info (dict): Estructura procesada con los datos del dashboard.
+        
+    Returns:
+        int: Altura recomendada para ambos paneles del bloque de análisis.
+    """
+    n_critical_assets = len(info["summary"]["critical_assets"])
+    n_ttps = len(info["summary"]["ttps"])
+    max_rows = max(n_critical_assets, n_ttps, 1)
+
+    return 7 + max_rows
+
+
 def render_header() -> Panel:
     """
     Renderiza el encabezado visual del dashboard: CARE/AEGIS.
@@ -215,7 +237,7 @@ def render_header() -> Panel:
     return header
 
 
-def render_summary_panel(info) -> Panel:
+def render_summary_panel(info, panel_height=None) -> Panel:
     """
     Compila resumen operativo del incidente: activos comprometidos, vectores detectados y propagación.
     
@@ -238,15 +260,16 @@ def render_summary_panel(info) -> Panel:
 """
 
     panel = Panel(
-        Align.center(summary_text),
+        Align.center(summary_text, vertical="middle"),
         title="Operational Summary",
         border_style="yellow",
+        height=panel_height,
     )
 
     return panel
 
 
-def render_risk_panel(info) -> Panel:
+def render_risk_panel(info, panel_height=None) -> Panel:
     """
     Visualiza el perfil de riesgo del sistema desglosado en las tres dimensiones CIA.
     
@@ -271,9 +294,9 @@ def render_risk_panel(info) -> Panel:
 
     # Tabla sin bordes para integración visual fluida
     table = Table(show_header=False, show_footer=False, box=None, padding=(0, 1))
-    table.add_column("Label", style="bold", width=28)
+    table.add_column("Label", style="bold", min_width=24, ratio=4)
     table.add_column("Value", width=8, justify="right")
-    table.add_column("Bar", width=35)
+    table.add_column("Bar", min_width=20, ratio=5)
 
     table.add_row("OVERALL SYSTEM RISK:", f"{risk_value}/10", bar)
     table.add_row("", "", "")  # Separación visual
@@ -282,16 +305,18 @@ def render_risk_panel(info) -> Panel:
     table.add_row("     • Availability Risk:", f"{availability_risk}/10", bar_availability)
 
     panel = Panel(
-        Align.center(table),
+        Align.center(table, vertical="middle"),
         title="Global Risk Level",
         border_style="red",
-        padding=(1, 1)
+        padding=(1, 1),
+        height=panel_height
+
     )
 
     return panel
 
 
-def render_critical_assets_table(info) -> Panel:
+def render_critical_assets_table(info, panel_height=None) -> Panel:
     """
     Cataloga los activos más críticos bajo amenaza, ordenados por severidad de impacto.
     
@@ -307,10 +332,10 @@ def render_critical_assets_table(info) -> Panel:
     critical_assets = info["summary"]["critical_assets"]
     
     table = Table(show_header=True, header_style="bold", expand=True)
-    table.add_column("ASSET ID", style="cyan", width=15, justify="center", no_wrap=True)
-    table.add_column("NAME", style="green", width=25, justify="center", no_wrap=True)
-    table.add_column("CRITICALITY", style="yellow", width=15, justify="center", no_wrap=True)
-    table.add_column("AFFECTED BY TTP", style="magenta", justify="center", no_wrap=True)
+    table.add_column("ASSET ID", style="cyan", min_width=8, justify="center", no_wrap=True)
+    table.add_column("NAME", style="green", min_width=12, justify="center", overflow="fold")
+    table.add_column("CRITICALITY", style="yellow", min_width=11, justify="center", no_wrap=True)
+    table.add_column("AFFECTED BY TTP", style="magenta", min_width=12, justify="center", overflow="fold")
 
     for asset_id, asset_data in critical_assets:
         criticality = asset_data["criticality"]
@@ -320,17 +345,18 @@ def render_critical_assets_table(info) -> Panel:
         table.add_row(asset_id, name, f"{criticality:.1f}", ttps_str)
     
     panel = Panel(
-        Align.center(table),
+        Align.center(table, vertical="middle"),
         title="Critical Assets Affected",
         padding=(0, 0),
         box=box.SIMPLE,
         expand=True,
+        height=panel_height,
     )
     
     return panel
 
 
-def render_ttps_table(info) -> Panel:
+def render_ttps_table(info, panel_height=None) -> Panel:
     """
     Tabula el catálogo completo de vectores de amenaza (TTPs) detectados.
     
@@ -343,12 +369,12 @@ def render_ttps_table(info) -> Panel:
     Returns:
         Panel: Tabla extendida con TTPs y sus atributos descriptivos.
     """
-    table = Table()
-    table.add_column("TTP ID", style="cyan", width=12, justify="center", no_wrap=True)
-    table.add_column("Name", style="green", justify="center", width=25, no_wrap=True)
-    table.add_column("Tactic", style="yellow", width=20, justify="center", no_wrap=True)
-    table.add_column("Root Asset", style="blue", no_wrap=True, justify="center")
-    table.add_column("P(Threat)", width=12, justify="center")
+    table = Table(expand=True)
+    table.add_column("TTP ID", style="cyan", min_width=8, justify="center", no_wrap=True)
+    table.add_column("Name", style="green", justify="center", min_width=12, overflow="fold")
+    table.add_column("Tactic", style="yellow", min_width=12, justify="center", overflow="fold")
+    table.add_column("Root Asset", style="blue", min_width=18, justify="center", overflow="fold")
+    table.add_column("P(Threat)", width=10, justify="center", no_wrap=True)
 
     ttps = info["summary"]["ttps"]
     for ttp in ttps:
@@ -365,11 +391,12 @@ def render_ttps_table(info) -> Panel:
         )
     
     panel = Panel(
-        Align.center(table),
+        Align.center(table, vertical="middle"),
         title="TTP Analysis",
         padding=(0, 0),
         expand=True,
-        box=box.SIMPLE
+        box=box.SIMPLE,
+        height=panel_height,
     )
 
     return panel
@@ -391,16 +418,16 @@ def render_optimizations_ask_panel() -> Panel:
     optimization_text = """[bold]Select protection objective:[/bold]
 
   [bold]<global>            Minimize overall system risk
-                            → Balanced reduction across confidentiality, integrity, availability
+                            -> Balanced reduction across confidentiality, integrity, availability
 
   [bold]<confidentiality>   Protect sensitive data
-                            → Reduce exposure and data exfiltration risk
+                            -> Reduce exposure and data exfiltration risk
 
   [bold]<integrity>         Protect data integrity
-                            → Prevent unauthorized modification and tampering
+                            -> Prevent unauthorized modification and tampering
 
   [bold]<availability>      Ensure service availability
-                            → Minimize disruptions and downtime
+                            -> Minimize disruptions and downtime
 
 [bold]Command:[/bold]
   python care.py optimize [dim]--objective <global | confidentiality | integrity | availability>
@@ -416,7 +443,7 @@ def render_optimizations_ask_panel() -> Panel:
     return panel
 
 
-def build_dashboard(info) -> Layout:
+def build_dashboard(info):
     """
     Ensambla todos los componentes visuales en un layout jerárquico coherente.
     
@@ -430,49 +457,50 @@ def build_dashboard(info) -> Layout:
     Returns:
         Layout: Árbol de componentes Rich listo para renderizar.
     """
-    n_ttps = len(info["summary"]["ttps"])
-    n_critical_assets = len(info["summary"]["critical_assets"])
-    
-    # Ajustar tamaño de la fila inferior según volumen de análisis
-    if n_ttps > n_critical_assets:
-        bottom_row_size = 8 + n_ttps
+    console_width = console.size.width
+    top_panel_height = 10
+    analysis_panel_height = analysis_row_height(info)
+
+    top_sections = [
+        render_summary_panel(info, panel_height=top_panel_height),
+        render_risk_panel(info, panel_height=top_panel_height)
+    ]
+    analysis_sections = [
+        render_critical_assets_table(info, panel_height=analysis_panel_height),
+        render_ttps_table(info, panel_height=analysis_panel_height)
+    ]
+
+    # Ensamblamos la capa superior del dashboard con Layout para repartir el espacio simétricamente
+    if console_width >= 120:
+        top_content = Table.grid(expand=True)
+        top_content.add_column(ratio=1)
+        top_content.add_column(ratio=1)
+        top_content.add_row(*top_sections)
     else:
-        bottom_row_size = 8 + n_critical_assets
+        top_content = Group(*top_sections)
 
-    layout = Layout()
+    # Construimos la zona analítica manteniendo proporción visual entre activos críticos y TTPs
+    if console_width >= 170:
+        analysis_content = Table.grid(expand=True)
+        analysis_content.add_column(ratio=6)
+        analysis_content.add_column(ratio=7)
+        analysis_content.add_row(*analysis_sections)
+    else:
+        analysis_content = Group(*analysis_sections)
 
-    # Estructura tridimensional: header → análisis dual → análisis detallado → guía
-    layout.split_column(
-        Layout(render_header(), size=4),
-        Layout(name="content", size=10),
-        Layout(name="bottom_row", size=bottom_row_size),
-        Layout(render_optimizations_ask_panel())
-    )
-
-    # Bifurcación horizontal del análisis operativo
-    layout["content"].split_row(
-        Layout(render_summary_panel(info)),
-        Layout(render_risk_panel(info))
-    )
-
-    # Composición de la fila analítica detallada
-    bottom_layout = Layout()
-    bottom_layout.split_row(
-        Layout(render_critical_assets_table(info), size=100),
-        Layout(render_ttps_table(info))
-    )
-    
-    # Envolver en panel contenedor para cohesión visual
-    bottom_panel = Panel(
-        bottom_layout,
+    analysis_panel = Panel(
+        analysis_content,
         title="[ANALYSIS]",
         border_style="blue",
-        padding=(0, 0)
+        expand=True,
     )
-    
-    layout["bottom_row"].update(bottom_panel)
 
-    return layout
+    return Group(
+        render_header(),
+        top_content,
+        analysis_panel,
+        render_optimizations_ask_panel(),
+    )
 
 
 def main():
