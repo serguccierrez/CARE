@@ -68,7 +68,7 @@ def render_context_panel(scenario_name: str, total_assets: int, total_ttps: int)
     )
 
 
-def render_assets_table(assets: list, scenario_name: str) -> Panel:
+def render_assets_table(assets: list, scenario_name: str, panel_height: int | None = None) -> Panel:
     """
     Renderiza una tabla con los activos del escenario activo.
     """
@@ -81,7 +81,7 @@ def render_assets_table(assets: list, scenario_name: str) -> Panel:
     if not assets:
         table.add_row("-", "No assets available", "-", "-", "-")
     else:
-        sample_size = min(MAX_ASSETS_DISPLAY, 5)
+        sample_size = min(MAX_ASSETS_DISPLAY, len(assets))
         sampled_assets = random.sample(assets, sample_size)
 
         for asset in sampled_assets:
@@ -99,10 +99,11 @@ def render_assets_table(assets: list, scenario_name: str) -> Panel:
         subtitle=f"View full asset inventory: care asset list --scenario \"{scenario_name}\"",
         border_style="blue",
         padding=(0, 1),
+        height=panel_height,
     )
 
 
-def render_ttps_table(ttps: list) -> Panel:
+def render_ttps_table(ttps: list, panel_height: int | None = None) -> Panel:
     """
     Renderiza una tabla resumida con TTPs disponibles para inyeccion.
     """
@@ -125,7 +126,20 @@ def render_ttps_table(ttps: list) -> Panel:
         subtitle="View full MITRE catalogue: care ttp list --limit 50",
         border_style="red",
         padding=(0, 1),
+        height=panel_height,
     )
+
+
+def analysis_panel_height(assets: list, ttps: list) -> int:
+    """
+    Calcula una altura comun para los paneles de assets y TTPs
+    a partir del mayor numero de filas mostradas.
+    """
+    visible_assets = min(len(assets), MAX_ASSETS_DISPLAY) if assets else 1
+    visible_ttps = min(len(ttps), MAX_TTPS_DISPLAY) if ttps else 1
+    max_rows = max(visible_assets, visible_ttps, 1)
+
+    return 7 + max_rows
 
 
 def render_execution_modes_panel() -> Panel:
@@ -178,9 +192,10 @@ def build_attack_interface(scenario_name: str, assets: list, ttps: list) -> None
     analysis_grid = Table.grid(expand=True)
     analysis_grid.add_column(ratio=6)
     analysis_grid.add_column(ratio=7)
+    common_panel_height = analysis_panel_height(assets, ttps)
     analysis_grid.add_row(
-        render_assets_table(assets, scenario_name),
-        render_ttps_table(ttps),
+        render_assets_table(assets, scenario_name, common_panel_height),
+        render_ttps_table(ttps, common_panel_height),
     )
 
     layout["header"].update(render_attack_header())
