@@ -97,10 +97,6 @@ def render_welcome_screen():
     console.print(status)
     console.print()
 
-    # Prompt final
-    prompt = Text("> _", style="bold cyan", justify="center")
-    console.print(prompt)
-
 
 def main():
     """

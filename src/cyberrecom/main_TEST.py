@@ -65,7 +65,7 @@ def main() -> None:
         load_data.load_and_insert_data(EXCEL_PATH, DB_PATH, scenario_name, description)
     
     else:
-        scenarios = grafo.list_scenarios(DB_PATH)
+        scenarios = grafo.list_scenarios(DB_PATH    )
         print("\nEscenarios disponibles en la BD:")
         print("-" * 80)
 

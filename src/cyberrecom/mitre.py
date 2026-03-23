@@ -84,8 +84,20 @@ def ttp_simulation():
     
     return ttp_data  
     
-      
     
+def list_ttps():
+    '''
+    Lista todas las TTPs disponibles en MITRE ATT&CK.
+    '''
+    techniques = MITRE_ATTACK_DATA.get_techniques(remove_revoked_deprecated=True)
+    
+    ttp_list = []
+    for technique in techniques:
+        ttp_id = technique['external_references'][0]['external_id']
+        ttp_name = technique['name']
+        ttp_list.append((ttp_id, ttp_name))
+    
+    return ttp_list      
     
 
 
