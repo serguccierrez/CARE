@@ -129,6 +129,52 @@ def list_scenarios(db_path: str):
         con.close()
         
         
+def delete_scenario(db_path: str, scenario_name: str):
+    """
+    Elimina un escenario específico de la base de datos, junto con sus activos y dependencias asociadas.
+    """
+    con = sqlite3.connect(db_path)
+    try:
+        cur = con.cursor()
+        # Obtener el scenario_pk del escenario a eliminar
+        cur.execute("""
+            SELECT scenario_pk
+            FROM scenarios
+            WHERE scenario_name = ?;
+        """, (scenario_name,))
+        row = cur.fetchone()
+        
+        if row is None:
+            print(f"Error: El escenario '{scenario_name}' no existe en la base de datos.")
+            return
+        
+        scenario_pk = row[0]
+        
+        # Eliminar dependencias asociadas al escenario
+        cur.execute("""
+            DELETE FROM dependencies
+            WHERE scenario_fk = ?;
+        """, (scenario_pk,))
+        
+        # Eliminar activos asociados al escenario
+        cur.execute("""
+            DELETE FROM assets
+            WHERE scenario_fk = ?;
+        """, (scenario_pk,))
+        
+        # Eliminar el escenario
+        cur.execute("""
+            DELETE FROM scenarios
+            WHERE scenario_pk = ?;
+        """, (scenario_pk,))
+        
+        con.commit()
+        print(f"Escenario '{scenario_name}' y sus datos asociados han sido eliminados.")
+        
+    finally:
+        con.close()
+        
+        
 def get_scenario_pk(db_path: str, scenario_name: str = None):
     """
     Obtiene el scenario_pk:
@@ -173,6 +219,38 @@ def get_scenario_pk(db_path: str, scenario_name: str = None):
 
     finally:
         con.close()
+        
+def list_assets_by_scenario(db_path: str, scenario_name: str):
+    """
+    Retorna todos los activos asociados a un escenario concreto.
+
+    Args:
+        db_path (str): Ruta a la base de datos SQLite.
+        scenario_name (str): Nombre del escenario.
+
+    Returns:
+        list[tuple]: Lista de tuplas con los activos del escenario.
+        Formato esperado:
+        (asset_pk, scenario_fk, asset_id, name, asset_type, domain,
+         criticality, cia_c, cia_i, cia_a, operational_state)
+    """
+    con = sqlite3.connect(db_path)
+    
+    scenario_pk = get_scenario_pk(db_path, scenario_name)
+    
+    try:
+        cur = con.cursor()
+        cur.execute("""
+            SELECT *
+            FROM assets
+            WHERE scenario_fk = ?
+            ORDER BY domain, asset_id;
+        """, (scenario_pk,))
+        rows = cur.fetchall()
+        return rows
+    finally:
+        con.close()
+
         
 #===============================================[GRAPH_FUNCTIONS]===============================================
 def build_intra_domain_graph(domain: str, assets_rows, deps_rows) -> nx.DiGraph:
