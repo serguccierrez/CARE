@@ -46,7 +46,7 @@ def render_db_header() -> Panel:
     return header
 
 
-def render_scenarios_table(scenarios: list) -> Panel:
+def render_scenarios_table(scenarios: list, selected_scenario: str) -> Panel:
     """
     Renderiza tabla de escenarios almacenados en la base de datos.
     
@@ -66,6 +66,9 @@ def render_scenarios_table(scenarios: list) -> Panel:
     for scenario in scenarios:
         scenario_pk, scenario_name, description, source_file, created_at = scenario
         source_name = Path(source_file).name if source_file else "N/A"
+        
+        if scenario_name == selected_scenario:
+            scenario_name = f" * {scenario_name} "
 
         table.add_row(
             str(scenario_pk),
@@ -77,6 +80,46 @@ def render_scenarios_table(scenarios: list) -> Panel:
     panel = Panel(
         table,
         title="Stored Scenarios",
+        border_style="yellow",
+        padding=(0, 1),
+    )
+
+    return panel
+
+
+def render_assets_table(assets: list, selected_scenario: str) -> Panel:
+    """
+    Renderiza tabla de activos asociados a un escenario concreto.
+
+    Args:
+        assets (list): Lista de tuplas con estructura:
+                      [(asset_pk, scenario_fk, asset_id, name, asset_type, domain,
+                        criticality, cia_c, cia_i, cia_a, operational_state), ...]
+        selected_scenario (str): Nombre del escenario cuyos activos se muestran.
+
+    Returns:
+        Panel: Tabla formateada con los activos del escenario.
+    """
+    table = Table(show_header=True, header_style="bold cyan", expand=True, box=box.SIMPLE)
+    table.add_column("Asset ID", style="bright_white", min_width=12, justify="center", no_wrap=True)
+    table.add_column("Name", style="green", min_width=22, justify="center", overflow="fold")
+    table.add_column("Type", style="yellow", min_width=14, justify="center", overflow="fold")
+    table.add_column("Domain", style="blue", min_width=12, justify="center", no_wrap=True)
+    table.add_column("Criticality", style="magenta", min_width=11, justify="center", no_wrap=True)
+
+    for asset in assets:
+        _, _, asset_id, name, asset_type, domain, criticality, _, _, _, _ = asset
+        table.add_row(
+            asset_id,
+            name or "Unknown",
+            asset_type or "N/A",
+            domain or "N/A",
+            f"{float(criticality):.1f}",
+        )
+
+    panel = Panel(
+        table,
+        title=f"Assets From Scenario: {selected_scenario}",
         border_style="yellow",
         padding=(0, 1),
     )
@@ -138,7 +181,7 @@ def render_system_ready() -> Text:
     return status_text
 
 
-def build_db_interface(scenarios: list) -> None:
+def build_db_interface(scenarios: list, selected_scenario: str, show_assets: bool = False) -> None:
     """
     Ensambla y renderiza la interfaz completa de base de datos usando Layout.
     
@@ -147,6 +190,9 @@ def build_db_interface(scenarios: list) -> None:
     
     Args:
         scenarios (list): Lista de tuplas con datos de escenarios almacenados.
+        selected_scenario (str, optional): Nombre del escenario seleccionado.
+        show_assets (bool, optional): Si es True, muestra los activos del escenario
+        seleccionado en lugar de la tabla de escenarios.
     """
     console.clear()
     
@@ -154,14 +200,20 @@ def build_db_interface(scenarios: list) -> None:
     layout = Layout()
     layout.split_column(
         Layout(name="header", size=5),
-        Layout(name="scenarios", size=10),
+        Layout(name="scenarios", size=20),
         Layout(name="operations", size=18),
         Layout(name="prompt", size=3),
     )
     
     # Renderizar y asignar componentes a cada sección
     layout["header"].update(render_db_header())
-    layout["scenarios"].update(render_scenarios_table(scenarios))
+    
+    if show_assets and selected_scenario:
+        assets = grafo.list_assets_by_scenario(str(DB_PATH), selected_scenario)
+        layout["scenarios"].update(render_assets_table(assets, selected_scenario))
+    else:
+        layout["scenarios"].update(render_scenarios_table(scenarios, selected_scenario))
+    
     layout["operations"].update(render_operations_menu())
     layout["prompt"].update(Align.left(render_system_ready()))
     
@@ -169,7 +221,7 @@ def build_db_interface(scenarios: list) -> None:
     console.print(layout)
 
 
-def main():
+def main(selected_scenario: str = None, show_assets: bool = False) -> None:
     """
     Función principal de demostración de la interfaz de base de datos.
     
@@ -178,7 +230,7 @@ def main():
     sample_scenarios = grafo.list_scenarios(str(DB_PATH))
 
     
-    build_db_interface(sample_scenarios)
+    build_db_interface(sample_scenarios, selected_scenario, show_assets)
 
 
 if __name__ == "__main__":

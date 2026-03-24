@@ -3,6 +3,10 @@ import pandas as pd
 import sqlite3
 from pathlib import Path
 
+
+#===============================================[CONSTANTS]===============================================
+DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog.db"
+
 #===============================================[DATA_LOADING]===============================================
 def load_data_from_excel(excel_path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
@@ -18,7 +22,7 @@ def load_data_from_excel(excel_path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
 #==============================================[CREATE_SCENARIO]===============================================
 def create_scenario(con, scenario_name: str, description: str = None, source_file: str = None) -> int:
     """
-    Crea un nuevo escenario y devuelve su scenario_pk.
+    Crea un nuevo escenario usando una conexion existente y devuelve su scenario_pk.
     """
     cur = con.cursor()
 
@@ -28,6 +32,22 @@ def create_scenario(con, scenario_name: str, description: str = None, source_fil
     """, (scenario_name, description, source_file))
 
     return cur.lastrowid
+
+
+def create_empty_scenario(db_path: Path, scenario_name: str, description: str = None, source_file: str = None) -> int:
+    """
+    Crea un escenario vacio y confirma la insercion en la base de datos.
+
+    Pensado para handlers de CLI que necesitan registrar un escenario
+    sin cargar todavia assets ni dependencias.
+    """
+    con = sqlite3.connect(db_path)
+    try:
+        scenario_pk = create_scenario(con, scenario_name, description, source_file)
+        con.commit()
+        return scenario_pk
+    finally:
+        con.close()
 
 
 
