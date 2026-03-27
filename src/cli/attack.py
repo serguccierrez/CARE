@@ -207,7 +207,7 @@ def build_attack_interface(scenario_name: str, assets: list, ttps: list) -> None
     console.print(layout)
 
 
-def resolve_active_scenario():
+def resolve_active_scenario(context):
     """
     Resuelve el escenario operativo activo.
     Actualmente selecciona el ultimo escenario almacenado como contexto por defecto.
@@ -215,14 +215,19 @@ def resolve_active_scenario():
     scenarios = grafo.list_scenarios(str(DB_PATH))
     if not scenarios:
         return None
-    return scenarios[-1]
+    
+    if context is None:
+        return None
+    scenario = context["active_scenario"]
+    
+    return scenario
 
 
-def main():
+def main(context = None):
     """
     Punto de entrada de demostracion para la pantalla de ataque.
     """
-    active_scenario = resolve_active_scenario()
+    active_scenario = resolve_active_scenario(context)
 
     if active_scenario is None:
         build_attack_interface("No active scenario", [], [])

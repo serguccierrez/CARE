@@ -85,6 +85,35 @@ def ttp_simulation():
     return ttp_data  
     
     
+def single_ttp_simulation():
+    '''
+    Simula la llegada de un único TTP sobre un activo con un cierto nivel de confidence.
+    Solo selecciona TTPs que existen realmente en MITRE ATT&CK.
+    '''
+    # Obtener todas las técnicas válidas
+    techniques = MITRE_ATTACK_DATA.get_techniques(remove_revoked_deprecated=True)
+
+    if not techniques:
+        print("Error: No se encontraron técnicas en MITRE ATT&CK")
+        return None
+    
+    # Seleccionar una técnica aleatoria
+    technique = random.choice(techniques)
+    
+    ttp_id = technique['external_references'][0]['external_id']
+    confidence = random.uniform(0.3, 1.0)
+    
+    ttp_data = {
+        'ttp_id': ttp_id,
+        'name': technique['name'],
+        'confidence': confidence,
+        'tactic': get_ttp_details_from_ttp_id(ttp_id)
+    }
+    
+    print(f"Simulación de TTP: {ttp_data}")
+    
+    return ttp_data
+    
 def list_ttps():
     '''
     Lista todas las TTPs disponibles en MITRE ATT&CK.

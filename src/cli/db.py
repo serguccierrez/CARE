@@ -137,25 +137,21 @@ def render_operations_menu() -> Panel:
     operations_text = Text()
     
     # Operación 1
-    operations_text.append("  [1] python care.py create-scenario\n", style="cyan")
+    operations_text.append("  [1] python care.py db create --scenario <scenario_name> --description <description> --source <source_file>\n", style="cyan")
     operations_text.append("      Create a new scenario from an Excel asset/dependency catalog\n\n", style="dim")
     
     # Operación 2
-    operations_text.append("  [2] python care.py load-scenario\n", style="cyan")
-    operations_text.append("      Import a new scenario from an Excel asset/dependency catalog\n\n", style="dim")
+    operations_text.append("  [2] python care.py db load --scenario <scenario_name>\n", style="cyan")
+    operations_text.append("      Import a new scenario from the DB catalog\n\n", style="dim")
     
     # Operación 3
-    operations_text.append("  [3] python care.py delete-scenario", style="cyan")
-    operations_text.append(" --<scenario_name>\n", style="cyan")
+    operations_text.append("  [3] python care.py db delete --scenario <scenario_name>\n", style="cyan")
     operations_text.append("      Remove a stored scenario and all associated assets and dependencies\n\n", style="dim")
     
     # Operación 4
-    operations_text.append("  [4] python care.py inspect-scenario\n", style="cyan")
+    operations_text.append("  [4] python care.py db asset-list --scenario <scenario_name>\n", style="cyan")
     operations_text.append("      Display all registered assets for a selected scenario\n\n", style="dim")
-    
-    # Operación 5
-    operations_text.append("  [5] python care.py return-to-main\n", style="cyan")
-    operations_text.append("      Exit database operations and return to CARE main interface\n", style="dim")
+
     
     panel = Panel(
         operations_text,
