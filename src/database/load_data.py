@@ -3,6 +3,10 @@ import pandas as pd
 import sqlite3
 from pathlib import Path
 
+
+#===============================================[CONSTANTS]===============================================
+DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog.db"
+
 #===============================================[DATA_LOADING]===============================================
 def load_data_from_excel(excel_path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
@@ -13,6 +17,40 @@ def load_data_from_excel(excel_path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     assets_df = dfs["Assets"].copy()
     deps_df = dfs["Dependencies"].copy()
     return assets_df, deps_df
+
+
+#==============================================[CREATE_SCENARIO]===============================================
+def create_scenario(con, scenario_name: str, description: str = None, source_file: str = None) -> int:
+    """
+    Crea un nuevo escenario usando una conexion existente y devuelve su scenario_pk.
+    """
+    cur = con.cursor()
+
+    cur.execute("""
+        INSERT INTO scenarios (scenario_name, description, source_file)
+        VALUES (?, ?, ?)
+    """, (scenario_name, description, source_file))
+
+    return cur.lastrowid
+
+
+def create_empty_scenario(db_path: Path, scenario_name: str, description: str = None, source_file: str = None) -> int:
+    """
+    Crea un escenario vacio y confirma la insercion en la base de datos.
+
+    Pensado para handlers de CLI que necesitan registrar un escenario
+    sin cargar todavia assets ni dependencias.
+    """
+    con = sqlite3.connect(db_path)
+    try:
+        scenario_pk = create_scenario(con, scenario_name, description, source_file)
+        con.commit()
+        return scenario_pk
+    finally:
+        con.close()
+
+
+
 
 #===============================================[COLUMN_MAPPING]===============================================
 def map_columns(assets_df: pd.DataFrame, deps_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -102,28 +140,44 @@ def validate_data(assets_df: pd.DataFrame, deps_df: pd.DataFrame) -> None:
         )
 
 #===============================================[DATABASE_INSERTION]===============================================
-def insert_into_database(assets_df: pd.DataFrame, deps_df: pd.DataFrame, db_path: Path) -> None:
+def insert_into_database(assets_df: pd.DataFrame, deps_df: pd.DataFrame, db_path: Path, scenario_name: str, description: str = None, source_file: str = None ) -> None:
     """
-    Inserta datos validados en la base de datos SQLite.
+    Inserta un nuevo escenario en la base de datos junto con sus activos y dependencias.
     """
     con = sqlite3.connect(db_path)
+
     try:
         con.execute("PRAGMA foreign_keys = ON;")
         cur = con.cursor()
 
-        cur.execute("DELETE FROM dependencies;")
-        cur.execute("DELETE FROM assets;")
+        # Creamos nuevo escenario y obtenemos su PK para asociarla luego a activos y dependencias
+        scenario_pk = create_scenario(con, scenario_name, description, source_file)
+
+        # Hacemos esa asociación añadiendo la columna scenario_fk a ambos DataFrames
+        assets_df = assets_df.copy()
+        deps_df = deps_df.copy()
+
+        assets_df["scenario_fk"] = scenario_pk
+        deps_df["scenario_fk"] = scenario_pk
+
+        # Insertamos los acrivos en la tabla assets
+        assets_df.to_sql("assets", con, if_exists="append", index=False)
+
+        # Insertamos las dependencias en la tabla dependencies
+        deps_df.to_sql("dependencies", con, if_exists="append", index=False)
+
         con.commit()
 
-        assets_df.to_sql("assets", con, if_exists="append", index=False)
-        deps_df.to_sql("dependencies", con, if_exists="append", index=False)
-        con.commit()
+        print(f" Escenario '{scenario_name}' creado correctamente")
+        print(f"  - scenario_pk: {scenario_pk}")
+        print(f"  - Activos: {len(assets_df)}")
+        print(f"  - Dependencias: {len(deps_df)}")
 
     finally:
         con.close()
 
 #===============================================[MAIN_LOAD_DATA]===============================================
-def load_and_insert_data(excel_path: Path, db_path: Path) -> None:
+def load_and_insert_data(excel_path: Path, db_path: Path, scenario_name: str, description: str = None) -> None:
     """
     Orquesta el flujo completo: carga, mapeo, limpieza, validación e inserción.
     Función principal para ser llamada desde otro módulo.
@@ -141,7 +195,7 @@ def load_and_insert_data(excel_path: Path, db_path: Path) -> None:
     validate_data(assets_df, deps_df)
     
     # Insertamos datos en BD
-    insert_into_database(assets_df, deps_df, db_path)
+    insert_into_database(assets_df, deps_df, db_path, scenario_name, description, source_file=str(excel_path))
     
     print(f"✓ Datos cargados exitosamente en {db_path}")
     print(f"  - Activos: {len(assets_df)}")
