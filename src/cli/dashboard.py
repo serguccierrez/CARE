@@ -155,6 +155,7 @@ def extract_report_data(report_data) -> dict:
         "system_confidentiality_risk": report_data.get("global_system_risk", {}).get("confidentiality_risk", "N/A"),
         "system_integrity_risk": report_data.get("global_system_risk", {}).get("integrity_risk", "N/A"),
         "system_availability_risk": report_data.get("global_system_risk", {}).get("availability_risk", "N/A"),
+        "analysis_timestamp": report_data.get("metadata", {}).get("timestamp", "N/A"),
     }
     return info
 
@@ -243,7 +244,37 @@ def render_header() -> Panel:
     """
     header_text = Text(justify="center")
     header_text.append("CARE / AEGIS\n", style="bold cyan")
-    header_text.append("Cyber Action Recommendation Engine", style="dim")
+    header_text.append("Cyber Action Recommendation Engine\n", style="dim")
+    header_text.append(
+        f"Last analysis: {info_timestamp_placeholder}",
+        style="dim white",
+    )
+
+    header = Panel(
+        Align.center(header_text, vertical="middle"),
+        border_style="cyan",
+        box=box.ROUNDED
+    )
+
+    return header
+
+
+def render_header(info) -> Panel:
+    """
+    Renderiza el encabezado visual del dashboard: CARE/AEGIS.
+    
+    Args:
+        info (dict): Estructura procesada con los datos del dashboard.
+        
+    Returns:
+        Panel: Componente grÃ¡fico con tÃ­tulo, subtÃ­tulo y timestamp.
+    """
+    analysis_timestamp = info["summary"].get("analysis_timestamp", "N/A")
+
+    header_text = Text(justify="center")
+    header_text.append("CARE / AEGIS\n", style="bold cyan")
+    header_text.append("Cyber Action Recommendation Engine\n", style="dim")
+    header_text.append(f"Last analysis: {analysis_timestamp}", style="dim white")
 
     header = Panel(
         Align.center(header_text, vertical="middle"),
@@ -513,7 +544,7 @@ def build_dashboard(info):
     )
 
     return Group(
-        render_header(),
+        render_header(info),
         top_content,
         analysis_panel,
         render_optimizations_ask_panel(),
