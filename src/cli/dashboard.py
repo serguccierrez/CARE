@@ -88,14 +88,22 @@ def extract_report_data(report_data) -> dict:
             node_data = asset_info.get("node_data", {})
             criticality = node_data.get("criticality", 0)
             name = node_data.get("name", "Unknown")
+            propagation_level = None
             
             # Mapeamos TTPs que impactan este activo
             ttps_affecting = []
             for ttp in ttps_list:
                 affected_nodes = ttp.get("affected_nodes", {})
-                for level_nodes in affected_nodes.values():
+                for level, level_nodes in affected_nodes.items():
                     if asset_id in level_nodes:
                         ttps_affecting.append(ttp["id"])
+                        try:
+                            current_level = int(level)
+                        except (TypeError, ValueError):
+                            current_level = 9999
+
+                        if propagation_level is None or current_level < propagation_level:
+                            propagation_level = current_level
                         break
             
             # Registramos solo activos bajo amenaza
@@ -103,18 +111,27 @@ def extract_report_data(report_data) -> dict:
                 affected_assets_dict[asset_id] = {
                     "name": name,
                     "criticality": criticality,
+                    "propagation_level": propagation_level if propagation_level is not None else 9999,
                     "ttps": ttps_affecting
                 }
     
-    # Convertimos a lista y ordenamos descendentemente por criticidad
+    # Convertimos a lista y ordenamos por nivel de propagacion (de arriba hacia abajo)
     critical_assets = []
     for asset_id, asset_data in affected_assets_dict.items():
         critical_assets.append((asset_id, asset_data))
     
-    # Ordenamos manualmente por criticidad
+    # Ordenamos primero por nivel de propagacion y, en empate, por criticidad descendente
     for i in range(len(critical_assets)):
         for j in range(i + 1, len(critical_assets)):
-            if critical_assets[j][1]["criticality"] > critical_assets[i][1]["criticality"]:
+            left_level = critical_assets[i][1]["propagation_level"]
+            right_level = critical_assets[j][1]["propagation_level"]
+            left_criticality = critical_assets[i][1]["criticality"]
+            right_criticality = critical_assets[j][1]["criticality"]
+
+            if (
+                right_level < left_level
+                or (right_level == left_level and right_criticality > left_criticality)
+            ):
                 critical_assets[i], critical_assets[j] = critical_assets[j], critical_assets[i]
     
     # Limitamos a los 7 activos más críticos para mantener legibilidad
@@ -334,19 +351,19 @@ def render_critical_assets_table(info, panel_height=None) -> Panel:
     table = Table(show_header=True, header_style="bold", expand=True)
     table.add_column("ASSET ID", style="cyan", min_width=8, justify="center", no_wrap=True)
     table.add_column("NAME", style="green", min_width=12, justify="center", overflow="fold")
-    table.add_column("CRITICALITY", style="yellow", min_width=11, justify="center", no_wrap=True)
+    table.add_column("PROP LEVEL", style="yellow", min_width=11, justify="center", no_wrap=True)
     table.add_column("AFFECTED BY TTP", style="magenta", min_width=12, justify="center", overflow="fold")
 
     for asset_id, asset_data in critical_assets:
-        criticality = asset_data["criticality"]
+        propagation_level = asset_data["propagation_level"]
         name = asset_data["name"]
         ttps_str = ", ".join(asset_data["ttps"])
         
-        table.add_row(asset_id, name, f"{criticality:.1f}", ttps_str)
+        table.add_row(asset_id, name, str(propagation_level), ttps_str)
     
     panel = Panel(
         Align.center(table, vertical="middle"),
-        title="Critical Assets Affected",
+        title="Affected Assets by Propagation Order",
         padding=(0, 0),
         box=box.SIMPLE,
         expand=True,
