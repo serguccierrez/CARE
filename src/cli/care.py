@@ -3,6 +3,7 @@ import argparse
 
 from src.cli import attack, dashboard, db, run_blocked, welcome
 import src.graph.grafo as grafo
+import src.cyberrecom.mitre as mitre
 import src.database.load_data as load_data
 import src.cyberrecom.runner as runner
 from pathlib import Path
@@ -21,9 +22,9 @@ def context_JSON_initialization():
     context = {
         "active_scenario": None,
         "mode": None,
-        "selected_asset": None,
+        "selected_asset":[],
         "selected_ttps": [],
-        "selected_confidences": None,
+        "selected_confidences": [],
     }
     return context
 
@@ -73,8 +74,17 @@ def handle_db_load(args):
     scenario_names = [scenario[1] for scenario in scenarios]
 
     if scenario_name not in scenario_names:
-        print(f"Error: el escenario '{scenario_name}' no existe.")
-        return
+       run_blocked.main(
+        title="CARE / INVALID SCENARIO",
+        header="Selected Scenario Not Found",
+        description="The requested scenario does not exist.",
+        action_title="Suggested action",
+        action_text='care db load --scenario "<valid_scenario_name>"',
+        footer="Verify the scenario name and try again.",
+        
+    )
+       return
+    
 
     # Guardarlo como escenario activo
     context = json_load_context()
@@ -92,7 +102,14 @@ def handle_db_delete(args):
     scenario_names = [scenario[1] for scenario in scenarios]
 
     if scenario_name not in scenario_names:
-        print(f"Error: el escenario '{scenario_name}' no existe.")
+        run_blocked.main(
+            title="CARE / INVALID SCENARIO",
+            header="Selected Scenario Not Found",
+            description="The requested scenario does not exist.",
+            action_title="Suggested action",
+            action_text='care db delete --scenario "<valid_scenario_name>"',
+            footer="Verify the scenario name and try again.",
+        )
         return
 
     # Eliminarlo de la base de datos
@@ -112,7 +129,14 @@ def handle_db_create(args):
     scenario_names = [scenario[1] for scenario in scenarios]
 
     if scenario_name in scenario_names:
-        print(f"Error: ya existe un escenario con el nombre '{scenario_name}'.")
+        run_blocked.main(
+            title="CARE / INVALID SCENARIO",
+            header="Selected Scenario Already Exists",
+            description="A scenario with the same name already exists.",
+            action_title="Suggested action",
+            action_text='care db create --scenario "<unique_scenario_name>"',
+            footer="Choose a different scenario name and try again.",
+        )
         return
 
     if  source_file == None:
@@ -133,7 +157,14 @@ def handle_db_list(args):
     scenario_names = [scenario[1] for scenario in scenarios]
 
     if scenario_name not in scenario_names:
-        print(f"Error: el escenario '{scenario_name}' no existe.")
+        run_blocked.main(
+            title="CARE / INVALID SCENARIO",
+            header="Selected Scenario Not Found",
+            description="The requested scenario does not exist.",
+            action_title="Suggested action",
+            action_text='care db asset-list --scenario "<valid_scenario_name>"',
+            footer="Verify the scenario name and try again.",
+        )
         return
 
     # Listar sus activos
@@ -165,13 +196,55 @@ def handle_attack_run(args):
         context["mode"] = "controlled"
 
     json_dump_context(context)
-    return runner.main(scenario_name, context=context)
+    
+    runner.main(scenario_name, context=context)
+    
+    return dashboard.main()
         
 def handle_attack_select(args):
     context = json_load_context()
-    context["selected_asset"] = args.asset if hasattr(args.asset, "asset") else None
-    context["selected_ttps"] = args.ttp if hasattr(args.ttp, "ttp") else None
-    context["selected_confidence"] = args.confidence if hasattr(args.confidence, "confidence") else None
+    
+    scenario_name = context["active_scenario"]
+    assets = grafo.list_assets_by_scenario(str(DB_PATH), scenario_name)
+
+    asset_ids = [asset[2] for asset in assets]
+    
+    
+    
+    if args.asset and args.asset not in asset_ids:
+        run_blocked.main(
+        title="CARE / INVALID ASSET",
+        header="Selected Asset Not Found",
+        description="The requested asset does not exist in the active scenario.",
+        action_title="Suggested action",
+        action_text='care attack select --asset "<valid_asset_id>"',
+        footer="Verify the asset ID and try again.",
+)
+        return
+    elif args.ttp and not mitre.check_ttp_exists(args.ttp):
+        run_blocked.main(
+        title="CARE / INVALID TTP",
+        header="Selected TTP Not Found",
+        description="The requested TTP does not exist in MITRE ATT&CK.",
+        action_title="Suggested action",
+        action_text='care attack select --ttp "<valid_ttp_id>"',
+        footer="Verify the TTP ID and try again.",
+)        
+        return
+    elif args.confidence and (not isinstance(args.confidence, float) or not (0.0 <= args.confidence <= 1.0)):
+        run_blocked.main(
+        title="CARE / INVALID CONFIDENCE",
+        header="Invalid Confidence Value",
+        description="The confidence value must be a float between 0.0 and 1.0.",
+        action_title="Suggested action",
+        action_text='care attack select --confidence <valid_confidence_value>',
+        footer="Verify the confidence value and try again.",
+)
+        return
+    
+    context["selected_asset"].append(args.asset) if hasattr(args, "asset") else None
+    context["selected_ttps"].append(args.ttp) if hasattr(args, "ttp") else None
+    context["selected_confidences"].append(args.confidence) if hasattr(args, "confidence") else None
     context["mode"] = "controlled"
     
     json_dump_context(context)
@@ -316,6 +389,7 @@ attack_select_parser.add_argument(
 attack_select_parser.add_argument(
     "--confidence",
     help="Nivel de confianza para la seleccion del TTP (opcional)",
+    type=float,
     required=False,
 )
 

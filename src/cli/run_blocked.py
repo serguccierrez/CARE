@@ -9,34 +9,74 @@ from rich.text import Text
 console = Console()
 
 
-def render_run_blocked_panel() -> Panel:
+def render_message_panel(
+    title: str,
+    header: str,
+    description: str,
+    action_title: str | None = None,
+    action_text: str | None = None,
+    footer: str | None = None,
+    border_style: str = "red",
+) -> Panel:
     """
-    Renderiza un panel informativo cuando no hay escenario cargado.
+    Renderiza un panel simple y reutilizable para mensajes de error o bloqueo.
     """
     content = Text()
-    content.append("No Active Scenario Loaded\n", style="bold white")
-    content.append(
-        "Attack execution cannot start without an operational scenario.\n\n",
-        style="dim",
-    )
-    content.append("Required action\n", style="bold yellow")
-    content.append('care db load --scenario "<scenario_name>"\n\n', style="bold cyan")
-    content.append(
-        "Load a scenario first and retry the operation.",
-        style="yellow",
-    )
+    content.append(f"{header}\n", style="bold white")
+    content.append(f"{description}\n\n", style="dim")
+
+    if action_title:
+        content.append(f"{action_title}\n", style="bold yellow")
+
+    if action_text:
+        content.append(f"{action_text}\n\n", style="bold cyan")
+
+    if footer:
+        content.append(footer, style="yellow")
 
     return Panel(
         Align.left(content),
-        title="CARE / RUN BLOCKED",
-        border_style="red",
+        title=title,
+        border_style=border_style,
         box=box.ROUNDED,
         padding=(1, 2),
     )
 
 
-def main() -> None:
+def render_run_blocked_panel() -> Panel:
+    """
+    Renderiza un panel informativo cuando no hay escenario cargado.
+    """
+    return render_message_panel(
+        title="CARE / RUN BLOCKED",
+        header="No Active Scenario Loaded",
+        description="Attack execution cannot start without an operational scenario.",
+        action_title="Required action",
+        action_text='care db load --scenario "<scenario_name>"',
+        footer="Load a scenario first and retry the operation.",
+    )
+
+
+def main(
+    title: str = "CARE / RUN BLOCKED",
+    header: str = "No Active Scenario Loaded",
+    description: str = "Attack execution cannot start without an operational scenario.",
+    action_title: str | None = "Required action",
+    action_text: str | None = 'care db load --scenario "<scenario_name>"',
+    footer: str | None = "Load a scenario first and retry the operation.",
+    border_style: str = "red",
+) -> None:
     """
     Punto de entrada de la vista.
     """
-    console.print(render_run_blocked_panel())
+    console.print(
+        render_message_panel(
+            title=title,
+            header=header,
+            description=description,
+            action_title=action_title,
+            action_text=action_text,
+            footer=footer,
+            border_style=border_style,
+        )
+    )

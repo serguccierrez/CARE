@@ -233,7 +233,7 @@ def main(context = None):
         build_attack_interface("No active scenario", [], [])
         return
 
-    scenario_pk, scenario_name, _, _, _ = active_scenario
+    scenario_name = active_scenario
     assets = grafo.list_assets_by_scenario(str(DB_PATH), scenario_name)
     ttps = mitre.list_ttps()
 

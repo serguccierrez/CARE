@@ -84,6 +84,15 @@ def ttp_simulation():
     
     return ttp_data  
     
+def check_ttp_exists(ttp_id: str) -> bool:
+    '''
+    Verifica si una TTP con el ID dado existe en MITRE ATT&CK.
+    '''
+    try:
+        MITRE_ATTACK_DATA.get_object_by_attack_id(ttp_id, "attack-pattern")
+        return True
+    except ValueError:
+        return False
     
 def single_ttp_simulation():
     '''
