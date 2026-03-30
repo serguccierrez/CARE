@@ -265,7 +265,7 @@ def render_dashboard_view(args: argparse.Namespace) -> None:
 parser = argparse.ArgumentParser(
     description=(
         "CARE - Cyber Action Recommendation Engine. "
-        "CLI principal para renderizar las vistas del sistema."
+        "Main CLI for rendering the system views."
     )
 )
 subparsers = parser.add_subparsers(title="Commands", dest="command")
@@ -275,7 +275,7 @@ subparsers = parser.add_subparsers(title="Commands", dest="command")
 asset_parser = subparsers.add_parser(
     "init",
     help="Render the CARE welcome view",
-    description="Muestra la pantalla principal de bienvenida de CARE.",
+    description="Render the main CARE welcome screen.",
 )
 asset_parser.set_defaults(handler=render_init_view)
 
@@ -284,7 +284,7 @@ asset_parser.set_defaults(handler=render_init_view)
 db_parser = subparsers.add_parser(
     "db",
     help="Render the database management view",
-    description="Muestra la interfaz CLI para gestionar escenarios y datos.",
+    description="Render the CLI interface for managing scenarios and data.",
 )
 db_parser.set_defaults(handler=render_db_view)
 
@@ -297,7 +297,7 @@ db_load_parser = db_subparsers.add_parser(
 )
 db_load_parser.add_argument(
     "--scenario",
-    help="Nombre del escenario a cargar",
+    help="Name of the scenario to load",
     required=True
 )
 db_load_parser.set_defaults(handler=handle_db_load)
@@ -309,7 +309,7 @@ db_delete_parser = db_subparsers.add_parser(
 )
 db_delete_parser.add_argument(
     "--scenario",
-    help="Nombre del escenario a eliminar",
+    help="Name of the scenario to delete",
     required=True
 )
 db_delete_parser.set_defaults(handler=handle_db_delete)
@@ -322,19 +322,19 @@ db_create_parser = db_subparsers.add_parser(
 
 db_create_parser.add_argument(
     "--scenario",
-    help="Nombre del escenario a crear",
+    help="Name of the scenario to create",
     required=True
 )
 
 db_create_parser.add_argument(
     "--description",
-    help="Descripción opcional del escenario",
+    help="Optional scenario description",
     required=False
 )
 
 db_create_parser.add_argument(
     "--source",
-    help="Archivo Excel fuente del escenario (opcional)",
+    help="Source Excel file for the scenario (optional)",
     required=False
 )
 
@@ -349,7 +349,7 @@ db_list_parser = db_subparsers.add_parser(
 
 db_list_parser.add_argument(
     "--scenario",
-    help="Nombre del escenario para listar sus activos",
+    help="Name of the scenario whose assets will be listed",
     required=True
 )
 db_list_parser.set_defaults(handler=handle_db_list)
@@ -360,7 +360,7 @@ db_list_parser.set_defaults(handler=handle_db_list)
 attack_parser = subparsers.add_parser(
     "attack",
     help="Render the attack operations view",
-    description="Muestra la interfaz operativa de simulacion e inyeccion de ataques.",
+    description="Render the operational interface for attack simulation and injection.",
 )
 attack_parser.set_defaults(handler=render_attack_view)
 
@@ -374,21 +374,21 @@ attack_select_parser = attack_asset_parser.add_parser(
 
 attack_select_parser.add_argument(
     "--asset",
-    help="Nombre del activo a seleccionar para operaciones de ataque",
+    help="Asset ID to select for attack operations",
     required=False
 )
 
 # Comando para seleccionar un TTP concreto
 attack_select_parser.add_argument(
     "--ttp",
-    help="Nombre del ttp a seleccionar para operaciones de ataque",
+    help="TTP ID to select for attack operations",
     required=False
 )
 
 
 attack_select_parser.add_argument(
     "--confidence",
-    help="Nivel de confianza para la seleccion del TTP (opcional)",
+    help="Confidence level for the selected TTP (optional)",
     type=float,
     required=False,
 )
@@ -404,7 +404,7 @@ attack_run_parser = attack_asset_parser.add_parser(
 # Comando para ejecutar un ataque con configuracion aleatoria
 attack_run_parser.add_argument(
     "--random",
-    help="Ejecutar una simulacion de ataque con configuracion aleatoria",
+    help="Run an attack simulation with a random configuration",
     action="store_true"
 )
 
@@ -418,7 +418,7 @@ attack_run_parser.set_defaults(handler=handle_attack_run)
 dashboard_parser = subparsers.add_parser(
     "dashboard",
     help="Render the analysis dashboard view",
-    description="Muestra el dashboard con el resumen del analisis de riesgos.",
+    description="Render the dashboard with the risk analysis summary.",
 )
 dashboard_parser.set_defaults(handler=render_dashboard_view)
 
