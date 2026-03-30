@@ -27,6 +27,7 @@ MAX_TTPS_DISPLAY = 8
 
 #==============================================[CONSOLE Y RENDERIZADO]==============================================#
 console = Console()
+ATTACK_WIDE_LAYOUT_BREAKPOINT = 150
 
 
 def render_attack_header() -> Panel:
@@ -164,6 +165,41 @@ def render_execution_modes_panel() -> Panel:
     )
 
 
+def render_selected_vectors_panel(context: dict ) -> Panel:
+    """
+    Renderiza los vectores de amenaza seleccionados en modo controlado.
+    """
+    selected_assets = context.get("selected_asset", []) if context else []
+    selected_ttps = context.get("selected_ttps", []) if context else []
+    selected_confidences = context.get("selected_confidences", []) if context else []
+    mode = context.get("mode", "N/A") if context else "N/A"
+
+    table = Table(show_header=True, header_style="bold cyan", expand=True, box=box.SIMPLE)
+    table.add_column("Asset", style="bright_white", min_width=10, justify="center", no_wrap=True)
+    table.add_column("TTP", style="green", min_width=9, justify="center", no_wrap=True)
+    table.add_column("Conf.", style="yellow", min_width=7, justify="center", no_wrap=True)
+
+    max_len = max(len(selected_assets), len(selected_ttps), len(selected_confidences), 0)
+
+    if max_len == 0:
+        table.add_row("-", "-", "-")
+    else:
+        for idx in range(max_len):
+            asset = selected_assets[idx] if idx < len(selected_assets) else "-"
+            ttp = selected_ttps[idx] if idx < len(selected_ttps) else "-"
+            confidence = selected_confidences[idx] if idx < len(selected_confidences) else "-"
+
+            confidence_value = f"{float(confidence):.2f}" if isinstance(confidence, (int, float)) else str(confidence)
+            table.add_row(str(asset), str(ttp), confidence_value)
+
+    return Panel(
+        table,
+        title=f"Selected Vectors [{mode}]",
+        border_style="magenta",
+        padding=(0, 1),
+    )
+
+
 def render_system_ready() -> Text:
     """
     Renderiza el estado final del sistema listo para lanzar el analisis.
@@ -174,11 +210,12 @@ def render_system_ready() -> Text:
     return status
 
 
-def build_attack_interface(scenario_name: str, assets: list, ttps: list) -> None:
+def build_attack_interface(scenario_name: str, assets: list, ttps: list, context: dict | None = None) -> None:
     """
     Ensambla la interfaz completa del modulo de ataque.
     """
     console.clear()
+    console_width = console.size.width
 
     layout = Layout()
     layout.split_column(
@@ -189,18 +226,43 @@ def build_attack_interface(scenario_name: str, assets: list, ttps: list) -> None
         Layout(name="prompt", size=3),
     )
 
-    analysis_grid = Table.grid(expand=True)
-    analysis_grid.add_column(ratio=6)
-    analysis_grid.add_column(ratio=7)
     common_panel_height = analysis_panel_height(assets, ttps)
-    analysis_grid.add_row(
-        render_assets_table(assets, scenario_name, common_panel_height),
-        render_ttps_table(ttps, common_panel_height),
-    )
+
+    context_panel = render_context_panel(scenario_name, len(assets), len(ttps))
+    selected_vectors_panel = render_selected_vectors_panel(context)
+    assets_panel = render_assets_table(assets, scenario_name, common_panel_height)
+    ttps_panel = render_ttps_table(ttps, common_panel_height)
+
+    if console_width >= ATTACK_WIDE_LAYOUT_BREAKPOINT:
+        context_content = Table.grid(expand=True)
+        context_content.add_column(ratio=3)
+        context_content.add_column(ratio=2)
+        context_content.add_row(
+            context_panel,
+            selected_vectors_panel,
+        )
+
+        analysis_content = Table.grid(expand=True)
+        analysis_content.add_column(ratio=6)
+        analysis_content.add_column(ratio=7)
+        analysis_content.add_row(
+            assets_panel,
+            ttps_panel,
+        )
+    else:
+        context_content = Table.grid(expand=True)
+        context_content.add_column()
+        context_content.add_row(context_panel)
+        context_content.add_row(selected_vectors_panel)
+
+        analysis_content = Table.grid(expand=True)
+        analysis_content.add_column()
+        analysis_content.add_row(assets_panel)
+        analysis_content.add_row(ttps_panel)
 
     layout["header"].update(render_attack_header())
-    layout["context"].update(render_context_panel(scenario_name, len(assets), len(ttps)))
-    layout["analysis"].update(analysis_grid)
+    layout["context"].update(context_content)
+    layout["analysis"].update(analysis_content)
     layout["modes"].update(render_execution_modes_panel())
     layout["prompt"].update(Align.left(render_system_ready()))
 
@@ -230,14 +292,14 @@ def main(context = None):
     active_scenario = resolve_active_scenario(context)
 
     if active_scenario is None:
-        build_attack_interface("No active scenario", [], [])
+        build_attack_interface("No active scenario", [], [], context)
         return
 
     scenario_name = active_scenario
     assets = grafo.list_assets_by_scenario(str(DB_PATH), scenario_name)
     ttps = mitre.list_ttps()
 
-    build_attack_interface(scenario_name, assets, ttps)
+    build_attack_interface(scenario_name, assets, ttps, context)
 
 
 if __name__ == "__main__":

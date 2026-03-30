@@ -24,6 +24,7 @@ DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog.db"
 #==============================================[CONSOLE Y RENDERIZADO]==============================================#
 
 console = Console()
+DB_WIDE_LAYOUT_BREAKPOINT = 140
 
 
 def render_db_header() -> Panel:
@@ -191,12 +192,13 @@ def build_db_interface(scenarios: list, selected_scenario: str, show_assets: boo
         seleccionado en lugar de la tabla de escenarios.
     """
     console.clear()
+    console_width = console.size.width
     
     # Crear layout principal dividido en 4 secciones verticales
     layout = Layout()
     layout.split_column(
         Layout(name="header", size=5),
-        Layout(name="scenarios", size=20),
+        Layout(name="content", size=20),
         Layout(name="operations", size=18),
         Layout(name="prompt", size=3),
     )
@@ -206,11 +208,23 @@ def build_db_interface(scenarios: list, selected_scenario: str, show_assets: boo
     
     if show_assets and selected_scenario:
         assets = grafo.list_assets_by_scenario(str(DB_PATH), selected_scenario)
-        layout["scenarios"].update(render_assets_table(assets, selected_scenario))
+        main_panel = render_assets_table(assets, selected_scenario)
     else:
-        layout["scenarios"].update(render_scenarios_table(scenarios, selected_scenario))
-    
-    layout["operations"].update(render_operations_menu())
+        main_panel = render_scenarios_table(scenarios, selected_scenario)
+
+    operations_panel = render_operations_menu()
+
+    if console_width >= DB_WIDE_LAYOUT_BREAKPOINT:
+        content_grid = Table.grid(expand=True)
+        content_grid.add_column(ratio=3)
+        content_grid.add_column(ratio=2)
+        content_grid.add_row(main_panel, operations_panel)
+        layout["content"].update(content_grid)
+        layout["operations"].update("")
+    else:
+        layout["content"].update(main_panel)
+        layout["operations"].update(operations_panel)
+
     layout["prompt"].update(Align.left(render_system_ready()))
     
     # Imprimir el layout completo
