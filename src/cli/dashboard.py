@@ -32,7 +32,7 @@ def load_report_data() -> dict:
     
     with open(report_path, "r", encoding="utf-8") as f:
         return json.load(f)
-    
+
 
 def extract_report_data(report_data) -> dict:
     """
@@ -205,61 +205,10 @@ def confidence_color(value) -> str:
 
 #==============================================[CONSOLE_Y_RENDERIZADO]==============================================#
 
-console = Console()  # Motor de renderizado terminal 
+console = Console()  # Motor de renderizado terminal
 
 
-
-
-
-def analysis_row_height(info) -> int:
-    """
-    Calcula la altura conjunta del bloque analítico en función de la tabla con más filas.
-    
-    Se toma como referencia el mayor número de registros entre activos críticos y TTPs
-    para que ambos paneles laterales tengan la misma altura y el contenedor quede ajustado,
-    sin exceso de espacio vacío ni recortes visuales.
-    
-    Args:
-        info (dict): Estructura procesada con los datos del dashboard.
-        
-    Returns:
-        int: Altura recomendada para ambos paneles del bloque de análisis.
-    """
-    n_critical_assets = len(info["summary"]["critical_assets"])
-    n_ttps = len(info["summary"]["ttps"])
-    max_rows = max(n_critical_assets, n_ttps, 1)
-
-    return 7 + max_rows
-
-
-def render_header() -> Panel:
-    """
-    Renderiza el encabezado visual del dashboard: CARE/AEGIS.
-    
-    Args:
-        Ninguno.
-        
-    Returns:
-        Panel: Componente gráfico con título y subtítulo centrado.
-    """
-    header_text = Text(justify="center")
-    header_text.append("CARE / AEGIS\n", style="bold cyan")
-    header_text.append("Cyber Action Recommendation Engine\n", style="dim")
-    header_text.append(
-        f"Last analysis: {info_timestamp_placeholder}",
-        style="dim white",
-    )
-
-    header = Panel(
-        Align.center(header_text, vertical="middle"),
-        border_style="cyan",
-        box=box.ROUNDED
-    )
-
-    return header
-
-
-def render_header(info) -> Panel:
+def render_header(info, optimization_mode=False) -> Panel:
     """
     Renderiza el encabezado visual del dashboard: CARE/AEGIS.
     
@@ -267,13 +216,15 @@ def render_header(info) -> Panel:
         info (dict): Estructura procesada con los datos del dashboard.
         
     Returns:
-        Panel: Componente grÃ¡fico con tÃ­tulo, subtÃ­tulo y timestamp.
+        Panel: Componente gráfico con título, subtítulo y timestamp.
     """
     analysis_timestamp = info["summary"].get("analysis_timestamp", "N/A")
 
     header_text = Text(justify="center")
     header_text.append("CARE / AEGIS\n", style="bold cyan")
     header_text.append("Cyber Action Recommendation Engine\n", style="dim")
+    if optimization_mode:
+        header_text.append("Optimization Decision View\n", style="bold green")
     header_text.append(f"Last analysis: {analysis_timestamp}", style="dim white")
 
     header = Panel(
@@ -450,7 +401,7 @@ def render_ttps_table(info, panel_height=None) -> Panel:
     return panel
 
 
-def render_optimizations_ask_panel() -> Panel:
+def render_optimizations_ask_panel(context=None) -> Panel:
     """
     Panel instructivo que guía al operador hacia la fase de optimización.
     
@@ -463,7 +414,21 @@ def render_optimizations_ask_panel() -> Panel:
     Returns:
         Panel: Guía interactiva con opciones y comando sugerido.
     """
-    optimization_text = """[bold]Select protection objective:[/bold]
+    context = context or {}
+    objective = context.get("optimization_objective") or "Not configured"
+    budget = context.get("optimization_budget")
+    time_limit = context.get("optimization_time")
+
+    budget_text = f"{budget:.0f}" if isinstance(budget, (int, float)) else "Not configured"
+    time_text = f"{time_limit:.1f} h" if isinstance(time_limit, (int, float)) else "Not configured"
+
+    optimization_text = f"""[bold]Current optimization configuration:[/bold]
+
+  [bold]Objective:[/bold] {objective}
+  [bold]Budget:[/bold] {budget_text}
+  [bold]Time limit:[/bold] {time_text}
+
+[bold]Select protection objective:[/bold]
 
   [bold]<global>            Minimize overall system risk
                             -> Balanced reduction across confidentiality, integrity, availability
@@ -491,7 +456,278 @@ def render_optimizations_ask_panel() -> Panel:
     return panel
 
 
-def build_dashboard(info):
+def get_report_assets(report_data) -> dict:
+    """
+    Devuelve los activos indexados por asset_id para reutilizarlos en el dashboard.
+    """
+    assets = {}
+
+    for block in report_data.get("nodes_analysis", []):
+        for asset_id, asset_info in block.items():
+            assets[asset_id] = asset_info
+
+    return assets
+
+
+def extract_optimization_data(report_data, optimization_results, context=None) -> dict:
+    """
+    Prepara los datos minimos necesarios para representar resultados de optimizacion.
+    """
+    context = context or {}
+
+    if not optimization_results:
+        return {"summary": {"asset_rows": []}}
+
+    selected_objective = context.get("optimization_objective")
+    objective = selected_objective if selected_objective in optimization_results else next(iter(optimization_results.keys()))
+    solution = optimization_results.get(objective, {})
+
+    report_assets = get_report_assets(report_data)
+    selected_assets = []
+    countermeasures_by_asset = {}
+
+    baseline_key_by_objective = {
+        "global": "asset_average_risk",
+        "confidentiality": "asset_confidentiality_risk",
+        "integrity": "asset_integrity_risk",
+        "availability": "asset_availability_risk",
+    }
+    solution_key_by_objective = {
+        "global": "risk_total",
+        "confidentiality": "asset_risk_C",
+        "integrity": "asset_risk_I",
+        "availability": "asset_risk_A",
+    }
+
+    baseline_metric = baseline_key_by_objective.get(objective, "asset_average_risk")
+    optimized_metric = solution_key_by_objective.get(objective, "risk_total")
+
+    for asset_id, decision in solution.get("assets_decisions", {}).items():
+        asset_info = report_assets.get(asset_id, {})
+        before_risk = float(asset_info.get(baseline_metric, 0.0) or 0.0)
+        after_risk = float(decision.get(optimized_metric, 0.0) or 0.0)
+        delta_risk = after_risk - before_risk
+
+        selected_asset = {
+            "asset_id": asset_id,
+            "asset_name": asset_info.get("node_data", {}).get("name", "Unknown"),
+            "countermeasure": decision.get("countermeasure", "none"),
+            "before_risk": before_risk,
+            "after_risk": after_risk,
+            "delta_risk": delta_risk,
+            "cost": float(decision.get("cost", 0.0) or 0.0),
+            "time_hours": float(decision.get("time_hours", 0.0) or 0.0),
+        }
+        selected_assets.append(selected_asset)
+        countermeasures_by_asset.setdefault(selected_asset["countermeasure"], []).append(selected_asset["asset_id"])
+
+    selected_assets.sort(key=lambda asset: asset["delta_risk"])
+
+    system_risk_by_objective = {
+        "global": float(report_data.get("global_system_risk", {}).get("overall_risk", 0.0) or 0.0),
+        "confidentiality": float(report_data.get("global_system_risk", {}).get("confidentiality_risk", 0.0) or 0.0),
+        "integrity": float(report_data.get("global_system_risk", {}).get("integrity_risk", 0.0) or 0.0),
+        "availability": float(report_data.get("global_system_risk", {}).get("availability_risk", 0.0) or 0.0),
+    }
+
+    total_criticality = float(solution.get("total_criticality", 0.0) or 0.0)
+    if total_criticality:
+        optimized_system_risks = {
+            "global": sum(float(decision.get("risk_total", 0.0) or 0.0) * float(decision.get("criticality", 0.0) or 0.0) for decision in solution.get("assets_decisions", {}).values()) / total_criticality,
+            "confidentiality": sum(float(decision.get("asset_risk_C", 0.0) or 0.0) * float(decision.get("criticality", 0.0) or 0.0) for decision in solution.get("assets_decisions", {}).values()) / total_criticality,
+            "integrity": sum(float(decision.get("asset_risk_I", 0.0) or 0.0) * float(decision.get("criticality", 0.0) or 0.0) for decision in solution.get("assets_decisions", {}).values()) / total_criticality,
+            "availability": sum(float(decision.get("asset_risk_A", 0.0) or 0.0) * float(decision.get("criticality", 0.0) or 0.0) for decision in solution.get("assets_decisions", {}).values()) / total_criticality,
+        }
+    else:
+        optimized_system_risks = dict(system_risk_by_objective)
+
+    objective_before = system_risk_by_objective.get(objective, 0.0)
+    objective_after = optimized_system_risks.get(objective, objective_before)
+
+    info = {
+        "summary": {
+            "analysis_timestamp": report_data.get("metadata", {}).get("timestamp", "N/A"),
+            "objective": objective,
+            "status": solution.get("status", "Unknown"),
+            "objective_before": objective_before,
+            "objective_after": objective_after,
+            "objective_delta": objective_after - objective_before,
+            "budget": float(solution.get("budget", 0.0) or 0.0),
+            "total_cost": float(solution.get("total_cost", 0.0) or 0.0),
+            "time_limit": float(context.get("optimization_time", 0.0) or 0.0),
+            "asset_rows": selected_assets,
+            "grouped_countermeasures": countermeasures_by_asset,
+            "assets_with_new_cm": len([asset for asset in selected_assets if asset["countermeasure"] != "none"]),
+            "assets_without_changes": len([asset for asset in selected_assets if asset["countermeasure"] == "none"]),
+            "system_risk_before": system_risk_by_objective,
+            "system_risk_after": optimized_system_risks,
+        }
+    }
+
+    return info
+
+
+def optimization_delta_style(delta: float) -> str:
+    """
+    Verde si reduce riesgo, rojo si empeora y amarillo si no cambia.
+    """
+    if delta < 0:
+        return "bold green"
+    if delta > 0:
+        return "bold red"
+    return "bold yellow"
+
+
+def format_objective_label(objective: str) -> str:
+    labels = {
+        "global": "Overall System Risk",
+        "confidentiality": "Confidentiality Risk",
+        "integrity": "Integrity Risk",
+        "availability": "Availability Risk",
+    }
+    return labels.get(objective, "Optimization Objective")
+
+
+def render_optimization_summary_panel(info, panel_height=None) -> Panel:
+    """
+    Resume el resultado operativo de la optimizacion.
+    """
+    summary = info["summary"]
+    budget_percent = (summary["total_cost"] / summary["budget"] * 100) if summary["budget"] else 0.0
+
+    summary_text = f"""
+[bold]Target Risk:[/bold] {format_objective_label(summary["objective"])}
+[bold]Solver Status:[/bold] {summary["status"]}
+[bold]Assets With Selected CM:[/bold] {summary["assets_with_new_cm"]}
+[bold]Assets Kept in Baseline:[/bold] {summary["assets_without_changes"]}
+[bold]Budget Consumption:[/bold] {summary["total_cost"]:.0f} / {summary["budget"]:.0f} ({budget_percent:.1f}%)
+[bold]Deployment Time Limit:[/bold] {summary["time_limit"]:.1f} h
+"""
+
+    panel = Panel(
+        Align.center(summary_text, vertical="middle"),
+        title="Optimization Summary",
+        border_style="yellow",
+        height=panel_height,
+    )
+
+    return panel
+
+
+def render_optimization_risk_panel(info, panel_height=None) -> Panel:
+    """
+    Muestra comparativa del riesgo objetivo antes y despues de optimizar.
+    """
+    summary = info["summary"]
+    objective = summary["objective"]
+    before_risk = round(summary["objective_before"], 2)
+    after_risk = round(summary["objective_after"], 2)
+    delta = summary["objective_delta"]
+    before_risk_bar = ProgressBar(total=10, completed=before_risk, complete_style=bar_risk_color(before_risk))
+    risk_bar = ProgressBar(total=10, completed=after_risk, complete_style=bar_risk_color(after_risk))
+
+    labels = {
+        "global": "OVERALL",
+        "confidentiality": "CONFIDENTIALITY",
+        "integrity": "INTEGRITY",
+        "availability": "AVAILABILITY",
+    }
+
+    table = Table(show_header=False, show_footer=False, box=None, padding=(0, 1))
+    table.add_column("Label", style="bold", min_width=22, ratio=4)
+    table.add_column("Value", width=12, justify="right")
+    table.add_column("Bar", min_width=20, ratio=5)
+
+    target_label = labels.get(objective, objective.upper())
+
+    table.add_row(f"TARGET {target_label} / BEFORE:", f"{before_risk}/10", before_risk_bar)
+    table.add_row(f"TARGET {target_label} / AFTER:", f"{after_risk}/10", risk_bar)
+    table.add_row("DELTA:", Text(f"{delta:+.2f}", style=optimization_delta_style(delta)), "")
+    table.add_row("", "", "")
+
+    for key in ["global", "confidentiality", "integrity", "availability"]:
+        if key == objective:
+            continue
+        before_value = summary["system_risk_before"].get(key, 0.0)
+        after_value = summary["system_risk_after"].get(key, 0.0)
+        delta_value = after_value - before_value
+        table.add_row(
+            f"  {labels[key]} / BACKGROUND:",
+            f"{before_value:.2f} -> {after_value:.2f}",
+            Text(f"{delta_value:+.2f}", style=optimization_delta_style(delta_value))
+        )
+
+    panel = Panel(
+        Align.center(table, vertical="middle"),
+        title="Risk Reduction",
+        border_style="red",
+        padding=(1, 1),
+        height=panel_height
+    )
+
+    return panel
+
+
+def render_optimization_assets_table(info, panel_height=None) -> Panel:
+    """
+    Tabla principal de contramedida seleccionada por activo.
+    """
+    table = Table(show_header=True, header_style="bold", expand=True)
+    table.add_column("ASSET ID", style="cyan", min_width=8, justify="center", no_wrap=True)
+    table.add_column("NAME", style="green", min_width=12, justify="center", overflow="fold")
+    table.add_column("CM", style="magenta", min_width=10, justify="center", overflow="fold")
+    table.add_column("BEFORE", style="yellow", min_width=8, justify="center", no_wrap=True)
+    table.add_column("AFTER", style="yellow", min_width=8, justify="center", no_wrap=True)
+    table.add_column("DELTA", style="blue", min_width=8, justify="center", no_wrap=True)
+
+    rows = info["summary"]["asset_rows"]
+    for row in rows[:8]:
+        table.add_row(
+            row["asset_id"],
+            row["asset_name"],
+            row["countermeasure"],
+            f"{row['before_risk']:.2f}",
+            f"{row['after_risk']:.2f}",
+            Text(f"{row['delta_risk']:+.2f}", style=optimization_delta_style(row["delta_risk"]))
+        )
+
+    panel = Panel(
+        Align.center(table, vertical="middle"),
+        title="Recommended Countermeasures by Asset",
+        padding=(0, 0),
+        box=box.SIMPLE,
+        expand=True,
+        height=panel_height,
+    )
+
+    return panel
+
+
+def render_countermeasure_distribution_panel(info, panel_height=None) -> Panel:
+    """
+    Agrupa que activos reciben cada contramedida para una lectura rapida.
+    """
+    table = Table(show_header=True, header_style="bold", expand=True, box=box.SIMPLE)
+    table.add_column("COUNTERMEASURE", style="magenta", min_width=14, justify="center", no_wrap=True)
+    table.add_column("ASSETS", style="green", min_width=20, justify="left", overflow="fold")
+
+    grouped_countermeasures = info["summary"]["grouped_countermeasures"]
+    for cm_name, assets in sorted(grouped_countermeasures.items(), key=lambda item: (-len(item[1]), item[0])):
+        table.add_row(cm_name, ", ".join(assets))
+
+    panel = Panel(
+        Align.center(table, vertical="middle"),
+        title="Deployment Grouping",
+        padding=(0, 0),
+        box=box.SIMPLE,
+        expand=True,
+        height=panel_height,
+    )
+
+    return panel
+
+
+def build_dashboard(info, optimization_mode=False, context=None):
     """
     Ensambla todos los componentes visuales en un layout jerárquico coherente.
     
@@ -506,17 +742,31 @@ def build_dashboard(info):
         Layout: Árbol de componentes Rich listo para renderizar.
     """
     console_width = console.size.width
-    top_panel_height = 10
-    analysis_panel_height = analysis_row_height(info)
-
-    top_sections = [
-        render_summary_panel(info, panel_height=top_panel_height),
-        render_risk_panel(info, panel_height=top_panel_height)
-    ]
-    analysis_sections = [
-        render_critical_assets_table(info, panel_height=analysis_panel_height),
-        render_ttps_table(info, panel_height=analysis_panel_height)
-    ]
+    if optimization_mode:
+        top_panel_height = 14
+        n_assets = len(info["summary"]["asset_rows"])
+        analysis_panel_height = 8 + max(min(n_assets, 8), 1)
+        top_sections = [
+            render_optimization_summary_panel(info, panel_height=top_panel_height),
+            render_optimization_risk_panel(info, panel_height=top_panel_height)
+        ]
+        analysis_sections = [
+            render_optimization_assets_table(info, panel_height=analysis_panel_height),
+            render_countermeasure_distribution_panel(info, panel_height=analysis_panel_height)
+        ]
+    else:
+        top_panel_height = 10
+        n_critical_assets = len(info["summary"]["critical_assets"])
+        n_ttps = len(info["summary"]["ttps"])
+        analysis_panel_height = 7 + max(n_critical_assets, n_ttps, 1)
+        top_sections = [
+            render_summary_panel(info, panel_height=top_panel_height),
+            render_risk_panel(info, panel_height=top_panel_height)
+        ]
+        analysis_sections = [
+            render_critical_assets_table(info, panel_height=analysis_panel_height),
+            render_ttps_table(info, panel_height=analysis_panel_height)
+        ]
 
     # Ensamblamos la capa superior del dashboard con Layout para repartir el espacio simétricamente
     if console_width >= 120:
@@ -538,20 +788,27 @@ def build_dashboard(info):
 
     analysis_panel = Panel(
         analysis_content,
-        title="[ANALYSIS]",
+        title="[OPTIMIZATION RESULTS]" if optimization_mode else "[ANALYSIS]",
         border_style="blue",
         expand=True,
     )
+
+    if optimization_mode:
+        return Group(
+            render_header(info, optimization_mode=True),
+            top_content,
+            analysis_panel,
+        )
 
     return Group(
         render_header(info),
         top_content,
         analysis_panel,
-        render_optimizations_ask_panel(),
+        render_optimizations_ask_panel(context),
     )
 
 
-def main():
+def main(show_optimization=False, optimization_results=None, context=None):
     """
     Punto de entrada principal: orquesta carga, extracción y renderizado del dashboard.
     
@@ -563,8 +820,16 @@ def main():
     Returns:
         Ninguno. Efecto secundario: imprime dashboard a stdout.
     """
-    info = extract_report_data(load_report_data())
-    dashboard = build_dashboard(info)
+    report_data = load_report_data()
+    context = context or {}
+
+    if show_optimization and optimization_results:
+        info = extract_optimization_data(report_data, optimization_results, context)
+        dashboard = build_dashboard(info, optimization_mode=True, context=context)
+    else:
+        info = extract_report_data(report_data)
+        dashboard = build_dashboard(info, context=context)
+
     console.print(dashboard)
 
 #==============================================[ENTRY POINT]==============================================#

@@ -522,6 +522,8 @@ def solve_optimization_problems(assets_scenarios_data, objective_type="all", bud
             decision_vars_copy, assets_scenarios_data, model, budget
         )
     
+    save_solution(results)
+    
     # Devolvemos nuestros resultados al código que nos llamó
     return results
 
