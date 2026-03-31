@@ -1,0 +1,39 @@
+{
+    "confidentiality": {
+        "status": "Optimal",
+        "baseline_risk": 3.58837423115,
+        "optimal_risk_weighted": 4.7408439,
+        "optimal_risk_normalized": 2.495181,
+        "risk_reduction": 1.0931932311499999,
+        "total_criticality": 1.9,
+        "assets_decisions": {
+            "asset_001": {
+                "scenario": "cm_firewall",
+                "countermeasure": "firewall",
+                "risk_total": 2.758921,
+                "asset_risk_C": 2.8769399999999994,
+                "asset_risk_I": 2.78837,
+                "asset_risk_A": 2.38538,
+                "criticality": 0.95,
+                "weighted_risk": 2.62097495,
+                "cost": 15000,
+                "time_hours": 14
+            },
+            "asset_020": {
+                "scenario": "cm_firewall",
+                "countermeasure": "firewall",
+                "risk_total": 2.2253650798000004,
+                "asset_risk_C": 2.113422,
+                "asset_risk_I": 2.334581,
+                "asset_risk_A": 1.9387940000000001,
+                "criticality": 0.95,
+                "weighted_risk": 2.1140968258100004,
+                "cost": 15000,
+                "time_hours": 14
+            }
+        },
+        "budget": 50000.0,
+        "total_cost": 30000.0,
+        "total_cost_used_percent": "60.0%"
+    }
+}
