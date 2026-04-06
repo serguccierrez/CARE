@@ -103,6 +103,59 @@ def get_possible_mitigations_for_ttp(ttp_id: str):
     else:
         print(f"No se encontraron mitigaciones para el TTP {ttp_id}.")
         raise ValueError(f"No mitigations found for TTP {ttp_id}")
+def check_ttp_exists(ttp_id: str) -> bool:
+    '''
+    Verifica si una TTP con el ID dado existe en MITRE ATT&CK.
+    '''
+    try:
+        MITRE_ATTACK_DATA.get_object_by_attack_id(ttp_id, "attack-pattern")
+        return True
+    except ValueError:
+        return False
+    
+def single_ttp_simulation():
+    '''
+    Simula la llegada de un único TTP sobre un activo con un cierto nivel de confidence.
+    Solo selecciona TTPs que existen realmente en MITRE ATT&CK.
+    '''
+    # Obtener todas las técnicas válidas
+    techniques = MITRE_ATTACK_DATA.get_techniques(remove_revoked_deprecated=True)
+
+    if not techniques:
+        print("Error: No se encontraron técnicas en MITRE ATT&CK")
+        return None
+    
+    # Seleccionar una técnica aleatoria
+    technique = random.choice(techniques)
+    
+    ttp_id = technique['external_references'][0]['external_id']
+    confidence = random.uniform(0.3, 1.0)
+    
+    ttp_data = {
+        'ttp_id': ttp_id,
+        'name': technique['name'],
+        'confidence': confidence,
+        'tactic': get_ttp_details_from_ttp_id(ttp_id)
+    }
+    
+    print(f"Simulación de TTP: {ttp_data}")
+    
+    return ttp_data
+    
+def list_ttps():
+    '''
+    Lista todas las TTPs disponibles en MITRE ATT&CK.
+    '''
+    techniques = MITRE_ATTACK_DATA.get_techniques(remove_revoked_deprecated=True)
+    
+    ttp_list = []
+    for technique in techniques:
+        ttp_id = technique['external_references'][0]['external_id']
+        ttp_name = technique['name']
+        ttp_list.append((ttp_id, ttp_name))
+    
+    return ttp_list      
+    
 
 
 #===========================================[MAIN FUNCTION]===========================================#

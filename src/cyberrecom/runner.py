@@ -5,10 +5,8 @@ import random
 import networkx as nx
 from pathlib import Path
 
-import src.database.load_data as load_data
 import src.cyberrecom.mitre as mitre
 import src.graph.grafo as grafo
-import src.database.create_db as create_db
 
 
 import src.reporting.report as report
@@ -18,8 +16,6 @@ import src.reporting.report as report
 import src.risk.red_bayes as red_bayes
 import src.risk.id_test as id_test
 
-import src.risk.optimization as optimization
-
 #=============================[CONSTANTS]===========================================#
 #DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
 DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog.db"
@@ -28,117 +24,100 @@ CPDS = id_test.read_constants()
 
 #==============================[MAIN FUNCTION]===========================================#
 
-def main() -> None:
-    """
-    Función principal: orquesta todo el flujo.
-    1. Crear estructura BD
-    2. Cargar datos desde Excel
-    3. Construir grafo MDO
-    4. Cargar TTPs MITRE ATT&CK
-    5. Realizar simulaciones de ataque TTP
-    """   
-    
-    print("\n" + "#"*80)
-    print("# Motor de recomendacion de contramedidas en entornos MDO - TFG V1.0.0")
-    print("#"*80)
-    
-    
-    # ============ PASO 1: Crear base de datos ============
-    print("\n" + "="*80)
-    print("PASO 1: CREANDO ESTRUCTURA DE BASE DE DATOS")
-    print("="*80)
-    if DB_PATH.exists():
-        print(f"Base de datos ya existe: {DB_PATH}.")
-    else:
-        create_db.create_db(DB_PATH, recreate=True)
-        print(f"Base de datos creada: {DB_PATH}\n")
-    
-    
-    # ============ PASO 2: Cargar datos desde Excel ============
-    print("\n" + "="*80)
-    print("PASO 2: CARGAR DATOS DESDE EXCEL")
-    print("="*80)
-    
-    load_new_scenario = input("Cargar nuevo escenario? (yes/no): ").lower() == "yes"
-    
-    if load_new_scenario:
-        scenario_name = input("nombre del escenario a cargar en la BD (ejemplo: 'Escenario de prueba'): ")
-        description = input("descripción del escenario (opcional): ")
-        load_data.load_and_insert_data(EXCEL_PATH, DB_PATH, scenario_name, description)
-    
-    else:
-        scenarios = grafo.list_scenarios(DB_PATH    )
-        print("\nEscenarios disponibles en la BD:")
-        print("-" * 80)
 
-        for scenario in scenarios:
-            scenario_pk, scenario_name, description, source_file, created_at = scenario
-            file_name = Path(source_file).name if source_file else "N/A"
-            print(f"[{scenario_pk:>2}] {scenario_name:<15} | file: {file_name:<30} | {created_at}\n")
-
-        scenario_name = input("Ingrese el nombre del escenario: ")
-    
-    
-    # ============ PASO 3: Construir grafo MDO ============
-    print("\n" + "="*80)
-    print("PASO 3: CONSTRUIR GRAFO MDO")
-    print("="*80)
-    
+def resolve_scenario(scenario_name: str) -> None:
     G_global = grafo.build_MDO_graph(str(DB_PATH), scenario_name )
     
+    return G_global
+
+
+def _ensure_list(value):
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]
     
-    # ============ PASO 4: Simular llegada de una amenaza ============
-    print("\n" + "="*80)
-    print("PASO 4: SIMULAR LLEGADA DE UNA AMENAZA")
-    print("="*80)
+def resolve_threat_vector(G_global, context) -> None:
     
-    #Simulamos una amenaza aleatoria que puede contener 1 o más vectores de ataque (TTPs) con un cierto nivel de confidence. Solo selecciona TTPs que existen realmente en MITRE ATT&CK.
-    random_threat_vectors = mitre.ttp_simulation()  # Es un diccionario con keys 'ttp_id' y 'confidence' (puede haber más de un TTP)
+    mode = context["mode"]
+    selected_assets = _ensure_list(context.get("selected_asset"))
+    selected_ttps = _ensure_list(context.get("selected_ttps"))
+    selected_confidences = _ensure_list(context.get("selected_confidences"))
     
-    for ttp_id, threat_vector in random_threat_vectors.items():
-        random_asset = random.choice(list(G_global.nodes)) #Seleccionamos un activo aleatorio del grafo MDO para simular que es el activo afectado por esta amenazañ
-        print(threat_vector)
-        confidence = threat_vector['confidence']
-        ttp_tactic = threat_vector['tactic']
-        threat_vector['asset'] = random_asset #Añadimos el activo afectado a cada TTP del vector de amenaza
+    if mode == "random":
+    
+        #Simulamos una amenaza aleatoria que puede contener 1 o más vectores de ataque (TTPs) con un cierto nivel de confidence. Solo selecciona TTPs que existen realmente en MITRE ATT&CK.
+        threat_vectors = mitre.ttp_simulation()  # Es un diccionario con keys 'ttp_id' y 'confidence' (puede haber más de un TTP)
         
-        print(f"\nSimulación de amenaza: TTP={ttp_id}, Confidence={confidence:.5f}, Asset={random_asset}, Tactic={ttp_tactic}")
+        for ttp_id, threat_vector in threat_vectors.items():
+            random_asset = random.choice(list(G_global.nodes)) #Seleccionamos un activo aleatorio del grafo MDO para simular que es el activo afectado por esta amenazañ
+            print(threat_vector)
+            confidence = threat_vector['confidence']
+            ttp_tactic = threat_vector['tactic']
+            threat_vector['asset'] = random_asset #Añadimos el activo afectado a cada TTP del vector de amenaza
+            
+            print(f"\nSimulación de amenaza: TTP={ttp_id}, Confidence={confidence:.5f}, Asset={random_asset}, Tactic={ttp_tactic}")
     
+    else:
+        threat_vectors = {}
+        max_len = max(len(selected_assets), len(selected_ttps), len(selected_confidences), 1)
+
+        for idx in range(max_len):
+            asset = selected_assets[idx] if idx < len(selected_assets) else None
+            ttp = selected_ttps[idx] if idx < len(selected_ttps) else None
+            confidence = selected_confidences[idx] if idx < len(selected_confidences) else None
+
+            if asset is None:
+                asset = random.choice(list(G_global.nodes))
+
+            if ttp is None:
+                ttp = mitre.single_ttp_simulation()
+
+            if confidence is None:
+                confidence = ttp["confidence"] if isinstance(ttp, dict) and "confidence" in ttp else random.uniform(0.3, 1.0)
+
+            if isinstance(ttp, dict):
+                ttp_id = ttp["ttp_id"]
+                ttp_details = ttp.get("tactic") or mitre.get_ttp_details_from_ttp_id(ttp_id)
+            else:
+                ttp_id = ttp
+                ttp_details = mitre.get_ttp_details_from_ttp_id(ttp_id)
+
+            threat_vectors[ttp_id] = {
+                "confidence": confidence,
+                "tactic": ttp_details,
+                "asset": asset
+            }
+            
     #{Inicializo JSON de reporte}
-    report_data = report.initialize_simulation_data(random_threat_vectors)
+    report_data = report.initialize_simulation_data(threat_vectors)
     report_data = report.add_graph_metadata(report_data, G_global)
     
-    # ============ PASO 5: Analizar impacto en el grafo MDO ============
-    print("\n" + "="*80)
-    print("PASO 5: ANALIZAR IMPACTO EN EL GRAFO MDO")
-    print("="*80)
+    return threat_vectors, report_data
+    
+    
+def resolve_graph_impact(G_global, threat_vectors, report_data):
     
     # Definimos diccionarios para almacenar nodos y aristas afectados por cada TTP de los vectores de amenaza
     affected_nodes = {}
     affected_edges = {}
 
-    for ttp_id, threat_vector in random_threat_vectors.items():
+    for ttp_id, threat_vector in threat_vectors.items():
         nodes, edges = grafo.get_infected_nodes(G_global, threat_vector['asset'])
         affected_nodes[ttp_id] = nodes
         affected_edges[ttp_id] = edges
-        
-    print(f"\nNodos afectados por cada TTP: {affected_nodes}")
-    print(f"\nAristas afectadas por cada TTP: {affected_edges}")
    
     report_data = report.include_affected_nodes_and_edges(report_data, affected_nodes, affected_edges)
-  
-    #========================================= PASO 8: Calculo del Threat del siguiente activo dependiente =========================================#
-    print("\n" + "="*80)
-    print("PASO 8: CALCULO DEL THREAT DEL SIGUIENTE ACTIVO DEPENDIENTE")
-    print("="*80)
     
-    res_threat_prob = red_bayes.get_res_threat_prob(affected_edges, affected_nodes, random_threat_vectors, G_global)
-    print(f"\nProbabilidades de amenaza calculadas para los activos afectados: {res_threat_prob}")
+    res_threat_prob = red_bayes.get_res_threat_prob(affected_edges, affected_nodes, threat_vectors, G_global)
     
+    return res_threat_prob, report_data
+
+
+def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
     
-    #========================================== PASO 9: red de bayes para activos =========================================#
-    
-    for ttp_id, threat_vector in random_threat_vectors.items():
+    for ttp_id, threat_vector in threat_vectors.items():
         for asset, info_asset in res_threat_prob.items():
             if ttp_id not in info_asset.get('threats_by_ttp', {}):
                 continue
@@ -256,43 +235,36 @@ def main() -> None:
 
     report_data = report.include_node_analysis(report_data, res_threat_prob)
     
+    return report_data
+
+
+def resolve_risk_assessment(report_data):
     report_data = report.calculate_incident_risk(report_data)
     report_data = report.total_risk_by_asset(report_data)
     report_data = report.calculate_global_system_risk(report_data)
     
-    #========================================== PASO 11: EVALUACION DE ESCENARIOS DE CONTRAMEDIDAS PARA EL PROBLEMA DE OPTIMIZACION =========================================#
-    print("\n" + "="*80)
-    print("PASO 11: EVALUACION DE ESCENARIOS DE CONTRAMEDIDAS PARA EL PROBLEMA DE OPTIMIZACION")
-    print("="*80)
-    
-    # Extrae las contramedidas candidatas del diagrama de influencia para cada incidente
-    report_data = report.generate_incident_scenarios(report_data)
-    print("\nEscenarios de incidente generados correctamente")
-    
-    # Genera todas las combinaciones de escenarios posibles para cada activo
-    report_data = report.generate_asset_scenario_combinations(report_data)
-    print("Combinaciones de escenarios por activo generadas correctamente")
-    
-   
-    
-    
-    
-    print(f"\nEstructura inicial del reporte: {report_data}")
-    
     report.export_report_to_json(report_data)
     
+    return report_data
     
- #===========================================================[PASO 12: LP PROBLEM OPTIMIZATION]=============================================
- # Configuramos el problema de optimización
-    print("\n" + "="*80)
-    print("PASO 12: CONFIGURACION DEL PROBLEMA DE OPTIMIZACION")
-    print("="*80)
-    assets_scenarios_data, decision_vars, model = optimization.setup_optimization_problem(report_data, budget=100000)
+
+
+def main(scenario_name, context ):
     
-# Resolvemos el problema
-    solution = optimization.solve_optimization_problems(assets_scenarios_data, decision_vars, budget=100,max_time_hours=100, objective_type="confidentiality")
+    #{Constuimos el grafo con el escenario seleccionado}#
+    G_global = resolve_scenario(scenario_name)
     
-    optimization.save_solution(solution)
-#=================================[ENTRY_POINT]===========================================#    
-if __name__ == "__main__":
-    main()
+    #{Construimos o simulamos el vector de amenaza}#
+    threat_vectors, report_data = resolve_threat_vector(G_global, context)
+    
+    #{Calculamos el impacto en el grafo}#
+    res_threat_prob, report_data = resolve_graph_impact(G_global, threat_vectors, report_data)
+    
+    #{Realizamos inferencia en la red de Bayes y análisis con diagrama de influencia para cada activo afectado por cada TTP}#
+    report_data = resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data)
+    
+    #{Calculamos el riesgo del incidente y exportamos el reporte}#
+    report_data = resolve_risk_assessment(report_data)
+    
+    return report_data
+

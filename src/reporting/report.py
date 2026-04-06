@@ -7,6 +7,8 @@ from pathlib import Path
 from ..cyberrecom.main import DB_PATH, EXCEL_PATH
 from ..risk.id_test import read_constants
 
+import networkx as nx
+
 
 CPDS = read_constants()
 
@@ -34,9 +36,21 @@ def initialize_simulation_data(threat_vector):
     report_data['nodes_analysis'] = []
     
     return report_data
-       
-    
-def include_affected_nodes_and_edges(report_data,affected_nodes_by_level, affected_edges_by_level):
+
+
+def add_graph_metadata(report_data, G_global):
+    """Añade metadatos del grafo a la estructura de datos del reporte"""
+
+    report_data["graph_metadata"] = {
+        "total_nodes": len(G_global.nodes()),
+        "total_edges": len(G_global.edges()),
+        "graph_density": nx.density(G_global),
+    }
+
+    return report_data
+
+
+def include_affected_nodes_and_edges(report_data, affected_nodes_by_level, affected_edges_by_level):
     """Incluye los nodos y aristas afectados en la estructura de datos del reporte"""
     
     # Recibimos dos diccionarios, uno con nodos afectados por cada TTP y otro con aristas afectadas por cada TTP, ambos organizados por niveles de propagación (nivel 1, nivel 2, etc.)
