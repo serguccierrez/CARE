@@ -4,17 +4,18 @@ import json
 from itertools import product
 
 from pathlib import Path
-from ..cyberrecom.main import DB_PATH, EXCEL_PATH
+
 from ..risk.id_test import read_constants
 
 import networkx as nx
 
 
-CPDS = read_constants()
+
 
 global_system_risk = 0.0
 
-
+DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
+EXCEL_PATH = Path(__file__).parent.parent.parent / "data" / "asset_catalog_validado_v1.0.0_ajustado.xlsx"
 
 
 #===============================[JSON FUNCTIONS]===========================================#
