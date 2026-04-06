@@ -10,9 +10,12 @@ import json
 #========================================[CONFIGURACIÓN]========================================#
 confidence = 0.8
 
-bn_cpds_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json"
-with open(bn_cpds_path, "r") as data:
-    cpd_data = json.load(data)
+def read_bn_cpds():
+    bn_cpds_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json"
+    with open(bn_cpds_path, "r") as data:
+        cpd_data = json.load(data)
+    return cpd_data
+
     
 dependency_type_probabilities_path = Path(__file__).parent.parent.parent / "configs" / "dependency_matrix.json"
 with open(dependency_type_probabilities_path, "r") as data:
@@ -53,6 +56,9 @@ def bayesian_network_construction(tactic="default", confidence=0.5):
     Returns:
         VariableElimination: motor de inferencia para realizar consultas sobre la red
     """
+    #==================={Carga de CPDs desde JSON}========================#
+    cpd_data = read_bn_cpds()
+    
     
     #=================={Definición de estructura de grafo}========================#
     """

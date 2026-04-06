@@ -19,7 +19,6 @@ def read_impact_levels():
 
 
 #=============================[CONSTANTS]===========================================#
-CPDS = read_constants()
 IMPACT_LEVELS = read_impact_levels()
 confidence = 0.8
 
@@ -50,7 +49,7 @@ def make_lvar(name, desc, states):
     return v
 
 
-def create_and_solve_dimension(dimension_name, node_name, tactic, confidence):
+def create_and_solve_dimension(dimension_name, node_name, tactic, confidence, CPDS):
     """
     Crea un diagrama de influencia para una dimensión CIA (Confidentiality, Integrity, Availability)
     y lo resuelve para encontrar la contramedida (CM) óptima que minimice el impacto residual.
@@ -70,6 +69,8 @@ def create_and_solve_dimension(dimension_name, node_name, tactic, confidence):
     """
     #=================={Inicialización diagrama de influencia y nodos}========================#
     ID = gum.InfluenceDiagram()
+    
+    
     
     # Nodos
     cm = ID.addDecisionNode(make_lvar("CM", "Countermeasure", CPDS["CM"]["states"]))
@@ -136,7 +137,7 @@ def softmax(x, T=1.0):
     return exp_x / np.sum(exp_x)
 
 
-def expected_utility_per_cm(influence_diagram):
+def expected_utility_per_cm(influence_diagram, cpds):
     """
     Calcula EU(CM=estado) probando cada contramedida por separado.
     Devuelve:
@@ -145,7 +146,7 @@ def expected_utility_per_cm(influence_diagram):
     """
     EU_by_cm = []
 
-    for cm_state in CPDS["CM"]["states"]:
+    for cm_state in cpds["CM"]["states"]:
         ie_tmp = gum.ShaferShenoyLIMIDInference(influence_diagram)
 
         # Fijamos la decisión CM a un estado concreto
@@ -161,13 +162,16 @@ def expected_utility_per_cm(influence_diagram):
 
 #========================================[INFERENCIA PARA CADA DIMENSIÓN CIA]========================================#
 def test_id():
+    
+    CPDS = read_constants()
+    
     choice = random.choice(MITRE_TACTICS)
     print(f"Construyendo diagrama de influencia para táctica: {choice}")
 
     # Crear soluciones para cada dimensión
-    influence_diagram_C, ie_C = create_and_solve_dimension("C", "C_res", choice)
-    influence_diagram_I, ie_I= create_and_solve_dimension("I", "I_res", choice)
-    influence_diagram_A, ie_A = create_and_solve_dimension("A", "A_res", choice)
+    influence_diagram_C, ie_C = create_and_solve_dimension("C", "C_res", choice, confidence=0.8, CPDS=CPDS)
+    influence_diagram_I, ie_I= create_and_solve_dimension("I", "I_res", choice, confidence=0.8, CPDS=CPDS)
+    influence_diagram_A, ie_A = create_and_solve_dimension("A", "A_res", choice, confidence=0.8, CPDS=CPDS)
 
     # Para cada dimensión
     optimal_cm_C = ie_C.optimalDecision("CM")
@@ -175,9 +179,9 @@ def test_id():
     optimal_cm_A = ie_A.optimalDecision("CM")
 
     # Calcular EU por CM para cada dimensión
-    EU_by_cm_C, p_cm_C, h_C = expected_utility_per_cm(influence_diagram_C)
-    EU_by_cm_I, p_cm_I, h_I = expected_utility_per_cm(influence_diagram_I)
-    EU_by_cm_A, p_cm_A, h_A = expected_utility_per_cm(influence_diagram_A)
+    EU_by_cm_C, p_cm_C, h_C = expected_utility_per_cm(influence_diagram_C,cpds=CPDS)
+    EU_by_cm_I, p_cm_I, h_I = expected_utility_per_cm(influence_diagram_I,cpds=CPDS)
+    EU_by_cm_A, p_cm_A, h_A = expected_utility_per_cm(influence_diagram_A,cpds=CPDS)
 
     # Imprimir resultados
     print("CONFIDENTIALITY:")

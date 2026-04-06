@@ -1,0 +1,131 @@
+{
+  "_template": {
+    "description": "Plantilla base para construir configs/bn_CPDs.json durante la simulacion.",
+    "dynamic_sections": [
+      "CM.states",
+      "CM.values",
+      "C_res.values",
+      "I_res.values",
+      "A_res.values"
+    ],
+    "filled_by": "src/cyberrecom/runner.py::resolve_bn_json_construction",
+    "notes": [
+      "Las contramedidas base se inicializan en runtime con: none, firewall, ids.",
+      "Las mitigaciones adicionales se agregan segun los TTPs seleccionados.",
+      "Cada matriz *_res.values se construye con columnas ordenadas por Risk={low, high} x CM.states."
+    ]
+  },
+  "Threat": {
+    "states": ["no", "yes"],
+    "values": [0.4, 0.6]
+  },
+  "CM": {
+    "states": [],
+    "values": []
+  },
+  "C_res": {
+    "states": ["low", "medium", "high"],
+    "values": []
+  },
+  "I_res": {
+    "states": ["low", "medium", "high"],
+    "values": []
+  },
+  "A_res": {
+    "states": ["low", "medium", "high"],
+    "values": []
+  },
+  "Risk_given_Threat_by_tactic": {
+    "states": ["low", "high"],
+    "default": {
+      "values": [
+        [0.92, 0.50],
+        [0.08, 0.50]
+      ]
+    },
+    "reconnaissance": {
+      "values": [
+        [0.97, 0.88],
+        [0.03, 0.12]
+      ]
+    },
+    "resource-development": {
+      "values": [
+        [0.96, 0.82],
+        [0.04, 0.18]
+      ]
+    },
+    "initial-access": {
+      "values": [
+        [0.93, 0.60],
+        [0.07, 0.40]
+      ]
+    },
+    "execution": {
+      "values": [
+        [0.92, 0.48],
+        [0.08, 0.52]
+      ]
+    },
+    "persistence": {
+      "values": [
+        [0.91, 0.42],
+        [0.09, 0.58]
+      ]
+    },
+    "privilege-escalation": {
+      "values": [
+        [0.90, 0.38],
+        [0.10, 0.62]
+      ]
+    },
+    "defense-evasion": {
+      "values": [
+        [0.89, 0.36],
+        [0.11, 0.64]
+      ]
+    },
+    "credential-access": {
+      "values": [
+        [0.86, 0.28],
+        [0.14, 0.72]
+      ]
+    },
+    "discovery": {
+      "values": [
+        [0.95, 0.72],
+        [0.05, 0.28]
+      ]
+    },
+    "lateral-movement": {
+      "values": [
+        [0.87, 0.30],
+        [0.13, 0.70]
+      ]
+    },
+    "collection": {
+      "values": [
+        [0.90, 0.44],
+        [0.10, 0.56]
+      ]
+    },
+    "command-and-control": {
+      "values": [
+        [0.88, 0.34],
+        [0.12, 0.66]
+      ]
+    },
+    "exfiltration": {
+      "values": [
+        [0.82, 0.10],
+        [0.18, 0.90]
+      ]
+    },
+    "impact": {
+      "values": [
+        [0.83, 0.05],
+        [0.17, 0.95]
+      ]
+    }
+  }
+}
