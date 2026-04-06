@@ -5,26 +5,2167 @@
       "description": "No se implementa ninguna contramedida",
       "cost": 0,
       "time_to_deploy_hours": 0,
-      "type": "none"
+      "type": "none",
+      "source": "custom",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.78,
+            0.17,
+            0.05
+          ],
+          "risk_high": [
+            0.18,
+            0.27,
+            0.55
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.76,
+            0.18,
+            0.06
+          ],
+          "risk_high": [
+            0.22,
+            0.28,
+            0.5
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.14,
+            0.04
+          ],
+          "risk_high": [
+            0.25,
+            0.3,
+            0.45
+          ]
+        }
+      }
     },
     "firewall": {
       "name": "Firewall",
-      "description": "Sistema de cortafuegos para control de tráfico de red",
+      "description": "Sistema de cortafuegos para control de trafico de red",
       "cost": 15000,
       "time_to_deploy_hours": 14,
-      "type": "network_security"
+      "type": "network_security",
+      "source": "custom",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.9,
+            0.08,
+            0.02
+          ],
+          "risk_high": [
+            0.33,
+            0.47,
+            0.2
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.46,
+            0.4,
+            0.14
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.88,
+            0.1,
+            0.02
+          ],
+          "risk_high": [
+            0.54,
+            0.34,
+            0.12
+          ]
+        }
+      }
     },
     "ids": {
       "name": "Intrusion Detection System",
-      "description": "Sistema de detección de intrusiones para monitorización de amenazas",
+      "description": "Sistema de deteccion de intrusiones para monitorizacion de amenazas",
       "cost": 12000,
       "time_to_deploy_hours": 21,
-      "type": "monitoring_detection"
+      "type": "monitoring_detection",
+      "source": "custom",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.84,
+            0.12,
+            0.04
+          ],
+          "risk_high": [
+            0.45,
+            0.4,
+            0.15
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.9,
+            0.08,
+            0.02
+          ],
+          "risk_high": [
+            0.32,
+            0.5,
+            0.18
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.8,
+            0.16,
+            0.04
+          ],
+          "risk_high": [
+            0.4,
+            0.45,
+            0.15
+          ]
+        }
+      }
+    },
+    "M1013": {
+      "name": "M1013-Application Developer Guidance",
+      "description": "Application Developer Guidance focuses on providing developers with the knowledge, tools, and best practice...",
+      "cost": 7000,
+      "time_to_deploy_hours": 60,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1015": {
+      "name": "M1015-Active Directory Configuration",
+      "description": "Implement robust Active Directory (AD) configurations using group policies to secure user accounts, control...",
+      "cost": 6000,
+      "time_to_deploy_hours": 24,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1016": {
+      "name": "M1016-Vulnerability Scanning",
+      "description": "Vulnerability scanning involves the automated or manual assessment of systems, applications, and networks t...",
+      "cost": 4500,
+      "time_to_deploy_hours": 12,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1017": {
+      "name": "M1017-User Training",
+      "description": "User Training involves educating employees and contractors on recognizing, reporting, and preventing cyber...",
+      "cost": 3000,
+      "time_to_deploy_hours": 18,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1018": {
+      "name": "M1018-User Account Management",
+      "description": "User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, in...",
+      "cost": 4000,
+      "time_to_deploy_hours": 16,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1019": {
+      "name": "M1019-Threat Intelligence Program",
+      "description": "A Threat Intelligence Program enables organizations to proactively identify, analyze, and act on cyber thre...",
+      "cost": 9000,
+      "time_to_deploy_hours": 40,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1020": {
+      "name": "M1020-SSL/TLS Inspection",
+      "description": "SSL/TLS inspection involves decrypting encrypted network traffic to examine its content for signs of malici...",
+      "cost": 14000,
+      "time_to_deploy_hours": 28,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        }
+      }
+    },
+    "M1021": {
+      "name": "M1021-Restrict Web-Based Content",
+      "description": "Restricting web-based content involves enforcing policies and technologies that limit access to potentially...",
+      "cost": 3500,
+      "time_to_deploy_hours": 10,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1022": {
+      "name": "M1022-Restrict File and Directory Permissions",
+      "description": "Restricting file and directory permissions involves setting access controls at the file system level to lim...",
+      "cost": 2500,
+      "time_to_deploy_hours": 8,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1024": {
+      "name": "M1024-Restrict Registry Permissions",
+      "description": "Restricting registry permissions involves configuring access control settings for sensitive registry keys a...",
+      "cost": 2800,
+      "time_to_deploy_hours": 10,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1025": {
+      "name": "M1025-Privileged Process Integrity",
+      "description": "Privileged Process Integrity focuses on defending highly privileged processes (e.g., system services, antiv...",
+      "cost": 6500,
+      "time_to_deploy_hours": 24,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1026": {
+      "name": "M1026-Privileged Account Management",
+      "description": "Privileged Account Management focuses on implementing policies, controls, and tools to securely manage priv...",
+      "cost": 5500,
+      "time_to_deploy_hours": 20,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1027": {
+      "name": "M1027-Password Policies",
+      "description": "Set and enforce secure password policies for accounts to reduce the likelihood of unauthorized access.",
+      "cost": 1500,
+      "time_to_deploy_hours": 6,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.79,
+            0.16,
+            0.05
+          ],
+          "risk_high": [
+            0.2,
+            0.3,
+            0.5
+          ]
+        }
+      }
+    },
+    "M1028": {
+      "name": "M1028-Operating System Configuration",
+      "description": "Operating System Configuration involves adjusting system settings and hardening the default configurations...",
+      "cost": 5000,
+      "time_to_deploy_hours": 20,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        }
+      }
+    },
+    "M1029": {
+      "name": "M1029-Remote Data Storage",
+      "description": "Remote Data Storage focuses on moving critical data, such as security logs and sensitive files, to secure,...",
+      "cost": 8000,
+      "time_to_deploy_hours": 18,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        }
+      }
+    },
+    "M1030": {
+      "name": "M1030-Network Segmentation",
+      "description": "Network segmentation involves dividing a network into smaller, isolated segments to control and limit the f...",
+      "cost": 11000,
+      "time_to_deploy_hours": 30,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        }
+      }
+    },
+    "M1031": {
+      "name": "M1031-Network Intrusion Prevention",
+      "description": "Use intrusion detection signatures to block traffic at network boundaries.",
+      "cost": 13000,
+      "time_to_deploy_hours": 20,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        }
+      }
+    },
+    "M1032": {
+      "name": "M1032-Multi-factor Authentication",
+      "description": "Multi-Factor Authentication (MFA) enhances security by requiring users to provide at least two forms of ver...",
+      "cost": 6000,
+      "time_to_deploy_hours": 16,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1033": {
+      "name": "M1033-Limit Software Installation",
+      "description": "Prevent users or groups from installing unauthorized or unapproved software to reduce the risk of introduci...",
+      "cost": 3500,
+      "time_to_deploy_hours": 10,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1034": {
+      "name": "M1034-Limit Hardware Installation",
+      "description": "Prevent unauthorized users or groups from installing or using hardware, such as external drives, peripheral...",
+      "cost": 3000,
+      "time_to_deploy_hours": 12,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1035": {
+      "name": "M1035-Limit Access to Resource Over Network",
+      "description": "Restrict access to network resources, such as file shares, remote systems, and services, to only those user...",
+      "cost": 4500,
+      "time_to_deploy_hours": 14,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1036": {
+      "name": "M1036-Account Use Policies",
+      "description": "Account Use Policies help mitigate unauthorized access by configuring and enforcing rules that govern how a...",
+      "cost": 2500,
+      "time_to_deploy_hours": 8,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.79,
+            0.16,
+            0.05
+          ],
+          "risk_high": [
+            0.2,
+            0.3,
+            0.5
+          ]
+        }
+      }
+    },
+    "M1037": {
+      "name": "M1037-Filter Network Traffic",
+      "description": "Employ network appliances and endpoint software to filter ingress, egress, and lateral network traffic.",
+      "cost": 9000,
+      "time_to_deploy_hours": 18,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        }
+      }
+    },
+    "M1038": {
+      "name": "M1038-Execution Prevention",
+      "description": "Prevent the execution of unauthorized or malicious code on systems by implementing application control, scr...",
+      "cost": 7000,
+      "time_to_deploy_hours": 22,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1039": {
+      "name": "M1039-Environment Variable Permissions",
+      "description": "Restrict the modification of environment variables to authorized users and processes by enforcing strict pe...",
+      "cost": 2000,
+      "time_to_deploy_hours": 6,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.79,
+            0.16,
+            0.05
+          ],
+          "risk_high": [
+            0.2,
+            0.3,
+            0.5
+          ]
+        }
+      }
+    },
+    "M1040": {
+      "name": "M1040-Behavior Prevention on Endpoint",
+      "description": "Behavior Prevention on Endpoint refers to the use of technologies and strategies to detect and block potent...",
+      "cost": 10000,
+      "time_to_deploy_hours": 24,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        }
+      }
+    },
+    "M1041": {
+      "name": "M1041-Encrypt Sensitive Information",
+      "description": "Protect sensitive information at rest, in transit, and during processing by using strong encryption algorit...",
+      "cost": 5500,
+      "time_to_deploy_hours": 14,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1042": {
+      "name": "M1042-Disable or Remove Feature or Program",
+      "description": "Disable or remove unnecessary and potentially vulnerable software, features, or services to reduce the atta...",
+      "cost": 3200,
+      "time_to_deploy_hours": 12,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1043": {
+      "name": "M1043-Credential Access Protection",
+      "description": "Credential Access Protection focuses on implementing measures to prevent adversaries from obtaining credent...",
+      "cost": 8500,
+      "time_to_deploy_hours": 26,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1044": {
+      "name": "M1044-Restrict Library Loading",
+      "description": "Restricting library loading involves implementing security controls to ensure that only trusted and verifie...",
+      "cost": 4000,
+      "time_to_deploy_hours": 14,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1045": {
+      "name": "M1045-Code Signing",
+      "description": "Code Signing is a security process that ensures the authenticity and integrity of software by digitally sig...",
+      "cost": 9000,
+      "time_to_deploy_hours": 26,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1046": {
+      "name": "M1046-Boot Integrity",
+      "description": "Boot Integrity ensures that a system starts securely by verifying the integrity of its boot process, operat...",
+      "cost": 7500,
+      "time_to_deploy_hours": 18,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        }
+      }
+    },
+    "M1047": {
+      "name": "M1047-Audit",
+      "description": "Auditing is the process of recording activity and systematically reviewing and analyzing the activity and s...",
+      "cost": 3500,
+      "time_to_deploy_hours": 12,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        }
+      }
+    },
+    "M1048": {
+      "name": "M1048-Application Isolation and Sandboxing",
+      "description": "Application Isolation and Sandboxing refers to the technique of restricting the execution of code to a cont...",
+      "cost": 9500,
+      "time_to_deploy_hours": 28,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        }
+      }
+    },
+    "M1049": {
+      "name": "M1049-Antivirus/Antimalware",
+      "description": "Antivirus/Antimalware solutions utilize signatures, heuristics, and behavioral analysis to detect, block, a...",
+      "cost": 8000,
+      "time_to_deploy_hours": 16,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        }
+      }
+    },
+    "M1050": {
+      "name": "M1050-Exploit Protection",
+      "description": "Deploy capabilities that detect, block, and mitigate conditions indicative of software exploits.",
+      "cost": 8500,
+      "time_to_deploy_hours": 20,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        }
+      }
+    },
+    "M1051": {
+      "name": "M1051-Update Software",
+      "description": "Software updates ensure systems are protected against known vulnerabilities by applying patches and upgrade...",
+      "cost": 4000,
+      "time_to_deploy_hours": 12,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1052": {
+      "name": "M1052-User Account Control",
+      "description": "User Account Control (UAC) is a security feature in Microsoft Windows that prevents unauthorized changes to...",
+      "cost": 2500,
+      "time_to_deploy_hours": 8,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.79,
+            0.16,
+            0.05
+          ],
+          "risk_high": [
+            0.2,
+            0.3,
+            0.5
+          ]
+        }
+      }
+    },
+    "M1053": {
+      "name": "M1053-Data Backup",
+      "description": "Data Backup involves taking and securely storing backups of data from end-user systems and critical servers.",
+      "cost": 7000,
+      "time_to_deploy_hours": 16,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        }
+      }
+    },
+    "M1054": {
+      "name": "M1054-Software Configuration",
+      "description": "Software configuration refers to making security-focused adjustments to the settings of applications, middl...",
+      "cost": 3000,
+      "time_to_deploy_hours": 10,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        }
+      }
+    },
+    "M1055": {
+      "name": "M1055-Do Not Mitigate",
+      "description": "The Do Not Mitigate category highlights scenarios where attempting to mitigate a specific technique may ina...",
+      "cost": 0,
+      "time_to_deploy_hours": 0,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.79,
+            0.16,
+            0.05
+          ],
+          "risk_high": [
+            0.2,
+            0.3,
+            0.5
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.79,
+            0.16,
+            0.05
+          ],
+          "risk_high": [
+            0.2,
+            0.3,
+            0.5
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.79,
+            0.16,
+            0.05
+          ],
+          "risk_high": [
+            0.2,
+            0.3,
+            0.5
+          ]
+        }
+      }
+    },
+    "M1056": {
+      "name": "M1056-Pre-compromise",
+      "description": "Pre-compromise mitigations involve proactive measures and defenses implemented to prevent adversaries from...",
+      "cost": 12000,
+      "time_to_deploy_hours": 80,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        }
+      }
+    },
+    "M1057": {
+      "name": "M1057-Data Loss Prevention",
+      "description": "Data Loss Prevention (DLP) involves implementing strategies and technologies to identify, categorize, monit...",
+      "cost": 11000,
+      "time_to_deploy_hours": 24,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.89,
+            0.08,
+            0.03
+          ],
+          "risk_high": [
+            0.44,
+            0.36,
+            0.2
+          ]
+        }
+      }
+    },
+    "M1060": {
+      "name": "M1060-Out-of-Band Communications Channel",
+      "description": "Establish secure out-of-band communication channels to ensure the continuity of critical communications dur...",
+      "cost": 5000,
+      "time_to_deploy_hours": 12,
+      "type": "mitre_attack",
+      "source": "mitre-attack",
+      "cpd": {
+        "C_res": {
+          "risk_low": [
+            0.82,
+            0.13,
+            0.05
+          ],
+          "risk_high": [
+            0.27,
+            0.35,
+            0.38
+          ]
+        },
+        "I_res": {
+          "risk_low": [
+            0.85,
+            0.11,
+            0.04
+          ],
+          "risk_high": [
+            0.35,
+            0.38,
+            0.27
+          ]
+        },
+        "A_res": {
+          "risk_low": [
+            0.92,
+            0.06,
+            0.02
+          ],
+          "risk_high": [
+            0.52,
+            0.31,
+            0.17
+          ]
+        }
+      }
     }
   },
   "metadata": {
     "currency": "EUR",
     "version": "1.0.0",
-    "description": "Configuración de contramedidas disponibles para el sistema MDO"
+    "description": "Configuracion de contramedidas disponibles para el sistema MDO"
   }
 }

@@ -1,5 +1,5 @@
-[
-  {
+{
+  "T1001": {
     "ttp_id": "T1001",
     "ttp_name": "Data Obfuscation",
     "is_subtechnique": false,
@@ -10,7 +10,7 @@
       }
     ]
   },
-  {
+  "T1001.001": {
     "ttp_id": "T1001.001",
     "ttp_name": "Junk Data",
     "is_subtechnique": true,
@@ -21,7 +21,7 @@
       }
     ]
   },
-  {
+  "T1001.002": {
     "ttp_id": "T1001.002",
     "ttp_name": "Steganography",
     "is_subtechnique": true,
@@ -32,7 +32,7 @@
       }
     ]
   },
-  {
+  "T1001.003": {
     "ttp_id": "T1001.003",
     "ttp_name": "Protocol or Service Impersonation",
     "is_subtechnique": true,
@@ -43,7 +43,7 @@
       }
     ]
   },
-  {
+  "T1003": {
     "ttp_id": "T1003",
     "ttp_name": "OS Credential Dumping",
     "is_subtechnique": false,
@@ -86,7 +86,7 @@
       }
     ]
   },
-  {
+  "T1003.001": {
     "ttp_id": "T1003.001",
     "ttp_name": "LSASS Memory",
     "is_subtechnique": true,
@@ -121,7 +121,7 @@
       }
     ]
   },
-  {
+  "T1003.002": {
     "ttp_id": "T1003.002",
     "ttp_name": "Security Account Manager",
     "is_subtechnique": true,
@@ -144,7 +144,7 @@
       }
     ]
   },
-  {
+  "T1003.003": {
     "ttp_id": "T1003.003",
     "ttp_name": "NTDS",
     "is_subtechnique": true,
@@ -167,7 +167,7 @@
       }
     ]
   },
-  {
+  "T1003.004": {
     "ttp_id": "T1003.004",
     "ttp_name": "LSA Secrets",
     "is_subtechnique": true,
@@ -186,7 +186,7 @@
       }
     ]
   },
-  {
+  "T1003.005": {
     "ttp_id": "T1003.005",
     "ttp_name": "Cached Domain Credentials",
     "is_subtechnique": true,
@@ -213,7 +213,7 @@
       }
     ]
   },
-  {
+  "T1003.006": {
     "ttp_id": "T1003.006",
     "ttp_name": "DCSync",
     "is_subtechnique": true,
@@ -232,7 +232,7 @@
       }
     ]
   },
-  {
+  "T1003.007": {
     "ttp_id": "T1003.007",
     "ttp_name": "Proc Filesystem",
     "is_subtechnique": true,
@@ -247,7 +247,7 @@
       }
     ]
   },
-  {
+  "T1003.008": {
     "ttp_id": "T1003.008",
     "ttp_name": "/etc/passwd and /etc/shadow",
     "is_subtechnique": true,
@@ -262,7 +262,7 @@
       }
     ]
   },
-  {
+  "T1005": {
     "ttp_id": "T1005",
     "ttp_name": "Data from Local System",
     "is_subtechnique": false,
@@ -273,7 +273,7 @@
       }
     ]
   },
-  {
+  "T1006": {
     "ttp_id": "T1006",
     "ttp_name": "Direct Volume Access",
     "is_subtechnique": false,
@@ -288,7 +288,7 @@
       }
     ]
   },
-  {
+  "T1008": {
     "ttp_id": "T1008",
     "ttp_name": "Fallback Channels",
     "is_subtechnique": false,
@@ -299,7 +299,7 @@
       }
     ]
   },
-  {
+  "T1011": {
     "ttp_id": "T1011",
     "ttp_name": "Exfiltration Over Other Network Medium",
     "is_subtechnique": false,
@@ -314,7 +314,7 @@
       }
     ]
   },
-  {
+  "T1011.001": {
     "ttp_id": "T1011.001",
     "ttp_name": "Exfiltration Over Bluetooth",
     "is_subtechnique": true,
@@ -329,7 +329,7 @@
       }
     ]
   },
-  {
+  "T1020.001": {
     "ttp_id": "T1020.001",
     "ttp_name": "Traffic Duplication",
     "is_subtechnique": true,
@@ -348,7 +348,7 @@
       }
     ]
   },
-  {
+  "T1021": {
     "ttp_id": "T1021",
     "ttp_name": "Remote Services",
     "is_subtechnique": false,
@@ -379,7 +379,7 @@
       }
     ]
   },
-  {
+  "T1021.001": {
     "ttp_id": "T1021.001",
     "ttp_name": "Remote Desktop Protocol",
     "is_subtechnique": true,
@@ -418,7 +418,7 @@
       }
     ]
   },
-  {
+  "T1021.002": {
     "ttp_id": "T1021.002",
     "ttp_name": "SMB/Windows Admin Shares",
     "is_subtechnique": true,
@@ -441,7 +441,7 @@
       }
     ]
   },
-  {
+  "T1021.003": {
     "ttp_id": "T1021.003",
     "ttp_name": "Distributed Component Object Model",
     "is_subtechnique": true,
@@ -464,7 +464,7 @@
       }
     ]
   },
-  {
+  "T1021.004": {
     "ttp_id": "T1021.004",
     "ttp_name": "SSH",
     "is_subtechnique": true,
@@ -483,7 +483,7 @@
       }
     ]
   },
-  {
+  "T1021.005": {
     "ttp_id": "T1021.005",
     "ttp_name": "VNC",
     "is_subtechnique": true,
@@ -506,7 +506,7 @@
       }
     ]
   },
-  {
+  "T1021.006": {
     "ttp_id": "T1021.006",
     "ttp_name": "Windows Remote Management",
     "is_subtechnique": true,
@@ -525,7 +525,7 @@
       }
     ]
   },
-  {
+  "T1021.007": {
     "ttp_id": "T1021.007",
     "ttp_name": "Cloud Services",
     "is_subtechnique": true,
@@ -540,7 +540,7 @@
       }
     ]
   },
-  {
+  "T1021.008": {
     "ttp_id": "T1021.008",
     "ttp_name": "Direct Cloud VM Connections",
     "is_subtechnique": true,
@@ -555,7 +555,7 @@
       }
     ]
   },
-  {
+  "T1025": {
     "ttp_id": "T1025",
     "ttp_name": "Data from Removable Media",
     "is_subtechnique": false,
@@ -566,7 +566,7 @@
       }
     ]
   },
-  {
+  "T1027": {
     "ttp_id": "T1027",
     "ttp_name": "Obfuscated Files or Information",
     "is_subtechnique": false,
@@ -589,7 +589,7 @@
       }
     ]
   },
-  {
+  "T1027.002": {
     "ttp_id": "T1027.002",
     "ttp_name": "Software Packing",
     "is_subtechnique": true,
@@ -600,7 +600,7 @@
       }
     ]
   },
-  {
+  "T1027.006": {
     "ttp_id": "T1027.006",
     "ttp_name": "HTML Smuggling",
     "is_subtechnique": true,
@@ -611,7 +611,7 @@
       }
     ]
   },
-  {
+  "T1027.009": {
     "ttp_id": "T1027.009",
     "ttp_name": "Embedded Payloads",
     "is_subtechnique": true,
@@ -626,7 +626,7 @@
       }
     ]
   },
-  {
+  "T1027.010": {
     "ttp_id": "T1027.010",
     "ttp_name": "Command Obfuscation",
     "is_subtechnique": true,
@@ -641,7 +641,7 @@
       }
     ]
   },
-  {
+  "T1027.011": {
     "ttp_id": "T1027.011",
     "ttp_name": "Fileless Storage",
     "is_subtechnique": true,
@@ -652,7 +652,7 @@
       }
     ]
   },
-  {
+  "T1027.012": {
     "ttp_id": "T1027.012",
     "ttp_name": "LNK Icon Smuggling",
     "is_subtechnique": true,
@@ -667,7 +667,7 @@
       }
     ]
   },
-  {
+  "T1027.013": {
     "ttp_id": "T1027.013",
     "ttp_name": "Encrypted/Encoded File",
     "is_subtechnique": true,
@@ -682,7 +682,7 @@
       }
     ]
   },
-  {
+  "T1027.014": {
     "ttp_id": "T1027.014",
     "ttp_name": "Polymorphic Code",
     "is_subtechnique": true,
@@ -697,7 +697,7 @@
       }
     ]
   },
-  {
+  "T1027.015": {
     "ttp_id": "T1027.015",
     "ttp_name": "Compression",
     "is_subtechnique": true,
@@ -708,7 +708,7 @@
       }
     ]
   },
-  {
+  "T1027.016": {
     "ttp_id": "T1027.016",
     "ttp_name": "Junk Code Insertion",
     "is_subtechnique": true,
@@ -719,7 +719,7 @@
       }
     ]
   },
-  {
+  "T1027.017": {
     "ttp_id": "T1027.017",
     "ttp_name": "SVG Smuggling",
     "is_subtechnique": true,
@@ -730,7 +730,7 @@
       }
     ]
   },
-  {
+  "T1029": {
     "ttp_id": "T1029",
     "ttp_name": "Scheduled Transfer",
     "is_subtechnique": false,
@@ -741,7 +741,7 @@
       }
     ]
   },
-  {
+  "T1030": {
     "ttp_id": "T1030",
     "ttp_name": "Data Transfer Size Limits",
     "is_subtechnique": false,
@@ -752,7 +752,7 @@
       }
     ]
   },
-  {
+  "T1036": {
     "ttp_id": "T1036",
     "ttp_name": "Masquerading",
     "is_subtechnique": false,
@@ -791,7 +791,7 @@
       }
     ]
   },
-  {
+  "T1036.001": {
     "ttp_id": "T1036.001",
     "ttp_name": "Invalid Code Signature",
     "is_subtechnique": true,
@@ -802,7 +802,7 @@
       }
     ]
   },
-  {
+  "T1036.003": {
     "ttp_id": "T1036.003",
     "ttp_name": "Rename Legitimate Utilities",
     "is_subtechnique": true,
@@ -813,7 +813,7 @@
       }
     ]
   },
-  {
+  "T1036.005": {
     "ttp_id": "T1036.005",
     "ttp_name": "Match Legitimate Resource Name or Location",
     "is_subtechnique": true,
@@ -832,7 +832,7 @@
       }
     ]
   },
-  {
+  "T1036.007": {
     "ttp_id": "T1036.007",
     "ttp_name": "Double File Extension",
     "is_subtechnique": true,
@@ -847,7 +847,7 @@
       }
     ]
   },
-  {
+  "T1036.008": {
     "ttp_id": "T1036.008",
     "ttp_name": "Masquerade File Type",
     "is_subtechnique": true,
@@ -866,7 +866,7 @@
       }
     ]
   },
-  {
+  "T1036.010": {
     "ttp_id": "T1036.010",
     "ttp_name": "Masquerade Account Name",
     "is_subtechnique": true,
@@ -881,7 +881,7 @@
       }
     ]
   },
-  {
+  "T1036.012": {
     "ttp_id": "T1036.012",
     "ttp_name": "Browser Fingerprint",
     "is_subtechnique": true,
@@ -892,7 +892,7 @@
       }
     ]
   },
-  {
+  "T1037": {
     "ttp_id": "T1037",
     "ttp_name": "Boot or Logon Initialization Scripts",
     "is_subtechnique": false,
@@ -907,7 +907,7 @@
       }
     ]
   },
-  {
+  "T1037.001": {
     "ttp_id": "T1037.001",
     "ttp_name": "Logon Script (Windows)",
     "is_subtechnique": true,
@@ -918,7 +918,7 @@
       }
     ]
   },
-  {
+  "T1037.002": {
     "ttp_id": "T1037.002",
     "ttp_name": "Login Hook",
     "is_subtechnique": true,
@@ -929,7 +929,7 @@
       }
     ]
   },
-  {
+  "T1037.003": {
     "ttp_id": "T1037.003",
     "ttp_name": "Network Logon Script",
     "is_subtechnique": true,
@@ -940,7 +940,7 @@
       }
     ]
   },
-  {
+  "T1037.004": {
     "ttp_id": "T1037.004",
     "ttp_name": "RC Scripts",
     "is_subtechnique": true,
@@ -951,7 +951,7 @@
       }
     ]
   },
-  {
+  "T1037.005": {
     "ttp_id": "T1037.005",
     "ttp_name": "Startup Items",
     "is_subtechnique": true,
@@ -962,7 +962,7 @@
       }
     ]
   },
-  {
+  "T1040": {
     "ttp_id": "T1040",
     "ttp_name": "Network Sniffing",
     "is_subtechnique": false,
@@ -985,7 +985,7 @@
       }
     ]
   },
-  {
+  "T1041": {
     "ttp_id": "T1041",
     "ttp_name": "Exfiltration Over C2 Channel",
     "is_subtechnique": false,
@@ -1000,7 +1000,7 @@
       }
     ]
   },
-  {
+  "T1046": {
     "ttp_id": "T1046",
     "ttp_name": "Network Service Discovery",
     "is_subtechnique": false,
@@ -1019,7 +1019,7 @@
       }
     ]
   },
-  {
+  "T1047": {
     "ttp_id": "T1047",
     "ttp_name": "Windows Management Instrumentation",
     "is_subtechnique": false,
@@ -1042,7 +1042,7 @@
       }
     ]
   },
-  {
+  "T1048": {
     "ttp_id": "T1048",
     "ttp_name": "Exfiltration Over Alternative Protocol",
     "is_subtechnique": false,
@@ -1073,7 +1073,7 @@
       }
     ]
   },
-  {
+  "T1048.001": {
     "ttp_id": "T1048.001",
     "ttp_name": "Exfiltration Over Symmetric Encrypted Non-C2 Protocol",
     "is_subtechnique": true,
@@ -1092,7 +1092,7 @@
       }
     ]
   },
-  {
+  "T1048.002": {
     "ttp_id": "T1048.002",
     "ttp_name": "Exfiltration Over Asymmetric Encrypted Non-C2 Protocol",
     "is_subtechnique": true,
@@ -1115,7 +1115,7 @@
       }
     ]
   },
-  {
+  "T1048.003": {
     "ttp_id": "T1048.003",
     "ttp_name": "Exfiltration Over Unencrypted Non-C2 Protocol",
     "is_subtechnique": true,
@@ -1138,7 +1138,7 @@
       }
     ]
   },
-  {
+  "T1052": {
     "ttp_id": "T1052",
     "ttp_name": "Exfiltration Over Physical Medium",
     "is_subtechnique": false,
@@ -1157,7 +1157,7 @@
       }
     ]
   },
-  {
+  "T1052.001": {
     "ttp_id": "T1052.001",
     "ttp_name": "Exfiltration over USB",
     "is_subtechnique": true,
@@ -1176,7 +1176,7 @@
       }
     ]
   },
-  {
+  "T1053": {
     "ttp_id": "T1053",
     "ttp_name": "Scheduled Task/Job",
     "is_subtechnique": false,
@@ -1203,7 +1203,7 @@
       }
     ]
   },
-  {
+  "T1053.002": {
     "ttp_id": "T1053.002",
     "ttp_name": "At",
     "is_subtechnique": true,
@@ -1226,7 +1226,7 @@
       }
     ]
   },
-  {
+  "T1053.003": {
     "ttp_id": "T1053.003",
     "ttp_name": "Cron",
     "is_subtechnique": true,
@@ -1241,7 +1241,7 @@
       }
     ]
   },
-  {
+  "T1053.005": {
     "ttp_id": "T1053.005",
     "ttp_name": "Scheduled Task",
     "is_subtechnique": true,
@@ -1264,7 +1264,7 @@
       }
     ]
   },
-  {
+  "T1053.006": {
     "ttp_id": "T1053.006",
     "ttp_name": "Systemd Timers",
     "is_subtechnique": true,
@@ -1283,7 +1283,7 @@
       }
     ]
   },
-  {
+  "T1053.007": {
     "ttp_id": "T1053.007",
     "ttp_name": "Container Orchestration Job",
     "is_subtechnique": true,
@@ -1298,7 +1298,7 @@
       }
     ]
   },
-  {
+  "T1055": {
     "ttp_id": "T1055",
     "ttp_name": "Process Injection",
     "is_subtechnique": false,
@@ -1313,7 +1313,7 @@
       }
     ]
   },
-  {
+  "T1055.001": {
     "ttp_id": "T1055.001",
     "ttp_name": "Dynamic-link Library Injection",
     "is_subtechnique": true,
@@ -1324,7 +1324,7 @@
       }
     ]
   },
-  {
+  "T1055.002": {
     "ttp_id": "T1055.002",
     "ttp_name": "Portable Executable Injection",
     "is_subtechnique": true,
@@ -1335,7 +1335,7 @@
       }
     ]
   },
-  {
+  "T1055.003": {
     "ttp_id": "T1055.003",
     "ttp_name": "Thread Execution Hijacking",
     "is_subtechnique": true,
@@ -1346,7 +1346,7 @@
       }
     ]
   },
-  {
+  "T1055.004": {
     "ttp_id": "T1055.004",
     "ttp_name": "Asynchronous Procedure Call",
     "is_subtechnique": true,
@@ -1357,7 +1357,7 @@
       }
     ]
   },
-  {
+  "T1055.005": {
     "ttp_id": "T1055.005",
     "ttp_name": "Thread Local Storage",
     "is_subtechnique": true,
@@ -1368,7 +1368,7 @@
       }
     ]
   },
-  {
+  "T1055.008": {
     "ttp_id": "T1055.008",
     "ttp_name": "Ptrace System Calls",
     "is_subtechnique": true,
@@ -1383,7 +1383,7 @@
       }
     ]
   },
-  {
+  "T1055.009": {
     "ttp_id": "T1055.009",
     "ttp_name": "Proc Memory",
     "is_subtechnique": true,
@@ -1398,7 +1398,7 @@
       }
     ]
   },
-  {
+  "T1055.011": {
     "ttp_id": "T1055.011",
     "ttp_name": "Extra Window Memory Injection",
     "is_subtechnique": true,
@@ -1409,7 +1409,7 @@
       }
     ]
   },
-  {
+  "T1055.012": {
     "ttp_id": "T1055.012",
     "ttp_name": "Process Hollowing",
     "is_subtechnique": true,
@@ -1420,7 +1420,7 @@
       }
     ]
   },
-  {
+  "T1055.013": {
     "ttp_id": "T1055.013",
     "ttp_name": "Process Doppelgänging",
     "is_subtechnique": true,
@@ -1431,7 +1431,7 @@
       }
     ]
   },
-  {
+  "T1055.014": {
     "ttp_id": "T1055.014",
     "ttp_name": "VDSO Hijacking",
     "is_subtechnique": true,
@@ -1442,7 +1442,7 @@
       }
     ]
   },
-  {
+  "T1055.015": {
     "ttp_id": "T1055.015",
     "ttp_name": "ListPlanting",
     "is_subtechnique": true,
@@ -1453,7 +1453,7 @@
       }
     ]
   },
-  {
+  "T1056.002": {
     "ttp_id": "T1056.002",
     "ttp_name": "GUI Input Capture",
     "is_subtechnique": true,
@@ -1464,7 +1464,7 @@
       }
     ]
   },
-  {
+  "T1056.003": {
     "ttp_id": "T1056.003",
     "ttp_name": "Web Portal Capture",
     "is_subtechnique": true,
@@ -1475,7 +1475,7 @@
       }
     ]
   },
-  {
+  "T1059": {
     "ttp_id": "T1059",
     "ttp_name": "Command and Scripting Interpreter",
     "is_subtechnique": false,
@@ -1518,7 +1518,7 @@
       }
     ]
   },
-  {
+  "T1059.001": {
     "ttp_id": "T1059.001",
     "ttp_name": "PowerShell",
     "is_subtechnique": true,
@@ -1545,7 +1545,7 @@
       }
     ]
   },
-  {
+  "T1059.002": {
     "ttp_id": "T1059.002",
     "ttp_name": "AppleScript",
     "is_subtechnique": true,
@@ -1560,7 +1560,7 @@
       }
     ]
   },
-  {
+  "T1059.003": {
     "ttp_id": "T1059.003",
     "ttp_name": "Windows Command Shell",
     "is_subtechnique": true,
@@ -1571,7 +1571,7 @@
       }
     ]
   },
-  {
+  "T1059.004": {
     "ttp_id": "T1059.004",
     "ttp_name": "Unix Shell",
     "is_subtechnique": true,
@@ -1582,7 +1582,7 @@
       }
     ]
   },
-  {
+  "T1059.005": {
     "ttp_id": "T1059.005",
     "ttp_name": "Visual Basic",
     "is_subtechnique": true,
@@ -1609,7 +1609,7 @@
       }
     ]
   },
-  {
+  "T1059.006": {
     "ttp_id": "T1059.006",
     "ttp_name": "Python",
     "is_subtechnique": true,
@@ -1632,7 +1632,7 @@
       }
     ]
   },
-  {
+  "T1059.007": {
     "ttp_id": "T1059.007",
     "ttp_name": "JavaScript",
     "is_subtechnique": true,
@@ -1655,7 +1655,7 @@
       }
     ]
   },
-  {
+  "T1059.008": {
     "ttp_id": "T1059.008",
     "ttp_name": "Network Device CLI",
     "is_subtechnique": true,
@@ -1674,7 +1674,7 @@
       }
     ]
   },
-  {
+  "T1059.009": {
     "ttp_id": "T1059.009",
     "ttp_name": "Cloud API",
     "is_subtechnique": true,
@@ -1689,7 +1689,7 @@
       }
     ]
   },
-  {
+  "T1059.010": {
     "ttp_id": "T1059.010",
     "ttp_name": "AutoHotKey & AutoIT",
     "is_subtechnique": true,
@@ -1700,7 +1700,7 @@
       }
     ]
   },
-  {
+  "T1059.011": {
     "ttp_id": "T1059.011",
     "ttp_name": "Lua",
     "is_subtechnique": true,
@@ -1719,7 +1719,7 @@
       }
     ]
   },
-  {
+  "T1059.013": {
     "ttp_id": "T1059.013",
     "ttp_name": "Container CLI/API",
     "is_subtechnique": true,
@@ -1734,7 +1734,7 @@
       }
     ]
   },
-  {
+  "T1068": {
     "ttp_id": "T1068",
     "ttp_name": "Exploitation for Privilege Escalation",
     "is_subtechnique": false,
@@ -1761,7 +1761,7 @@
       }
     ]
   },
-  {
+  "T1070": {
     "ttp_id": "T1070",
     "ttp_name": "Indicator Removal",
     "is_subtechnique": false,
@@ -1780,7 +1780,7 @@
       }
     ]
   },
-  {
+  "T1070.001": {
     "ttp_id": "T1070.001",
     "ttp_name": "Clear Windows Event Logs",
     "is_subtechnique": true,
@@ -1799,7 +1799,7 @@
       }
     ]
   },
-  {
+  "T1070.002": {
     "ttp_id": "T1070.002",
     "ttp_name": "Clear Linux or Mac System Logs",
     "is_subtechnique": true,
@@ -1818,7 +1818,7 @@
       }
     ]
   },
-  {
+  "T1070.003": {
     "ttp_id": "T1070.003",
     "ttp_name": "Clear Command History",
     "is_subtechnique": true,
@@ -1837,7 +1837,7 @@
       }
     ]
   },
-  {
+  "T1070.007": {
     "ttp_id": "T1070.007",
     "ttp_name": "Clear Network Connection History and Configurations",
     "is_subtechnique": true,
@@ -1852,7 +1852,7 @@
       }
     ]
   },
-  {
+  "T1070.008": {
     "ttp_id": "T1070.008",
     "ttp_name": "Clear Mailbox Data",
     "is_subtechnique": true,
@@ -1871,7 +1871,7 @@
       }
     ]
   },
-  {
+  "T1070.009": {
     "ttp_id": "T1070.009",
     "ttp_name": "Clear Persistence",
     "is_subtechnique": true,
@@ -1886,7 +1886,7 @@
       }
     ]
   },
-  {
+  "T1071": {
     "ttp_id": "T1071",
     "ttp_name": "Application Layer Protocol",
     "is_subtechnique": false,
@@ -1901,7 +1901,7 @@
       }
     ]
   },
-  {
+  "T1071.001": {
     "ttp_id": "T1071.001",
     "ttp_name": "Web Protocols",
     "is_subtechnique": true,
@@ -1916,7 +1916,7 @@
       }
     ]
   },
-  {
+  "T1071.002": {
     "ttp_id": "T1071.002",
     "ttp_name": "File Transfer Protocols",
     "is_subtechnique": true,
@@ -1931,7 +1931,7 @@
       }
     ]
   },
-  {
+  "T1071.003": {
     "ttp_id": "T1071.003",
     "ttp_name": "Mail Protocols",
     "is_subtechnique": true,
@@ -1946,7 +1946,7 @@
       }
     ]
   },
-  {
+  "T1071.004": {
     "ttp_id": "T1071.004",
     "ttp_name": "DNS",
     "is_subtechnique": true,
@@ -1961,7 +1961,7 @@
       }
     ]
   },
-  {
+  "T1071.005": {
     "ttp_id": "T1071.005",
     "ttp_name": "Publish/Subscribe Protocols",
     "is_subtechnique": true,
@@ -1976,7 +1976,7 @@
       }
     ]
   },
-  {
+  "T1072": {
     "ttp_id": "T1072",
     "ttp_name": "Software Deployment Tools",
     "is_subtechnique": false,
@@ -2023,7 +2023,7 @@
       }
     ]
   },
-  {
+  "T1078": {
     "ttp_id": "T1078",
     "ttp_name": "Valid Accounts",
     "is_subtechnique": false,
@@ -2062,7 +2062,7 @@
       }
     ]
   },
-  {
+  "T1078.001": {
     "ttp_id": "T1078.001",
     "ttp_name": "Default Accounts",
     "is_subtechnique": true,
@@ -2077,7 +2077,7 @@
       }
     ]
   },
-  {
+  "T1078.002": {
     "ttp_id": "T1078.002",
     "ttp_name": "Domain Accounts",
     "is_subtechnique": true,
@@ -2104,7 +2104,7 @@
       }
     ]
   },
-  {
+  "T1078.003": {
     "ttp_id": "T1078.003",
     "ttp_name": "Local Accounts",
     "is_subtechnique": true,
@@ -2127,7 +2127,7 @@
       }
     ]
   },
-  {
+  "T1078.004": {
     "ttp_id": "T1078.004",
     "ttp_name": "Cloud Accounts",
     "is_subtechnique": true,
@@ -2162,7 +2162,7 @@
       }
     ]
   },
-  {
+  "T1080": {
     "ttp_id": "T1080",
     "ttp_name": "Taint Shared Content",
     "is_subtechnique": false,
@@ -2185,7 +2185,7 @@
       }
     ]
   },
-  {
+  "T1087": {
     "ttp_id": "T1087",
     "ttp_name": "Account Discovery",
     "is_subtechnique": false,
@@ -2200,7 +2200,7 @@
       }
     ]
   },
-  {
+  "T1087.001": {
     "ttp_id": "T1087.001",
     "ttp_name": "Local Account",
     "is_subtechnique": true,
@@ -2211,7 +2211,7 @@
       }
     ]
   },
-  {
+  "T1087.002": {
     "ttp_id": "T1087.002",
     "ttp_name": "Domain Account",
     "is_subtechnique": true,
@@ -2222,7 +2222,7 @@
       }
     ]
   },
-  {
+  "T1087.004": {
     "ttp_id": "T1087.004",
     "ttp_name": "Cloud Account",
     "is_subtechnique": true,
@@ -2237,7 +2237,7 @@
       }
     ]
   },
-  {
+  "T1090": {
     "ttp_id": "T1090",
     "ttp_name": "Proxy",
     "is_subtechnique": false,
@@ -2256,7 +2256,7 @@
       }
     ]
   },
-  {
+  "T1090.001": {
     "ttp_id": "T1090.001",
     "ttp_name": "Internal Proxy",
     "is_subtechnique": true,
@@ -2267,7 +2267,7 @@
       }
     ]
   },
-  {
+  "T1090.002": {
     "ttp_id": "T1090.002",
     "ttp_name": "External Proxy",
     "is_subtechnique": true,
@@ -2278,7 +2278,7 @@
       }
     ]
   },
-  {
+  "T1090.003": {
     "ttp_id": "T1090.003",
     "ttp_name": "Multi-hop Proxy",
     "is_subtechnique": true,
@@ -2289,7 +2289,7 @@
       }
     ]
   },
-  {
+  "T1090.004": {
     "ttp_id": "T1090.004",
     "ttp_name": "Domain Fronting",
     "is_subtechnique": true,
@@ -2300,7 +2300,7 @@
       }
     ]
   },
-  {
+  "T1091": {
     "ttp_id": "T1091",
     "ttp_name": "Replication Through Removable Media",
     "is_subtechnique": false,
@@ -2319,7 +2319,7 @@
       }
     ]
   },
-  {
+  "T1092": {
     "ttp_id": "T1092",
     "ttp_name": "Communication Through Removable Media",
     "is_subtechnique": false,
@@ -2334,7 +2334,7 @@
       }
     ]
   },
-  {
+  "T1095": {
     "ttp_id": "T1095",
     "ttp_name": "Non-Application Layer Protocol",
     "is_subtechnique": false,
@@ -2357,7 +2357,7 @@
       }
     ]
   },
-  {
+  "T1098": {
     "ttp_id": "T1098",
     "ttp_name": "Account Manipulation",
     "is_subtechnique": false,
@@ -2392,7 +2392,7 @@
       }
     ]
   },
-  {
+  "T1098.001": {
     "ttp_id": "T1098.001",
     "ttp_name": "Additional Cloud Credentials",
     "is_subtechnique": true,
@@ -2419,7 +2419,7 @@
       }
     ]
   },
-  {
+  "T1098.002": {
     "ttp_id": "T1098.002",
     "ttp_name": "Additional Email Delegate Permissions",
     "is_subtechnique": true,
@@ -2438,7 +2438,7 @@
       }
     ]
   },
-  {
+  "T1098.003": {
     "ttp_id": "T1098.003",
     "ttp_name": "Additional Cloud Roles",
     "is_subtechnique": true,
@@ -2457,7 +2457,7 @@
       }
     ]
   },
-  {
+  "T1098.004": {
     "ttp_id": "T1098.004",
     "ttp_name": "SSH Authorized Keys",
     "is_subtechnique": true,
@@ -2476,7 +2476,7 @@
       }
     ]
   },
-  {
+  "T1098.005": {
     "ttp_id": "T1098.005",
     "ttp_name": "Device Registration",
     "is_subtechnique": true,
@@ -2487,7 +2487,7 @@
       }
     ]
   },
-  {
+  "T1098.006": {
     "ttp_id": "T1098.006",
     "ttp_name": "Additional Container Cluster Roles",
     "is_subtechnique": true,
@@ -2502,7 +2502,7 @@
       }
     ]
   },
-  {
+  "T1102": {
     "ttp_id": "T1102",
     "ttp_name": "Web Service",
     "is_subtechnique": false,
@@ -2517,7 +2517,7 @@
       }
     ]
   },
-  {
+  "T1102.001": {
     "ttp_id": "T1102.001",
     "ttp_name": "Dead Drop Resolver",
     "is_subtechnique": true,
@@ -2532,7 +2532,7 @@
       }
     ]
   },
-  {
+  "T1102.002": {
     "ttp_id": "T1102.002",
     "ttp_name": "Bidirectional Communication",
     "is_subtechnique": true,
@@ -2547,7 +2547,7 @@
       }
     ]
   },
-  {
+  "T1102.003": {
     "ttp_id": "T1102.003",
     "ttp_name": "One-Way Communication",
     "is_subtechnique": true,
@@ -2562,7 +2562,7 @@
       }
     ]
   },
-  {
+  "T1104": {
     "ttp_id": "T1104",
     "ttp_name": "Multi-Stage Channels",
     "is_subtechnique": false,
@@ -2573,7 +2573,7 @@
       }
     ]
   },
-  {
+  "T1105": {
     "ttp_id": "T1105",
     "ttp_name": "Ingress Tool Transfer",
     "is_subtechnique": false,
@@ -2588,7 +2588,7 @@
       }
     ]
   },
-  {
+  "T1106": {
     "ttp_id": "T1106",
     "ttp_name": "Native API",
     "is_subtechnique": false,
@@ -2603,7 +2603,7 @@
       }
     ]
   },
-  {
+  "T1110": {
     "ttp_id": "T1110",
     "ttp_name": "Brute Force",
     "is_subtechnique": false,
@@ -2626,7 +2626,7 @@
       }
     ]
   },
-  {
+  "T1110.001": {
     "ttp_id": "T1110.001",
     "ttp_name": "Password Guessing",
     "is_subtechnique": true,
@@ -2649,7 +2649,7 @@
       }
     ]
   },
-  {
+  "T1110.002": {
     "ttp_id": "T1110.002",
     "ttp_name": "Password Cracking",
     "is_subtechnique": true,
@@ -2664,7 +2664,7 @@
       }
     ]
   },
-  {
+  "T1110.003": {
     "ttp_id": "T1110.003",
     "ttp_name": "Password Spraying",
     "is_subtechnique": true,
@@ -2683,7 +2683,7 @@
       }
     ]
   },
-  {
+  "T1110.004": {
     "ttp_id": "T1110.004",
     "ttp_name": "Credential Stuffing",
     "is_subtechnique": true,
@@ -2706,7 +2706,7 @@
       }
     ]
   },
-  {
+  "T1111": {
     "ttp_id": "T1111",
     "ttp_name": "Multi-Factor Authentication Interception",
     "is_subtechnique": false,
@@ -2717,7 +2717,7 @@
       }
     ]
   },
-  {
+  "T1112": {
     "ttp_id": "T1112",
     "ttp_name": "Modify Registry",
     "is_subtechnique": false,
@@ -2728,7 +2728,7 @@
       }
     ]
   },
-  {
+  "T1114": {
     "ttp_id": "T1114",
     "ttp_name": "Email Collection",
     "is_subtechnique": false,
@@ -2751,7 +2751,7 @@
       }
     ]
   },
-  {
+  "T1114.001": {
     "ttp_id": "T1114.001",
     "ttp_name": "Local Email Collection",
     "is_subtechnique": true,
@@ -2766,7 +2766,7 @@
       }
     ]
   },
-  {
+  "T1114.002": {
     "ttp_id": "T1114.002",
     "ttp_name": "Remote Email Collection",
     "is_subtechnique": true,
@@ -2785,7 +2785,7 @@
       }
     ]
   },
-  {
+  "T1114.003": {
     "ttp_id": "T1114.003",
     "ttp_name": "Email Forwarding Rule",
     "is_subtechnique": true,
@@ -2808,7 +2808,7 @@
       }
     ]
   },
-  {
+  "T1119": {
     "ttp_id": "T1119",
     "ttp_name": "Automated Collection",
     "is_subtechnique": false,
@@ -2823,7 +2823,7 @@
       }
     ]
   },
-  {
+  "T1127": {
     "ttp_id": "T1127",
     "ttp_name": "Trusted Developer Utilities Proxy Execution",
     "is_subtechnique": false,
@@ -2842,7 +2842,7 @@
       }
     ]
   },
-  {
+  "T1127.001": {
     "ttp_id": "T1127.001",
     "ttp_name": "MSBuild",
     "is_subtechnique": true,
@@ -2857,7 +2857,7 @@
       }
     ]
   },
-  {
+  "T1127.002": {
     "ttp_id": "T1127.002",
     "ttp_name": "ClickOnce",
     "is_subtechnique": true,
@@ -2876,7 +2876,7 @@
       }
     ]
   },
-  {
+  "T1127.003": {
     "ttp_id": "T1127.003",
     "ttp_name": "JamPlus",
     "is_subtechnique": true,
@@ -2891,7 +2891,7 @@
       }
     ]
   },
-  {
+  "T1129": {
     "ttp_id": "T1129",
     "ttp_name": "Shared Modules",
     "is_subtechnique": false,
@@ -2902,7 +2902,7 @@
       }
     ]
   },
-  {
+  "T1132": {
     "ttp_id": "T1132",
     "ttp_name": "Data Encoding",
     "is_subtechnique": false,
@@ -2913,7 +2913,7 @@
       }
     ]
   },
-  {
+  "T1132.001": {
     "ttp_id": "T1132.001",
     "ttp_name": "Standard Encoding",
     "is_subtechnique": true,
@@ -2924,7 +2924,7 @@
       }
     ]
   },
-  {
+  "T1132.002": {
     "ttp_id": "T1132.002",
     "ttp_name": "Non-Standard Encoding",
     "is_subtechnique": true,
@@ -2935,7 +2935,7 @@
       }
     ]
   },
-  {
+  "T1133": {
     "ttp_id": "T1133",
     "ttp_name": "External Remote Services",
     "is_subtechnique": false,
@@ -2962,7 +2962,7 @@
       }
     ]
   },
-  {
+  "T1134": {
     "ttp_id": "T1134",
     "ttp_name": "Access Token Manipulation",
     "is_subtechnique": false,
@@ -2977,7 +2977,7 @@
       }
     ]
   },
-  {
+  "T1134.001": {
     "ttp_id": "T1134.001",
     "ttp_name": "Token Impersonation/Theft",
     "is_subtechnique": true,
@@ -2992,7 +2992,7 @@
       }
     ]
   },
-  {
+  "T1134.002": {
     "ttp_id": "T1134.002",
     "ttp_name": "Create Process with Token",
     "is_subtechnique": true,
@@ -3007,7 +3007,7 @@
       }
     ]
   },
-  {
+  "T1134.003": {
     "ttp_id": "T1134.003",
     "ttp_name": "Make and Impersonate Token",
     "is_subtechnique": true,
@@ -3022,7 +3022,7 @@
       }
     ]
   },
-  {
+  "T1134.005": {
     "ttp_id": "T1134.005",
     "ttp_name": "SID-History Injection",
     "is_subtechnique": true,
@@ -3033,7 +3033,7 @@
       }
     ]
   },
-  {
+  "T1135": {
     "ttp_id": "T1135",
     "ttp_name": "Network Share Discovery",
     "is_subtechnique": false,
@@ -3044,7 +3044,7 @@
       }
     ]
   },
-  {
+  "T1136": {
     "ttp_id": "T1136",
     "ttp_name": "Create Account",
     "is_subtechnique": false,
@@ -3067,7 +3067,7 @@
       }
     ]
   },
-  {
+  "T1136.001": {
     "ttp_id": "T1136.001",
     "ttp_name": "Local Account",
     "is_subtechnique": true,
@@ -3082,7 +3082,7 @@
       }
     ]
   },
-  {
+  "T1136.002": {
     "ttp_id": "T1136.002",
     "ttp_name": "Domain Account",
     "is_subtechnique": true,
@@ -3105,7 +3105,7 @@
       }
     ]
   },
-  {
+  "T1136.003": {
     "ttp_id": "T1136.003",
     "ttp_name": "Cloud Account",
     "is_subtechnique": true,
@@ -3124,7 +3124,7 @@
       }
     ]
   },
-  {
+  "T1137": {
     "ttp_id": "T1137",
     "ttp_name": "Office Application Startup",
     "is_subtechnique": false,
@@ -3147,7 +3147,7 @@
       }
     ]
   },
-  {
+  "T1137.001": {
     "ttp_id": "T1137.001",
     "ttp_name": "Office Template Macros",
     "is_subtechnique": true,
@@ -3162,7 +3162,7 @@
       }
     ]
   },
-  {
+  "T1137.002": {
     "ttp_id": "T1137.002",
     "ttp_name": "Office Test",
     "is_subtechnique": true,
@@ -3177,7 +3177,7 @@
       }
     ]
   },
-  {
+  "T1137.003": {
     "ttp_id": "T1137.003",
     "ttp_name": "Outlook Forms",
     "is_subtechnique": true,
@@ -3192,7 +3192,7 @@
       }
     ]
   },
-  {
+  "T1137.004": {
     "ttp_id": "T1137.004",
     "ttp_name": "Outlook Home Page",
     "is_subtechnique": true,
@@ -3207,7 +3207,7 @@
       }
     ]
   },
-  {
+  "T1137.005": {
     "ttp_id": "T1137.005",
     "ttp_name": "Outlook Rules",
     "is_subtechnique": true,
@@ -3222,7 +3222,7 @@
       }
     ]
   },
-  {
+  "T1137.006": {
     "ttp_id": "T1137.006",
     "ttp_name": "Add-ins",
     "is_subtechnique": true,
@@ -3233,7 +3233,7 @@
       }
     ]
   },
-  {
+  "T1176": {
     "ttp_id": "T1176",
     "ttp_name": "Software Extensions",
     "is_subtechnique": false,
@@ -3260,7 +3260,7 @@
       }
     ]
   },
-  {
+  "T1176.001": {
     "ttp_id": "T1176.001",
     "ttp_name": "Browser Extensions",
     "is_subtechnique": true,
@@ -3287,7 +3287,7 @@
       }
     ]
   },
-  {
+  "T1176.002": {
     "ttp_id": "T1176.002",
     "ttp_name": "IDE Extensions",
     "is_subtechnique": true,
@@ -3314,7 +3314,7 @@
       }
     ]
   },
-  {
+  "T1185": {
     "ttp_id": "T1185",
     "ttp_name": "Browser Session Hijacking",
     "is_subtechnique": false,
@@ -3329,7 +3329,7 @@
       }
     ]
   },
-  {
+  "T1187": {
     "ttp_id": "T1187",
     "ttp_name": "Forced Authentication",
     "is_subtechnique": false,
@@ -3344,7 +3344,7 @@
       }
     ]
   },
-  {
+  "T1189": {
     "ttp_id": "T1189",
     "ttp_name": "Drive-by Compromise",
     "is_subtechnique": false,
@@ -3371,7 +3371,7 @@
       }
     ]
   },
-  {
+  "T1190": {
     "ttp_id": "T1190",
     "ttp_name": "Exploit Public-Facing Application",
     "is_subtechnique": false,
@@ -3410,7 +3410,7 @@
       }
     ]
   },
-  {
+  "T1195": {
     "ttp_id": "T1195",
     "ttp_name": "Supply Chain Compromise",
     "is_subtechnique": false,
@@ -3441,7 +3441,7 @@
       }
     ]
   },
-  {
+  "T1195.001": {
     "ttp_id": "T1195.001",
     "ttp_name": "Compromise Software Dependencies and Development Tools",
     "is_subtechnique": true,
@@ -3464,7 +3464,7 @@
       }
     ]
   },
-  {
+  "T1195.002": {
     "ttp_id": "T1195.002",
     "ttp_name": "Compromise Software Supply Chain",
     "is_subtechnique": true,
@@ -3479,7 +3479,7 @@
       }
     ]
   },
-  {
+  "T1195.003": {
     "ttp_id": "T1195.003",
     "ttp_name": "Compromise Hardware Supply Chain",
     "is_subtechnique": true,
@@ -3490,7 +3490,7 @@
       }
     ]
   },
-  {
+  "T1197": {
     "ttp_id": "T1197",
     "ttp_name": "BITS Jobs",
     "is_subtechnique": false,
@@ -3509,7 +3509,7 @@
       }
     ]
   },
-  {
+  "T1199": {
     "ttp_id": "T1199",
     "ttp_name": "Trusted Relationship",
     "is_subtechnique": false,
@@ -3528,7 +3528,7 @@
       }
     ]
   },
-  {
+  "T1200": {
     "ttp_id": "T1200",
     "ttp_name": "Hardware Additions",
     "is_subtechnique": false,
@@ -3543,7 +3543,7 @@
       }
     ]
   },
-  {
+  "T1201": {
     "ttp_id": "T1201",
     "ttp_name": "Password Policy Discovery",
     "is_subtechnique": false,
@@ -3554,7 +3554,7 @@
       }
     ]
   },
-  {
+  "T1203": {
     "ttp_id": "T1203",
     "ttp_name": "Exploitation for Client Execution",
     "is_subtechnique": false,
@@ -3573,7 +3573,7 @@
       }
     ]
   },
-  {
+  "T1204": {
     "ttp_id": "T1204",
     "ttp_name": "User Execution",
     "is_subtechnique": false,
@@ -3604,7 +3604,7 @@
       }
     ]
   },
-  {
+  "T1204.001": {
     "ttp_id": "T1204.001",
     "ttp_name": "Malicious Link",
     "is_subtechnique": true,
@@ -3623,7 +3623,7 @@
       }
     ]
   },
-  {
+  "T1204.002": {
     "ttp_id": "T1204.002",
     "ttp_name": "Malicious File",
     "is_subtechnique": true,
@@ -3642,7 +3642,7 @@
       }
     ]
   },
-  {
+  "T1204.003": {
     "ttp_id": "T1204.003",
     "ttp_name": "Malicious Image",
     "is_subtechnique": true,
@@ -3665,7 +3665,7 @@
       }
     ]
   },
-  {
+  "T1204.004": {
     "ttp_id": "T1204.004",
     "ttp_name": "Malicious Copy and Paste",
     "is_subtechnique": true,
@@ -3684,7 +3684,7 @@
       }
     ]
   },
-  {
+  "T1204.005": {
     "ttp_id": "T1204.005",
     "ttp_name": "Malicious Library",
     "is_subtechnique": true,
@@ -3703,7 +3703,7 @@
       }
     ]
   },
-  {
+  "T1205": {
     "ttp_id": "T1205",
     "ttp_name": "Traffic Signaling",
     "is_subtechnique": false,
@@ -3718,7 +3718,7 @@
       }
     ]
   },
-  {
+  "T1205.001": {
     "ttp_id": "T1205.001",
     "ttp_name": "Port Knocking",
     "is_subtechnique": true,
@@ -3729,7 +3729,7 @@
       }
     ]
   },
-  {
+  "T1205.002": {
     "ttp_id": "T1205.002",
     "ttp_name": "Socket Filters",
     "is_subtechnique": true,
@@ -3740,7 +3740,7 @@
       }
     ]
   },
-  {
+  "T1210": {
     "ttp_id": "T1210",
     "ttp_name": "Exploitation of Remote Services",
     "is_subtechnique": false,
@@ -3779,7 +3779,7 @@
       }
     ]
   },
-  {
+  "T1211": {
     "ttp_id": "T1211",
     "ttp_name": "Exploitation for Defense Evasion",
     "is_subtechnique": false,
@@ -3802,7 +3802,7 @@
       }
     ]
   },
-  {
+  "T1212": {
     "ttp_id": "T1212",
     "ttp_name": "Exploitation for Credential Access",
     "is_subtechnique": false,
@@ -3829,7 +3829,7 @@
       }
     ]
   },
-  {
+  "T1213": {
     "ttp_id": "T1213",
     "ttp_name": "Data from Information Repositories",
     "is_subtechnique": false,
@@ -3864,7 +3864,7 @@
       }
     ]
   },
-  {
+  "T1213.001": {
     "ttp_id": "T1213.001",
     "ttp_name": "Confluence",
     "is_subtechnique": true,
@@ -3883,7 +3883,7 @@
       }
     ]
   },
-  {
+  "T1213.002": {
     "ttp_id": "T1213.002",
     "ttp_name": "Sharepoint",
     "is_subtechnique": true,
@@ -3902,7 +3902,7 @@
       }
     ]
   },
-  {
+  "T1213.003": {
     "ttp_id": "T1213.003",
     "ttp_name": "Code Repositories",
     "is_subtechnique": true,
@@ -3925,7 +3925,7 @@
       }
     ]
   },
-  {
+  "T1213.004": {
     "ttp_id": "T1213.004",
     "ttp_name": "Customer Relationship Management Software",
     "is_subtechnique": true,
@@ -3948,7 +3948,7 @@
       }
     ]
   },
-  {
+  "T1213.005": {
     "ttp_id": "T1213.005",
     "ttp_name": "Messaging Applications",
     "is_subtechnique": true,
@@ -3967,7 +3967,7 @@
       }
     ]
   },
-  {
+  "T1213.006": {
     "ttp_id": "T1213.006",
     "ttp_name": "Databases",
     "is_subtechnique": true,
@@ -3994,7 +3994,7 @@
       }
     ]
   },
-  {
+  "T1216": {
     "ttp_id": "T1216",
     "ttp_name": "System Script Proxy Execution",
     "is_subtechnique": false,
@@ -4005,7 +4005,7 @@
       }
     ]
   },
-  {
+  "T1216.001": {
     "ttp_id": "T1216.001",
     "ttp_name": "PubPrn",
     "is_subtechnique": true,
@@ -4020,7 +4020,7 @@
       }
     ]
   },
-  {
+  "T1216.002": {
     "ttp_id": "T1216.002",
     "ttp_name": "SyncAppvPublishingServer",
     "is_subtechnique": true,
@@ -4031,7 +4031,7 @@
       }
     ]
   },
-  {
+  "T1218": {
     "ttp_id": "T1218",
     "ttp_name": "System Binary Proxy Execution",
     "is_subtechnique": false,
@@ -4062,7 +4062,7 @@
       }
     ]
   },
-  {
+  "T1218.001": {
     "ttp_id": "T1218.001",
     "ttp_name": "Compiled HTML File",
     "is_subtechnique": true,
@@ -4077,7 +4077,7 @@
       }
     ]
   },
-  {
+  "T1218.002": {
     "ttp_id": "T1218.002",
     "ttp_name": "Control Panel",
     "is_subtechnique": true,
@@ -4092,7 +4092,7 @@
       }
     ]
   },
-  {
+  "T1218.003": {
     "ttp_id": "T1218.003",
     "ttp_name": "CMSTP",
     "is_subtechnique": true,
@@ -4107,7 +4107,7 @@
       }
     ]
   },
-  {
+  "T1218.004": {
     "ttp_id": "T1218.004",
     "ttp_name": "InstallUtil",
     "is_subtechnique": true,
@@ -4122,7 +4122,7 @@
       }
     ]
   },
-  {
+  "T1218.005": {
     "ttp_id": "T1218.005",
     "ttp_name": "Mshta",
     "is_subtechnique": true,
@@ -4137,7 +4137,7 @@
       }
     ]
   },
-  {
+  "T1218.007": {
     "ttp_id": "T1218.007",
     "ttp_name": "Msiexec",
     "is_subtechnique": true,
@@ -4152,7 +4152,7 @@
       }
     ]
   },
-  {
+  "T1218.008": {
     "ttp_id": "T1218.008",
     "ttp_name": "Odbcconf",
     "is_subtechnique": true,
@@ -4167,7 +4167,7 @@
       }
     ]
   },
-  {
+  "T1218.009": {
     "ttp_id": "T1218.009",
     "ttp_name": "Regsvcs/Regasm",
     "is_subtechnique": true,
@@ -4182,7 +4182,7 @@
       }
     ]
   },
-  {
+  "T1218.010": {
     "ttp_id": "T1218.010",
     "ttp_name": "Regsvr32",
     "is_subtechnique": true,
@@ -4193,7 +4193,7 @@
       }
     ]
   },
-  {
+  "T1218.011": {
     "ttp_id": "T1218.011",
     "ttp_name": "Rundll32",
     "is_subtechnique": true,
@@ -4204,7 +4204,7 @@
       }
     ]
   },
-  {
+  "T1218.012": {
     "ttp_id": "T1218.012",
     "ttp_name": "Verclsid",
     "is_subtechnique": true,
@@ -4223,7 +4223,7 @@
       }
     ]
   },
-  {
+  "T1218.013": {
     "ttp_id": "T1218.013",
     "ttp_name": "Mavinject",
     "is_subtechnique": true,
@@ -4238,7 +4238,7 @@
       }
     ]
   },
-  {
+  "T1218.014": {
     "ttp_id": "T1218.014",
     "ttp_name": "MMC",
     "is_subtechnique": true,
@@ -4253,7 +4253,7 @@
       }
     ]
   },
-  {
+  "T1218.015": {
     "ttp_id": "T1218.015",
     "ttp_name": "Electron Applications",
     "is_subtechnique": true,
@@ -4272,7 +4272,7 @@
       }
     ]
   },
-  {
+  "T1219": {
     "ttp_id": "T1219",
     "ttp_name": "Remote Access Tools",
     "is_subtechnique": false,
@@ -4299,7 +4299,7 @@
       }
     ]
   },
-  {
+  "T1219.001": {
     "ttp_id": "T1219.001",
     "ttp_name": "IDE Tunneling",
     "is_subtechnique": true,
@@ -4310,7 +4310,7 @@
       }
     ]
   },
-  {
+  "T1219.002": {
     "ttp_id": "T1219.002",
     "ttp_name": "Remote Desktop Software",
     "is_subtechnique": true,
@@ -4329,7 +4329,7 @@
       }
     ]
   },
-  {
+  "T1219.003": {
     "ttp_id": "T1219.003",
     "ttp_name": "Remote Access Hardware",
     "is_subtechnique": true,
@@ -4340,7 +4340,7 @@
       }
     ]
   },
-  {
+  "T1220": {
     "ttp_id": "T1220",
     "ttp_name": "XSL Script Processing",
     "is_subtechnique": false,
@@ -4351,7 +4351,7 @@
       }
     ]
   },
-  {
+  "T1221": {
     "ttp_id": "T1221",
     "ttp_name": "Template Injection",
     "is_subtechnique": false,
@@ -4374,7 +4374,7 @@
       }
     ]
   },
-  {
+  "T1222": {
     "ttp_id": "T1222",
     "ttp_name": "File and Directory Permissions Modification",
     "is_subtechnique": false,
@@ -4389,7 +4389,7 @@
       }
     ]
   },
-  {
+  "T1222.001": {
     "ttp_id": "T1222.001",
     "ttp_name": "Windows File and Directory Permissions Modification",
     "is_subtechnique": true,
@@ -4404,7 +4404,7 @@
       }
     ]
   },
-  {
+  "T1222.002": {
     "ttp_id": "T1222.002",
     "ttp_name": "Linux and Mac File and Directory Permissions Modification",
     "is_subtechnique": true,
@@ -4419,7 +4419,7 @@
       }
     ]
   },
-  {
+  "T1480": {
     "ttp_id": "T1480",
     "ttp_name": "Execution Guardrails",
     "is_subtechnique": false,
@@ -4430,7 +4430,7 @@
       }
     ]
   },
-  {
+  "T1480.001": {
     "ttp_id": "T1480.001",
     "ttp_name": "Environmental Keying",
     "is_subtechnique": true,
@@ -4441,7 +4441,7 @@
       }
     ]
   },
-  {
+  "T1480.002": {
     "ttp_id": "T1480.002",
     "ttp_name": "Mutual Exclusion",
     "is_subtechnique": true,
@@ -4452,7 +4452,7 @@
       }
     ]
   },
-  {
+  "T1482": {
     "ttp_id": "T1482",
     "ttp_name": "Domain Trust Discovery",
     "is_subtechnique": false,
@@ -4467,7 +4467,7 @@
       }
     ]
   },
-  {
+  "T1484": {
     "ttp_id": "T1484",
     "ttp_name": "Domain or Tenant Policy Modification",
     "is_subtechnique": false,
@@ -4486,7 +4486,7 @@
       }
     ]
   },
-  {
+  "T1484.001": {
     "ttp_id": "T1484.001",
     "ttp_name": "Group Policy Modification",
     "is_subtechnique": true,
@@ -4501,7 +4501,7 @@
       }
     ]
   },
-  {
+  "T1484.002": {
     "ttp_id": "T1484.002",
     "ttp_name": "Trust Modification",
     "is_subtechnique": true,
@@ -4516,7 +4516,7 @@
       }
     ]
   },
-  {
+  "T1485": {
     "ttp_id": "T1485",
     "ttp_name": "Data Destruction",
     "is_subtechnique": false,
@@ -4535,7 +4535,7 @@
       }
     ]
   },
-  {
+  "T1485.001": {
     "ttp_id": "T1485.001",
     "ttp_name": "Lifecycle-Triggered Deletion",
     "is_subtechnique": true,
@@ -4550,7 +4550,7 @@
       }
     ]
   },
-  {
+  "T1486": {
     "ttp_id": "T1486",
     "ttp_name": "Data Encrypted for Impact",
     "is_subtechnique": false,
@@ -4565,7 +4565,7 @@
       }
     ]
   },
-  {
+  "T1489": {
     "ttp_id": "T1489",
     "ttp_name": "Service Stop",
     "is_subtechnique": false,
@@ -4592,7 +4592,7 @@
       }
     ]
   },
-  {
+  "T1490": {
     "ttp_id": "T1490",
     "ttp_name": "Inhibit System Recovery",
     "is_subtechnique": false,
@@ -4615,7 +4615,7 @@
       }
     ]
   },
-  {
+  "T1491": {
     "ttp_id": "T1491",
     "ttp_name": "Defacement",
     "is_subtechnique": false,
@@ -4626,7 +4626,7 @@
       }
     ]
   },
-  {
+  "T1491.001": {
     "ttp_id": "T1491.001",
     "ttp_name": "Internal Defacement",
     "is_subtechnique": true,
@@ -4637,7 +4637,7 @@
       }
     ]
   },
-  {
+  "T1491.002": {
     "ttp_id": "T1491.002",
     "ttp_name": "External Defacement",
     "is_subtechnique": true,
@@ -4648,7 +4648,7 @@
       }
     ]
   },
-  {
+  "T1495": {
     "ttp_id": "T1495",
     "ttp_name": "Firmware Corruption",
     "is_subtechnique": false,
@@ -4667,7 +4667,7 @@
       }
     ]
   },
-  {
+  "T1496.003": {
     "ttp_id": "T1496.003",
     "ttp_name": "SMS Pumping",
     "is_subtechnique": true,
@@ -4678,7 +4678,7 @@
       }
     ]
   },
-  {
+  "T1498": {
     "ttp_id": "T1498",
     "ttp_name": "Network Denial of Service",
     "is_subtechnique": false,
@@ -4689,7 +4689,7 @@
       }
     ]
   },
-  {
+  "T1498.001": {
     "ttp_id": "T1498.001",
     "ttp_name": "Direct Network Flood",
     "is_subtechnique": true,
@@ -4700,7 +4700,7 @@
       }
     ]
   },
-  {
+  "T1498.002": {
     "ttp_id": "T1498.002",
     "ttp_name": "Reflection Amplification",
     "is_subtechnique": true,
@@ -4711,7 +4711,7 @@
       }
     ]
   },
-  {
+  "T1499": {
     "ttp_id": "T1499",
     "ttp_name": "Endpoint Denial of Service",
     "is_subtechnique": false,
@@ -4722,7 +4722,7 @@
       }
     ]
   },
-  {
+  "T1499.001": {
     "ttp_id": "T1499.001",
     "ttp_name": "OS Exhaustion Flood",
     "is_subtechnique": true,
@@ -4733,7 +4733,7 @@
       }
     ]
   },
-  {
+  "T1499.002": {
     "ttp_id": "T1499.002",
     "ttp_name": "Service Exhaustion Flood",
     "is_subtechnique": true,
@@ -4744,7 +4744,7 @@
       }
     ]
   },
-  {
+  "T1499.003": {
     "ttp_id": "T1499.003",
     "ttp_name": "Application Exhaustion Flood",
     "is_subtechnique": true,
@@ -4755,7 +4755,7 @@
       }
     ]
   },
-  {
+  "T1499.004": {
     "ttp_id": "T1499.004",
     "ttp_name": "Application or System Exploitation",
     "is_subtechnique": true,
@@ -4766,7 +4766,7 @@
       }
     ]
   },
-  {
+  "T1505": {
     "ttp_id": "T1505",
     "ttp_name": "Server Software Component",
     "is_subtechnique": false,
@@ -4801,7 +4801,7 @@
       }
     ]
   },
-  {
+  "T1505.001": {
     "ttp_id": "T1505.001",
     "ttp_name": "SQL Stored Procedures",
     "is_subtechnique": true,
@@ -4820,7 +4820,7 @@
       }
     ]
   },
-  {
+  "T1505.002": {
     "ttp_id": "T1505.002",
     "ttp_name": "Transport Agent",
     "is_subtechnique": true,
@@ -4839,7 +4839,7 @@
       }
     ]
   },
-  {
+  "T1505.003": {
     "ttp_id": "T1505.003",
     "ttp_name": "Web Shell",
     "is_subtechnique": true,
@@ -4854,7 +4854,7 @@
       }
     ]
   },
-  {
+  "T1505.004": {
     "ttp_id": "T1505.004",
     "ttp_name": "IIS Components",
     "is_subtechnique": true,
@@ -4877,7 +4877,7 @@
       }
     ]
   },
-  {
+  "T1505.005": {
     "ttp_id": "T1505.005",
     "ttp_name": "Terminal Services DLL",
     "is_subtechnique": true,
@@ -4892,7 +4892,7 @@
       }
     ]
   },
-  {
+  "T1505.006": {
     "ttp_id": "T1505.006",
     "ttp_name": "vSphere Installation Bundles",
     "is_subtechnique": true,
@@ -4911,7 +4911,7 @@
       }
     ]
   },
-  {
+  "T1525": {
     "ttp_id": "T1525",
     "ttp_name": "Implant Internal Image",
     "is_subtechnique": false,
@@ -4930,7 +4930,7 @@
       }
     ]
   },
-  {
+  "T1528": {
     "ttp_id": "T1528",
     "ttp_name": "Steal Application Access Token",
     "is_subtechnique": false,
@@ -4953,7 +4953,7 @@
       }
     ]
   },
-  {
+  "T1530": {
     "ttp_id": "T1530",
     "ttp_name": "Data from Cloud Storage",
     "is_subtechnique": false,
@@ -4984,7 +4984,7 @@
       }
     ]
   },
-  {
+  "T1535": {
     "ttp_id": "T1535",
     "ttp_name": "Unused/Unsupported Cloud Regions",
     "is_subtechnique": false,
@@ -4995,7 +4995,7 @@
       }
     ]
   },
-  {
+  "T1537": {
     "ttp_id": "T1537",
     "ttp_name": "Transfer Data to Cloud Account",
     "is_subtechnique": false,
@@ -5018,7 +5018,7 @@
       }
     ]
   },
-  {
+  "T1538": {
     "ttp_id": "T1538",
     "ttp_name": "Cloud Service Dashboard",
     "is_subtechnique": false,
@@ -5029,7 +5029,7 @@
       }
     ]
   },
-  {
+  "T1539": {
     "ttp_id": "T1539",
     "ttp_name": "Steal Web Session Cookie",
     "is_subtechnique": false,
@@ -5060,7 +5060,7 @@
       }
     ]
   },
-  {
+  "T1542": {
     "ttp_id": "T1542",
     "ttp_name": "Pre-OS Boot",
     "is_subtechnique": false,
@@ -5087,7 +5087,7 @@
       }
     ]
   },
-  {
+  "T1542.001": {
     "ttp_id": "T1542.001",
     "ttp_name": "System Firmware",
     "is_subtechnique": true,
@@ -5106,7 +5106,7 @@
       }
     ]
   },
-  {
+  "T1542.002": {
     "ttp_id": "T1542.002",
     "ttp_name": "Component Firmware",
     "is_subtechnique": true,
@@ -5117,7 +5117,7 @@
       }
     ]
   },
-  {
+  "T1542.003": {
     "ttp_id": "T1542.003",
     "ttp_name": "Bootkit",
     "is_subtechnique": true,
@@ -5132,7 +5132,7 @@
       }
     ]
   },
-  {
+  "T1542.004": {
     "ttp_id": "T1542.004",
     "ttp_name": "ROMMONkit",
     "is_subtechnique": true,
@@ -5151,7 +5151,7 @@
       }
     ]
   },
-  {
+  "T1542.005": {
     "ttp_id": "T1542.005",
     "ttp_name": "TFTP Boot",
     "is_subtechnique": true,
@@ -5182,7 +5182,7 @@
       }
     ]
   },
-  {
+  "T1543": {
     "ttp_id": "T1543",
     "ttp_name": "Create or Modify System Process",
     "is_subtechnique": false,
@@ -5225,7 +5225,7 @@
       }
     ]
   },
-  {
+  "T1543.001": {
     "ttp_id": "T1543.001",
     "ttp_name": "Launch Agent",
     "is_subtechnique": true,
@@ -5236,7 +5236,7 @@
       }
     ]
   },
-  {
+  "T1543.002": {
     "ttp_id": "T1543.002",
     "ttp_name": "Systemd Service",
     "is_subtechnique": true,
@@ -5259,7 +5259,7 @@
       }
     ]
   },
-  {
+  "T1543.003": {
     "ttp_id": "T1543.003",
     "ttp_name": "Windows Service",
     "is_subtechnique": true,
@@ -5286,7 +5286,7 @@
       }
     ]
   },
-  {
+  "T1543.004": {
     "ttp_id": "T1543.004",
     "ttp_name": "Launch Daemon",
     "is_subtechnique": true,
@@ -5301,7 +5301,7 @@
       }
     ]
   },
-  {
+  "T1543.005": {
     "ttp_id": "T1543.005",
     "ttp_name": "Container Service",
     "is_subtechnique": true,
@@ -5316,7 +5316,7 @@
       }
     ]
   },
-  {
+  "T1546": {
     "ttp_id": "T1546",
     "ttp_name": "Event Triggered Execution",
     "is_subtechnique": false,
@@ -5331,7 +5331,7 @@
       }
     ]
   },
-  {
+  "T1546.002": {
     "ttp_id": "T1546.002",
     "ttp_name": "Screensaver",
     "is_subtechnique": true,
@@ -5346,7 +5346,7 @@
       }
     ]
   },
-  {
+  "T1546.003": {
     "ttp_id": "T1546.003",
     "ttp_name": "Windows Management Instrumentation Event Subscription",
     "is_subtechnique": true,
@@ -5365,7 +5365,7 @@
       }
     ]
   },
-  {
+  "T1546.004": {
     "ttp_id": "T1546.004",
     "ttp_name": "Unix Shell Configuration Modification",
     "is_subtechnique": true,
@@ -5376,7 +5376,7 @@
       }
     ]
   },
-  {
+  "T1546.006": {
     "ttp_id": "T1546.006",
     "ttp_name": "LC_LOAD_DYLIB Addition",
     "is_subtechnique": true,
@@ -5395,7 +5395,7 @@
       }
     ]
   },
-  {
+  "T1546.008": {
     "ttp_id": "T1546.008",
     "ttp_name": "Accessibility Features",
     "is_subtechnique": true,
@@ -5414,7 +5414,7 @@
       }
     ]
   },
-  {
+  "T1546.009": {
     "ttp_id": "T1546.009",
     "ttp_name": "AppCert DLLs",
     "is_subtechnique": true,
@@ -5425,7 +5425,7 @@
       }
     ]
   },
-  {
+  "T1546.010": {
     "ttp_id": "T1546.010",
     "ttp_name": "AppInit DLLs",
     "is_subtechnique": true,
@@ -5440,7 +5440,7 @@
       }
     ]
   },
-  {
+  "T1546.011": {
     "ttp_id": "T1546.011",
     "ttp_name": "Application Shimming",
     "is_subtechnique": true,
@@ -5455,7 +5455,7 @@
       }
     ]
   },
-  {
+  "T1546.013": {
     "ttp_id": "T1546.013",
     "ttp_name": "PowerShell Profile",
     "is_subtechnique": true,
@@ -5474,7 +5474,7 @@
       }
     ]
   },
-  {
+  "T1546.014": {
     "ttp_id": "T1546.014",
     "ttp_name": "Emond",
     "is_subtechnique": true,
@@ -5485,7 +5485,7 @@
       }
     ]
   },
-  {
+  "T1547.002": {
     "ttp_id": "T1547.002",
     "ttp_name": "Authentication Package",
     "is_subtechnique": true,
@@ -5496,7 +5496,7 @@
       }
     ]
   },
-  {
+  "T1547.003": {
     "ttp_id": "T1547.003",
     "ttp_name": "Time Providers",
     "is_subtechnique": true,
@@ -5511,7 +5511,7 @@
       }
     ]
   },
-  {
+  "T1547.004": {
     "ttp_id": "T1547.004",
     "ttp_name": "Winlogon Helper DLL",
     "is_subtechnique": true,
@@ -5526,7 +5526,7 @@
       }
     ]
   },
-  {
+  "T1547.005": {
     "ttp_id": "T1547.005",
     "ttp_name": "Security Support Provider",
     "is_subtechnique": true,
@@ -5537,7 +5537,7 @@
       }
     ]
   },
-  {
+  "T1547.006": {
     "ttp_id": "T1547.006",
     "ttp_name": "Kernel Modules and Extensions",
     "is_subtechnique": true,
@@ -5560,7 +5560,7 @@
       }
     ]
   },
-  {
+  "T1547.007": {
     "ttp_id": "T1547.007",
     "ttp_name": "Re-opened Applications",
     "is_subtechnique": true,
@@ -5575,7 +5575,7 @@
       }
     ]
   },
-  {
+  "T1547.008": {
     "ttp_id": "T1547.008",
     "ttp_name": "LSASS Driver",
     "is_subtechnique": true,
@@ -5594,7 +5594,7 @@
       }
     ]
   },
-  {
+  "T1547.009": {
     "ttp_id": "T1547.009",
     "ttp_name": "Shortcut Modification",
     "is_subtechnique": true,
@@ -5613,7 +5613,7 @@
       }
     ]
   },
-  {
+  "T1547.012": {
     "ttp_id": "T1547.012",
     "ttp_name": "Print Processors",
     "is_subtechnique": true,
@@ -5624,7 +5624,7 @@
       }
     ]
   },
-  {
+  "T1547.013": {
     "ttp_id": "T1547.013",
     "ttp_name": "XDG Autostart Entries",
     "is_subtechnique": true,
@@ -5643,7 +5643,7 @@
       }
     ]
   },
-  {
+  "T1548": {
     "ttp_id": "T1548",
     "ttp_name": "Abuse Elevation Control Mechanism",
     "is_subtechnique": false,
@@ -5682,7 +5682,7 @@
       }
     ]
   },
-  {
+  "T1548.001": {
     "ttp_id": "T1548.001",
     "ttp_name": "Setuid and Setgid",
     "is_subtechnique": true,
@@ -5693,7 +5693,7 @@
       }
     ]
   },
-  {
+  "T1548.002": {
     "ttp_id": "T1548.002",
     "ttp_name": "Bypass User Account Control",
     "is_subtechnique": true,
@@ -5716,7 +5716,7 @@
       }
     ]
   },
-  {
+  "T1548.003": {
     "ttp_id": "T1548.003",
     "ttp_name": "Sudo and Sudo Caching",
     "is_subtechnique": true,
@@ -5735,7 +5735,7 @@
       }
     ]
   },
-  {
+  "T1548.004": {
     "ttp_id": "T1548.004",
     "ttp_name": "Elevated Execution with Prompt",
     "is_subtechnique": true,
@@ -5746,7 +5746,7 @@
       }
     ]
   },
-  {
+  "T1548.005": {
     "ttp_id": "T1548.005",
     "ttp_name": "Temporary Elevated Cloud Access",
     "is_subtechnique": true,
@@ -5757,7 +5757,7 @@
       }
     ]
   },
-  {
+  "T1548.006": {
     "ttp_id": "T1548.006",
     "ttp_name": "TCC Manipulation",
     "is_subtechnique": true,
@@ -5776,7 +5776,7 @@
       }
     ]
   },
-  {
+  "T1550": {
     "ttp_id": "T1550",
     "ttp_name": "Use Alternate Authentication Material",
     "is_subtechnique": false,
@@ -5811,7 +5811,7 @@
       }
     ]
   },
-  {
+  "T1550.001": {
     "ttp_id": "T1550.001",
     "ttp_name": "Application Access Token",
     "is_subtechnique": true,
@@ -5838,7 +5838,7 @@
       }
     ]
   },
-  {
+  "T1550.002": {
     "ttp_id": "T1550.002",
     "ttp_name": "Pass the Hash",
     "is_subtechnique": true,
@@ -5861,7 +5861,7 @@
       }
     ]
   },
-  {
+  "T1550.003": {
     "ttp_id": "T1550.003",
     "ttp_name": "Pass the Ticket",
     "is_subtechnique": true,
@@ -5884,7 +5884,7 @@
       }
     ]
   },
-  {
+  "T1550.004": {
     "ttp_id": "T1550.004",
     "ttp_name": "Web Session Cookie",
     "is_subtechnique": true,
@@ -5895,7 +5895,7 @@
       }
     ]
   },
-  {
+  "T1552": {
     "ttp_id": "T1552",
     "ttp_name": "Unsecured Credentials",
     "is_subtechnique": false,
@@ -5946,7 +5946,7 @@
       }
     ]
   },
-  {
+  "T1552.001": {
     "ttp_id": "T1552.001",
     "ttp_name": "Credentials In Files",
     "is_subtechnique": true,
@@ -5969,7 +5969,7 @@
       }
     ]
   },
-  {
+  "T1552.002": {
     "ttp_id": "T1552.002",
     "ttp_name": "Credentials in Registry",
     "is_subtechnique": true,
@@ -5988,7 +5988,7 @@
       }
     ]
   },
-  {
+  "T1552.003": {
     "ttp_id": "T1552.003",
     "ttp_name": "Shell History",
     "is_subtechnique": true,
@@ -5999,7 +5999,7 @@
       }
     ]
   },
-  {
+  "T1552.004": {
     "ttp_id": "T1552.004",
     "ttp_name": "Private Keys",
     "is_subtechnique": true,
@@ -6022,7 +6022,7 @@
       }
     ]
   },
-  {
+  "T1552.005": {
     "ttp_id": "T1552.005",
     "ttp_name": "Cloud Instance Metadata API",
     "is_subtechnique": true,
@@ -6041,7 +6041,7 @@
       }
     ]
   },
-  {
+  "T1552.006": {
     "ttp_id": "T1552.006",
     "ttp_name": "Group Policy Preferences",
     "is_subtechnique": true,
@@ -6060,7 +6060,7 @@
       }
     ]
   },
-  {
+  "T1552.007": {
     "ttp_id": "T1552.007",
     "ttp_name": "Container API",
     "is_subtechnique": true,
@@ -6083,7 +6083,7 @@
       }
     ]
   },
-  {
+  "T1552.008": {
     "ttp_id": "T1552.008",
     "ttp_name": "Chat Messages",
     "is_subtechnique": true,
@@ -6098,7 +6098,7 @@
       }
     ]
   },
-  {
+  "T1553": {
     "ttp_id": "T1553",
     "ttp_name": "Subvert Trust Controls",
     "is_subtechnique": false,
@@ -6125,7 +6125,7 @@
       }
     ]
   },
-  {
+  "T1553.001": {
     "ttp_id": "T1553.001",
     "ttp_name": "Gatekeeper Bypass",
     "is_subtechnique": true,
@@ -6136,7 +6136,7 @@
       }
     ]
   },
-  {
+  "T1553.003": {
     "ttp_id": "T1553.003",
     "ttp_name": "SIP and Trust Provider Hijacking",
     "is_subtechnique": true,
@@ -6155,7 +6155,7 @@
       }
     ]
   },
-  {
+  "T1553.004": {
     "ttp_id": "T1553.004",
     "ttp_name": "Install Root Certificate",
     "is_subtechnique": true,
@@ -6170,7 +6170,7 @@
       }
     ]
   },
-  {
+  "T1553.005": {
     "ttp_id": "T1553.005",
     "ttp_name": "Mark-of-the-Web Bypass",
     "is_subtechnique": true,
@@ -6185,7 +6185,7 @@
       }
     ]
   },
-  {
+  "T1553.006": {
     "ttp_id": "T1553.006",
     "ttp_name": "Code Signing Policy Modification",
     "is_subtechnique": true,
@@ -6204,7 +6204,7 @@
       }
     ]
   },
-  {
+  "T1554": {
     "ttp_id": "T1554",
     "ttp_name": "Compromise Host Software Binary",
     "is_subtechnique": false,
@@ -6215,7 +6215,7 @@
       }
     ]
   },
-  {
+  "T1555": {
     "ttp_id": "T1555",
     "ttp_name": "Credentials from Password Stores",
     "is_subtechnique": false,
@@ -6234,7 +6234,7 @@
       }
     ]
   },
-  {
+  "T1555.001": {
     "ttp_id": "T1555.001",
     "ttp_name": "Keychain",
     "is_subtechnique": true,
@@ -6245,7 +6245,7 @@
       }
     ]
   },
-  {
+  "T1555.003": {
     "ttp_id": "T1555.003",
     "ttp_name": "Credentials from Web Browsers",
     "is_subtechnique": true,
@@ -6272,7 +6272,7 @@
       }
     ]
   },
-  {
+  "T1555.004": {
     "ttp_id": "T1555.004",
     "ttp_name": "Windows Credential Manager",
     "is_subtechnique": true,
@@ -6283,7 +6283,7 @@
       }
     ]
   },
-  {
+  "T1555.005": {
     "ttp_id": "T1555.005",
     "ttp_name": "Password Managers",
     "is_subtechnique": true,
@@ -6310,7 +6310,7 @@
       }
     ]
   },
-  {
+  "T1555.006": {
     "ttp_id": "T1555.006",
     "ttp_name": "Cloud Secrets Management Stores",
     "is_subtechnique": true,
@@ -6321,7 +6321,7 @@
       }
     ]
   },
-  {
+  "T1556": {
     "ttp_id": "T1556",
     "ttp_name": "Modify Authentication Process",
     "is_subtechnique": false,
@@ -6364,7 +6364,7 @@
       }
     ]
   },
-  {
+  "T1556.001": {
     "ttp_id": "T1556.001",
     "ttp_name": "Domain Controller Authentication",
     "is_subtechnique": true,
@@ -6387,7 +6387,7 @@
       }
     ]
   },
-  {
+  "T1556.002": {
     "ttp_id": "T1556.002",
     "ttp_name": "Password Filter DLL",
     "is_subtechnique": true,
@@ -6398,7 +6398,7 @@
       }
     ]
   },
-  {
+  "T1556.003": {
     "ttp_id": "T1556.003",
     "ttp_name": "Pluggable Authentication Modules",
     "is_subtechnique": true,
@@ -6413,7 +6413,7 @@
       }
     ]
   },
-  {
+  "T1556.004": {
     "ttp_id": "T1556.004",
     "ttp_name": "Network Device Authentication",
     "is_subtechnique": true,
@@ -6428,7 +6428,7 @@
       }
     ]
   },
-  {
+  "T1556.005": {
     "ttp_id": "T1556.005",
     "ttp_name": "Reversible Encryption",
     "is_subtechnique": true,
@@ -6443,7 +6443,7 @@
       }
     ]
   },
-  {
+  "T1556.006": {
     "ttp_id": "T1556.006",
     "ttp_name": "Multi-Factor Authentication",
     "is_subtechnique": true,
@@ -6462,7 +6462,7 @@
       }
     ]
   },
-  {
+  "T1556.007": {
     "ttp_id": "T1556.007",
     "ttp_name": "Hybrid Identity",
     "is_subtechnique": true,
@@ -6481,7 +6481,7 @@
       }
     ]
   },
-  {
+  "T1556.008": {
     "ttp_id": "T1556.008",
     "ttp_name": "Network Provider DLL",
     "is_subtechnique": true,
@@ -6500,7 +6500,7 @@
       }
     ]
   },
-  {
+  "T1556.009": {
     "ttp_id": "T1556.009",
     "ttp_name": "Conditional Access Policies",
     "is_subtechnique": true,
@@ -6511,7 +6511,7 @@
       }
     ]
   },
-  {
+  "T1557": {
     "ttp_id": "T1557",
     "ttp_name": "Adversary-in-the-Middle",
     "is_subtechnique": false,
@@ -6546,7 +6546,7 @@
       }
     ]
   },
-  {
+  "T1557.001": {
     "ttp_id": "T1557.001",
     "ttp_name": "LLMNR/NBT-NS Poisoning and SMB Relay",
     "is_subtechnique": true,
@@ -6569,7 +6569,7 @@
       }
     ]
   },
-  {
+  "T1557.002": {
     "ttp_id": "T1557.002",
     "ttp_name": "ARP Cache Poisoning",
     "is_subtechnique": true,
@@ -6600,7 +6600,7 @@
       }
     ]
   },
-  {
+  "T1557.003": {
     "ttp_id": "T1557.003",
     "ttp_name": "DHCP Spoofing",
     "is_subtechnique": true,
@@ -6615,7 +6615,7 @@
       }
     ]
   },
-  {
+  "T1557.004": {
     "ttp_id": "T1557.004",
     "ttp_name": "Evil Twin",
     "is_subtechnique": true,
@@ -6630,7 +6630,7 @@
       }
     ]
   },
-  {
+  "T1558": {
     "ttp_id": "T1558",
     "ttp_name": "Steal or Forge Kerberos Tickets",
     "is_subtechnique": false,
@@ -6661,7 +6661,7 @@
       }
     ]
   },
-  {
+  "T1558.001": {
     "ttp_id": "T1558.001",
     "ttp_name": "Golden Ticket",
     "is_subtechnique": true,
@@ -6676,7 +6676,7 @@
       }
     ]
   },
-  {
+  "T1558.002": {
     "ttp_id": "T1558.002",
     "ttp_name": "Silver Ticket",
     "is_subtechnique": true,
@@ -6695,7 +6695,7 @@
       }
     ]
   },
-  {
+  "T1558.003": {
     "ttp_id": "T1558.003",
     "ttp_name": "Kerberoasting",
     "is_subtechnique": true,
@@ -6714,7 +6714,7 @@
       }
     ]
   },
-  {
+  "T1558.004": {
     "ttp_id": "T1558.004",
     "ttp_name": "AS-REP Roasting",
     "is_subtechnique": true,
@@ -6733,7 +6733,7 @@
       }
     ]
   },
-  {
+  "T1558.005": {
     "ttp_id": "T1558.005",
     "ttp_name": "Ccache Files",
     "is_subtechnique": true,
@@ -6748,7 +6748,7 @@
       }
     ]
   },
-  {
+  "T1559": {
     "ttp_id": "T1559",
     "ttp_name": "Inter-Process Communication",
     "is_subtechnique": false,
@@ -6779,7 +6779,7 @@
       }
     ]
   },
-  {
+  "T1559.001": {
     "ttp_id": "T1559.001",
     "ttp_name": "Component Object Model",
     "is_subtechnique": true,
@@ -6794,7 +6794,7 @@
       }
     ]
   },
-  {
+  "T1559.002": {
     "ttp_id": "T1559.002",
     "ttp_name": "Dynamic Data Exchange",
     "is_subtechnique": true,
@@ -6817,7 +6817,7 @@
       }
     ]
   },
-  {
+  "T1559.003": {
     "ttp_id": "T1559.003",
     "ttp_name": "XPC Services",
     "is_subtechnique": true,
@@ -6828,7 +6828,7 @@
       }
     ]
   },
-  {
+  "T1560": {
     "ttp_id": "T1560",
     "ttp_name": "Archive Collected Data",
     "is_subtechnique": false,
@@ -6839,7 +6839,7 @@
       }
     ]
   },
-  {
+  "T1560.001": {
     "ttp_id": "T1560.001",
     "ttp_name": "Archive via Utility",
     "is_subtechnique": true,
@@ -6850,7 +6850,7 @@
       }
     ]
   },
-  {
+  "T1561": {
     "ttp_id": "T1561",
     "ttp_name": "Disk Wipe",
     "is_subtechnique": false,
@@ -6861,7 +6861,7 @@
       }
     ]
   },
-  {
+  "T1561.001": {
     "ttp_id": "T1561.001",
     "ttp_name": "Disk Content Wipe",
     "is_subtechnique": true,
@@ -6872,7 +6872,7 @@
       }
     ]
   },
-  {
+  "T1561.002": {
     "ttp_id": "T1561.002",
     "ttp_name": "Disk Structure Wipe",
     "is_subtechnique": true,
@@ -6883,7 +6883,7 @@
       }
     ]
   },
-  {
+  "T1562": {
     "ttp_id": "T1562",
     "ttp_name": "Impair Defenses",
     "is_subtechnique": false,
@@ -6918,7 +6918,7 @@
       }
     ]
   },
-  {
+  "T1562.001": {
     "ttp_id": "T1562.001",
     "ttp_name": "Disable or Modify Tools",
     "is_subtechnique": true,
@@ -6945,7 +6945,7 @@
       }
     ]
   },
-  {
+  "T1562.002": {
     "ttp_id": "T1562.002",
     "ttp_name": "Disable Windows Event Logging",
     "is_subtechnique": true,
@@ -6968,7 +6968,7 @@
       }
     ]
   },
-  {
+  "T1562.003": {
     "ttp_id": "T1562.003",
     "ttp_name": "Impair Command History Logging",
     "is_subtechnique": true,
@@ -6983,7 +6983,7 @@
       }
     ]
   },
-  {
+  "T1562.004": {
     "ttp_id": "T1562.004",
     "ttp_name": "Disable or Modify System Firewall",
     "is_subtechnique": true,
@@ -7006,7 +7006,7 @@
       }
     ]
   },
-  {
+  "T1562.006": {
     "ttp_id": "T1562.006",
     "ttp_name": "Indicator Blocking",
     "is_subtechnique": true,
@@ -7025,7 +7025,7 @@
       }
     ]
   },
-  {
+  "T1562.007": {
     "ttp_id": "T1562.007",
     "ttp_name": "Disable or Modify Cloud Firewall",
     "is_subtechnique": true,
@@ -7040,7 +7040,7 @@
       }
     ]
   },
-  {
+  "T1562.008": {
     "ttp_id": "T1562.008",
     "ttp_name": "Disable or Modify Cloud Logs",
     "is_subtechnique": true,
@@ -7051,7 +7051,7 @@
       }
     ]
   },
-  {
+  "T1562.009": {
     "ttp_id": "T1562.009",
     "ttp_name": "Safe Mode Boot",
     "is_subtechnique": true,
@@ -7066,7 +7066,7 @@
       }
     ]
   },
-  {
+  "T1562.010": {
     "ttp_id": "T1562.010",
     "ttp_name": "Downgrade Attack",
     "is_subtechnique": true,
@@ -7081,7 +7081,7 @@
       }
     ]
   },
-  {
+  "T1562.011": {
     "ttp_id": "T1562.011",
     "ttp_name": "Spoof Security Alerting",
     "is_subtechnique": true,
@@ -7092,7 +7092,7 @@
       }
     ]
   },
-  {
+  "T1562.012": {
     "ttp_id": "T1562.012",
     "ttp_name": "Disable or Modify Linux Audit System",
     "is_subtechnique": true,
@@ -7107,7 +7107,7 @@
       }
     ]
   },
-  {
+  "T1562.013": {
     "ttp_id": "T1562.013",
     "ttp_name": "Disable or Modify Network Device Firewall",
     "is_subtechnique": true,
@@ -7126,7 +7126,7 @@
       }
     ]
   },
-  {
+  "T1563": {
     "ttp_id": "T1563",
     "ttp_name": "Remote Service Session Hijacking",
     "is_subtechnique": false,
@@ -7153,7 +7153,7 @@
       }
     ]
   },
-  {
+  "T1563.001": {
     "ttp_id": "T1563.001",
     "ttp_name": "SSH Hijacking",
     "is_subtechnique": true,
@@ -7176,7 +7176,7 @@
       }
     ]
   },
-  {
+  "T1563.002": {
     "ttp_id": "T1563.002",
     "ttp_name": "RDP Hijacking",
     "is_subtechnique": true,
@@ -7211,7 +7211,7 @@
       }
     ]
   },
-  {
+  "T1564": {
     "ttp_id": "T1564",
     "ttp_name": "Hide Artifacts",
     "is_subtechnique": false,
@@ -7234,7 +7234,7 @@
       }
     ]
   },
-  {
+  "T1564.002": {
     "ttp_id": "T1564.002",
     "ttp_name": "Hidden Users",
     "is_subtechnique": true,
@@ -7245,7 +7245,7 @@
       }
     ]
   },
-  {
+  "T1564.003": {
     "ttp_id": "T1564.003",
     "ttp_name": "Hidden Window",
     "is_subtechnique": true,
@@ -7260,7 +7260,7 @@
       }
     ]
   },
-  {
+  "T1564.004": {
     "ttp_id": "T1564.004",
     "ttp_name": "NTFS File Attributes",
     "is_subtechnique": true,
@@ -7271,7 +7271,7 @@
       }
     ]
   },
-  {
+  "T1564.006": {
     "ttp_id": "T1564.006",
     "ttp_name": "Run Virtual Instance",
     "is_subtechnique": true,
@@ -7290,7 +7290,7 @@
       }
     ]
   },
-  {
+  "T1564.007": {
     "ttp_id": "T1564.007",
     "ttp_name": "VBA Stomping",
     "is_subtechnique": true,
@@ -7301,7 +7301,7 @@
       }
     ]
   },
-  {
+  "T1564.008": {
     "ttp_id": "T1564.008",
     "ttp_name": "Email Hiding Rules",
     "is_subtechnique": true,
@@ -7312,7 +7312,7 @@
       }
     ]
   },
-  {
+  "T1564.009": {
     "ttp_id": "T1564.009",
     "ttp_name": "Resource Forking",
     "is_subtechnique": true,
@@ -7323,7 +7323,7 @@
       }
     ]
   },
-  {
+  "T1564.012": {
     "ttp_id": "T1564.012",
     "ttp_name": "File/Path Exclusions",
     "is_subtechnique": true,
@@ -7338,7 +7338,7 @@
       }
     ]
   },
-  {
+  "T1564.014": {
     "ttp_id": "T1564.014",
     "ttp_name": "Extended Attributes",
     "is_subtechnique": true,
@@ -7349,7 +7349,7 @@
       }
     ]
   },
-  {
+  "T1565": {
     "ttp_id": "T1565",
     "ttp_name": "Data Manipulation",
     "is_subtechnique": false,
@@ -7372,7 +7372,7 @@
       }
     ]
   },
-  {
+  "T1565.001": {
     "ttp_id": "T1565.001",
     "ttp_name": "Stored Data Manipulation",
     "is_subtechnique": true,
@@ -7391,7 +7391,7 @@
       }
     ]
   },
-  {
+  "T1565.002": {
     "ttp_id": "T1565.002",
     "ttp_name": "Transmitted Data Manipulation",
     "is_subtechnique": true,
@@ -7402,7 +7402,7 @@
       }
     ]
   },
-  {
+  "T1565.003": {
     "ttp_id": "T1565.003",
     "ttp_name": "Runtime Data Manipulation",
     "is_subtechnique": true,
@@ -7417,7 +7417,7 @@
       }
     ]
   },
-  {
+  "T1566": {
     "ttp_id": "T1566",
     "ttp_name": "Phishing",
     "is_subtechnique": false,
@@ -7448,7 +7448,7 @@
       }
     ]
   },
-  {
+  "T1566.001": {
     "ttp_id": "T1566.001",
     "ttp_name": "Spearphishing Attachment",
     "is_subtechnique": true,
@@ -7483,7 +7483,7 @@
       }
     ]
   },
-  {
+  "T1566.002": {
     "ttp_id": "T1566.002",
     "ttp_name": "Spearphishing Link",
     "is_subtechnique": true,
@@ -7510,7 +7510,7 @@
       }
     ]
   },
-  {
+  "T1566.003": {
     "ttp_id": "T1566.003",
     "ttp_name": "Spearphishing via Service",
     "is_subtechnique": true,
@@ -7537,7 +7537,7 @@
       }
     ]
   },
-  {
+  "T1566.004": {
     "ttp_id": "T1566.004",
     "ttp_name": "Spearphishing Voice",
     "is_subtechnique": true,
@@ -7548,7 +7548,7 @@
       }
     ]
   },
-  {
+  "T1567": {
     "ttp_id": "T1567",
     "ttp_name": "Exfiltration Over Web Service",
     "is_subtechnique": false,
@@ -7563,7 +7563,7 @@
       }
     ]
   },
-  {
+  "T1567.001": {
     "ttp_id": "T1567.001",
     "ttp_name": "Exfiltration to Code Repository",
     "is_subtechnique": true,
@@ -7574,7 +7574,7 @@
       }
     ]
   },
-  {
+  "T1567.002": {
     "ttp_id": "T1567.002",
     "ttp_name": "Exfiltration to Cloud Storage",
     "is_subtechnique": true,
@@ -7585,7 +7585,7 @@
       }
     ]
   },
-  {
+  "T1567.003": {
     "ttp_id": "T1567.003",
     "ttp_name": "Exfiltration to Text Storage Sites",
     "is_subtechnique": true,
@@ -7596,7 +7596,7 @@
       }
     ]
   },
-  {
+  "T1567.004": {
     "ttp_id": "T1567.004",
     "ttp_name": "Exfiltration Over Webhook",
     "is_subtechnique": true,
@@ -7607,7 +7607,7 @@
       }
     ]
   },
-  {
+  "T1568": {
     "ttp_id": "T1568",
     "ttp_name": "Dynamic Resolution",
     "is_subtechnique": false,
@@ -7622,7 +7622,7 @@
       }
     ]
   },
-  {
+  "T1568.002": {
     "ttp_id": "T1568.002",
     "ttp_name": "Domain Generation Algorithms",
     "is_subtechnique": true,
@@ -7637,7 +7637,7 @@
       }
     ]
   },
-  {
+  "T1569": {
     "ttp_id": "T1569",
     "ttp_name": "System Services",
     "is_subtechnique": false,
@@ -7660,7 +7660,7 @@
       }
     ]
   },
-  {
+  "T1569.001": {
     "ttp_id": "T1569.001",
     "ttp_name": "Launchctl",
     "is_subtechnique": true,
@@ -7671,7 +7671,7 @@
       }
     ]
   },
-  {
+  "T1569.002": {
     "ttp_id": "T1569.002",
     "ttp_name": "Service Execution",
     "is_subtechnique": true,
@@ -7690,7 +7690,7 @@
       }
     ]
   },
-  {
+  "T1569.003": {
     "ttp_id": "T1569.003",
     "ttp_name": "Systemctl",
     "is_subtechnique": true,
@@ -7701,7 +7701,7 @@
       }
     ]
   },
-  {
+  "T1570": {
     "ttp_id": "T1570",
     "ttp_name": "Lateral Tool Transfer",
     "is_subtechnique": false,
@@ -7716,7 +7716,7 @@
       }
     ]
   },
-  {
+  "T1571": {
     "ttp_id": "T1571",
     "ttp_name": "Non-Standard Port",
     "is_subtechnique": false,
@@ -7731,7 +7731,7 @@
       }
     ]
   },
-  {
+  "T1572": {
     "ttp_id": "T1572",
     "ttp_name": "Protocol Tunneling",
     "is_subtechnique": false,
@@ -7746,7 +7746,7 @@
       }
     ]
   },
-  {
+  "T1573": {
     "ttp_id": "T1573",
     "ttp_name": "Encrypted Channel",
     "is_subtechnique": false,
@@ -7761,7 +7761,7 @@
       }
     ]
   },
-  {
+  "T1573.001": {
     "ttp_id": "T1573.001",
     "ttp_name": "Symmetric Cryptography",
     "is_subtechnique": true,
@@ -7772,7 +7772,7 @@
       }
     ]
   },
-  {
+  "T1573.002": {
     "ttp_id": "T1573.002",
     "ttp_name": "Asymmetric Cryptography",
     "is_subtechnique": true,
@@ -7787,7 +7787,7 @@
       }
     ]
   },
-  {
+  "T1574": {
     "ttp_id": "T1574",
     "ttp_name": "Hijack Execution Flow",
     "is_subtechnique": false,
@@ -7834,7 +7834,7 @@
       }
     ]
   },
-  {
+  "T1574.001": {
     "ttp_id": "T1574.001",
     "ttp_name": "DLL",
     "is_subtechnique": true,
@@ -7861,7 +7861,7 @@
       }
     ]
   },
-  {
+  "T1574.004": {
     "ttp_id": "T1574.004",
     "ttp_name": "Dylib Hijacking",
     "is_subtechnique": true,
@@ -7872,7 +7872,7 @@
       }
     ]
   },
-  {
+  "T1574.005": {
     "ttp_id": "T1574.005",
     "ttp_name": "Executable Installer File Permissions Weakness",
     "is_subtechnique": true,
@@ -7891,7 +7891,7 @@
       }
     ]
   },
-  {
+  "T1574.006": {
     "ttp_id": "T1574.006",
     "ttp_name": "Dynamic Linker Hijacking",
     "is_subtechnique": true,
@@ -7906,7 +7906,7 @@
       }
     ]
   },
-  {
+  "T1574.007": {
     "ttp_id": "T1574.007",
     "ttp_name": "Path Interception by PATH Environment Variable",
     "is_subtechnique": true,
@@ -7925,7 +7925,7 @@
       }
     ]
   },
-  {
+  "T1574.008": {
     "ttp_id": "T1574.008",
     "ttp_name": "Path Interception by Search Order Hijacking",
     "is_subtechnique": true,
@@ -7944,7 +7944,7 @@
       }
     ]
   },
-  {
+  "T1574.009": {
     "ttp_id": "T1574.009",
     "ttp_name": "Path Interception by Unquoted Path",
     "is_subtechnique": true,
@@ -7963,7 +7963,7 @@
       }
     ]
   },
-  {
+  "T1574.010": {
     "ttp_id": "T1574.010",
     "ttp_name": "Services File Permissions Weakness",
     "is_subtechnique": true,
@@ -7982,7 +7982,7 @@
       }
     ]
   },
-  {
+  "T1574.011": {
     "ttp_id": "T1574.011",
     "ttp_name": "Services Registry Permissions Weakness",
     "is_subtechnique": true,
@@ -7993,7 +7993,7 @@
       }
     ]
   },
-  {
+  "T1574.012": {
     "ttp_id": "T1574.012",
     "ttp_name": "COR_PROFILER",
     "is_subtechnique": true,
@@ -8012,7 +8012,7 @@
       }
     ]
   },
-  {
+  "T1574.013": {
     "ttp_id": "T1574.013",
     "ttp_name": "KernelCallbackTable",
     "is_subtechnique": true,
@@ -8023,7 +8023,7 @@
       }
     ]
   },
-  {
+  "T1574.014": {
     "ttp_id": "T1574.014",
     "ttp_name": "AppDomainManager",
     "is_subtechnique": true,
@@ -8034,7 +8034,7 @@
       }
     ]
   },
-  {
+  "T1578": {
     "ttp_id": "T1578",
     "ttp_name": "Modify Cloud Compute Infrastructure",
     "is_subtechnique": false,
@@ -8049,7 +8049,7 @@
       }
     ]
   },
-  {
+  "T1578.001": {
     "ttp_id": "T1578.001",
     "ttp_name": "Create Snapshot",
     "is_subtechnique": true,
@@ -8064,7 +8064,7 @@
       }
     ]
   },
-  {
+  "T1578.002": {
     "ttp_id": "T1578.002",
     "ttp_name": "Create Cloud Instance",
     "is_subtechnique": true,
@@ -8079,7 +8079,7 @@
       }
     ]
   },
-  {
+  "T1578.003": {
     "ttp_id": "T1578.003",
     "ttp_name": "Delete Cloud Instance",
     "is_subtechnique": true,
@@ -8094,7 +8094,7 @@
       }
     ]
   },
-  {
+  "T1578.005": {
     "ttp_id": "T1578.005",
     "ttp_name": "Modify Cloud Compute Configurations",
     "is_subtechnique": true,
@@ -8109,7 +8109,7 @@
       }
     ]
   },
-  {
+  "T1580": {
     "ttp_id": "T1580",
     "ttp_name": "Cloud Infrastructure Discovery",
     "is_subtechnique": false,
@@ -8120,7 +8120,7 @@
       }
     ]
   },
-  {
+  "T1583": {
     "ttp_id": "T1583",
     "ttp_name": "Acquire Infrastructure",
     "is_subtechnique": false,
@@ -8131,7 +8131,7 @@
       }
     ]
   },
-  {
+  "T1583.001": {
     "ttp_id": "T1583.001",
     "ttp_name": "Domains",
     "is_subtechnique": true,
@@ -8142,7 +8142,7 @@
       }
     ]
   },
-  {
+  "T1583.002": {
     "ttp_id": "T1583.002",
     "ttp_name": "DNS Server",
     "is_subtechnique": true,
@@ -8153,7 +8153,7 @@
       }
     ]
   },
-  {
+  "T1583.003": {
     "ttp_id": "T1583.003",
     "ttp_name": "Virtual Private Server",
     "is_subtechnique": true,
@@ -8164,7 +8164,7 @@
       }
     ]
   },
-  {
+  "T1583.004": {
     "ttp_id": "T1583.004",
     "ttp_name": "Server",
     "is_subtechnique": true,
@@ -8175,7 +8175,7 @@
       }
     ]
   },
-  {
+  "T1583.005": {
     "ttp_id": "T1583.005",
     "ttp_name": "Botnet",
     "is_subtechnique": true,
@@ -8186,7 +8186,7 @@
       }
     ]
   },
-  {
+  "T1583.006": {
     "ttp_id": "T1583.006",
     "ttp_name": "Web Services",
     "is_subtechnique": true,
@@ -8197,7 +8197,7 @@
       }
     ]
   },
-  {
+  "T1583.007": {
     "ttp_id": "T1583.007",
     "ttp_name": "Serverless",
     "is_subtechnique": true,
@@ -8208,7 +8208,7 @@
       }
     ]
   },
-  {
+  "T1583.008": {
     "ttp_id": "T1583.008",
     "ttp_name": "Malvertising",
     "is_subtechnique": true,
@@ -8219,7 +8219,7 @@
       }
     ]
   },
-  {
+  "T1584": {
     "ttp_id": "T1584",
     "ttp_name": "Compromise Infrastructure",
     "is_subtechnique": false,
@@ -8230,7 +8230,7 @@
       }
     ]
   },
-  {
+  "T1584.001": {
     "ttp_id": "T1584.001",
     "ttp_name": "Domains",
     "is_subtechnique": true,
@@ -8241,7 +8241,7 @@
       }
     ]
   },
-  {
+  "T1584.002": {
     "ttp_id": "T1584.002",
     "ttp_name": "DNS Server",
     "is_subtechnique": true,
@@ -8252,7 +8252,7 @@
       }
     ]
   },
-  {
+  "T1584.003": {
     "ttp_id": "T1584.003",
     "ttp_name": "Virtual Private Server",
     "is_subtechnique": true,
@@ -8263,7 +8263,7 @@
       }
     ]
   },
-  {
+  "T1584.004": {
     "ttp_id": "T1584.004",
     "ttp_name": "Server",
     "is_subtechnique": true,
@@ -8274,7 +8274,7 @@
       }
     ]
   },
-  {
+  "T1584.005": {
     "ttp_id": "T1584.005",
     "ttp_name": "Botnet",
     "is_subtechnique": true,
@@ -8285,7 +8285,7 @@
       }
     ]
   },
-  {
+  "T1584.006": {
     "ttp_id": "T1584.006",
     "ttp_name": "Web Services",
     "is_subtechnique": true,
@@ -8296,7 +8296,7 @@
       }
     ]
   },
-  {
+  "T1584.007": {
     "ttp_id": "T1584.007",
     "ttp_name": "Serverless",
     "is_subtechnique": true,
@@ -8307,7 +8307,7 @@
       }
     ]
   },
-  {
+  "T1584.008": {
     "ttp_id": "T1584.008",
     "ttp_name": "Network Devices",
     "is_subtechnique": true,
@@ -8318,7 +8318,7 @@
       }
     ]
   },
-  {
+  "T1585": {
     "ttp_id": "T1585",
     "ttp_name": "Establish Accounts",
     "is_subtechnique": false,
@@ -8329,7 +8329,7 @@
       }
     ]
   },
-  {
+  "T1585.001": {
     "ttp_id": "T1585.001",
     "ttp_name": "Social Media Accounts",
     "is_subtechnique": true,
@@ -8340,7 +8340,7 @@
       }
     ]
   },
-  {
+  "T1585.002": {
     "ttp_id": "T1585.002",
     "ttp_name": "Email Accounts",
     "is_subtechnique": true,
@@ -8351,7 +8351,7 @@
       }
     ]
   },
-  {
+  "T1585.003": {
     "ttp_id": "T1585.003",
     "ttp_name": "Cloud Accounts",
     "is_subtechnique": true,
@@ -8362,7 +8362,7 @@
       }
     ]
   },
-  {
+  "T1586": {
     "ttp_id": "T1586",
     "ttp_name": "Compromise Accounts",
     "is_subtechnique": false,
@@ -8373,7 +8373,7 @@
       }
     ]
   },
-  {
+  "T1586.001": {
     "ttp_id": "T1586.001",
     "ttp_name": "Social Media Accounts",
     "is_subtechnique": true,
@@ -8384,7 +8384,7 @@
       }
     ]
   },
-  {
+  "T1586.002": {
     "ttp_id": "T1586.002",
     "ttp_name": "Email Accounts",
     "is_subtechnique": true,
@@ -8395,7 +8395,7 @@
       }
     ]
   },
-  {
+  "T1586.003": {
     "ttp_id": "T1586.003",
     "ttp_name": "Cloud Accounts",
     "is_subtechnique": true,
@@ -8406,7 +8406,7 @@
       }
     ]
   },
-  {
+  "T1587": {
     "ttp_id": "T1587",
     "ttp_name": "Develop Capabilities",
     "is_subtechnique": false,
@@ -8417,7 +8417,7 @@
       }
     ]
   },
-  {
+  "T1587.001": {
     "ttp_id": "T1587.001",
     "ttp_name": "Malware",
     "is_subtechnique": true,
@@ -8428,7 +8428,7 @@
       }
     ]
   },
-  {
+  "T1587.002": {
     "ttp_id": "T1587.002",
     "ttp_name": "Code Signing Certificates",
     "is_subtechnique": true,
@@ -8439,7 +8439,7 @@
       }
     ]
   },
-  {
+  "T1587.003": {
     "ttp_id": "T1587.003",
     "ttp_name": "Digital Certificates",
     "is_subtechnique": true,
@@ -8450,7 +8450,7 @@
       }
     ]
   },
-  {
+  "T1587.004": {
     "ttp_id": "T1587.004",
     "ttp_name": "Exploits",
     "is_subtechnique": true,
@@ -8461,7 +8461,7 @@
       }
     ]
   },
-  {
+  "T1588": {
     "ttp_id": "T1588",
     "ttp_name": "Obtain Capabilities",
     "is_subtechnique": false,
@@ -8472,7 +8472,7 @@
       }
     ]
   },
-  {
+  "T1588.001": {
     "ttp_id": "T1588.001",
     "ttp_name": "Malware",
     "is_subtechnique": true,
@@ -8483,7 +8483,7 @@
       }
     ]
   },
-  {
+  "T1588.002": {
     "ttp_id": "T1588.002",
     "ttp_name": "Tool",
     "is_subtechnique": true,
@@ -8494,7 +8494,7 @@
       }
     ]
   },
-  {
+  "T1588.003": {
     "ttp_id": "T1588.003",
     "ttp_name": "Code Signing Certificates",
     "is_subtechnique": true,
@@ -8505,7 +8505,7 @@
       }
     ]
   },
-  {
+  "T1588.004": {
     "ttp_id": "T1588.004",
     "ttp_name": "Digital Certificates",
     "is_subtechnique": true,
@@ -8516,7 +8516,7 @@
       }
     ]
   },
-  {
+  "T1588.005": {
     "ttp_id": "T1588.005",
     "ttp_name": "Exploits",
     "is_subtechnique": true,
@@ -8527,7 +8527,7 @@
       }
     ]
   },
-  {
+  "T1588.006": {
     "ttp_id": "T1588.006",
     "ttp_name": "Vulnerabilities",
     "is_subtechnique": true,
@@ -8538,7 +8538,7 @@
       }
     ]
   },
-  {
+  "T1588.007": {
     "ttp_id": "T1588.007",
     "ttp_name": "Artificial Intelligence",
     "is_subtechnique": true,
@@ -8549,7 +8549,7 @@
       }
     ]
   },
-  {
+  "T1589": {
     "ttp_id": "T1589",
     "ttp_name": "Gather Victim Identity Information",
     "is_subtechnique": false,
@@ -8560,7 +8560,7 @@
       }
     ]
   },
-  {
+  "T1589.001": {
     "ttp_id": "T1589.001",
     "ttp_name": "Credentials",
     "is_subtechnique": true,
@@ -8571,7 +8571,7 @@
       }
     ]
   },
-  {
+  "T1589.002": {
     "ttp_id": "T1589.002",
     "ttp_name": "Email Addresses",
     "is_subtechnique": true,
@@ -8582,7 +8582,7 @@
       }
     ]
   },
-  {
+  "T1589.003": {
     "ttp_id": "T1589.003",
     "ttp_name": "Employee Names",
     "is_subtechnique": true,
@@ -8593,7 +8593,7 @@
       }
     ]
   },
-  {
+  "T1590": {
     "ttp_id": "T1590",
     "ttp_name": "Gather Victim Network Information",
     "is_subtechnique": false,
@@ -8604,7 +8604,7 @@
       }
     ]
   },
-  {
+  "T1590.001": {
     "ttp_id": "T1590.001",
     "ttp_name": "Domain Properties",
     "is_subtechnique": true,
@@ -8615,7 +8615,7 @@
       }
     ]
   },
-  {
+  "T1590.002": {
     "ttp_id": "T1590.002",
     "ttp_name": "DNS",
     "is_subtechnique": true,
@@ -8626,7 +8626,7 @@
       }
     ]
   },
-  {
+  "T1590.003": {
     "ttp_id": "T1590.003",
     "ttp_name": "Network Trust Dependencies",
     "is_subtechnique": true,
@@ -8637,7 +8637,7 @@
       }
     ]
   },
-  {
+  "T1590.004": {
     "ttp_id": "T1590.004",
     "ttp_name": "Network Topology",
     "is_subtechnique": true,
@@ -8648,7 +8648,7 @@
       }
     ]
   },
-  {
+  "T1590.005": {
     "ttp_id": "T1590.005",
     "ttp_name": "IP Addresses",
     "is_subtechnique": true,
@@ -8659,7 +8659,7 @@
       }
     ]
   },
-  {
+  "T1590.006": {
     "ttp_id": "T1590.006",
     "ttp_name": "Network Security Appliances",
     "is_subtechnique": true,
@@ -8670,7 +8670,7 @@
       }
     ]
   },
-  {
+  "T1591": {
     "ttp_id": "T1591",
     "ttp_name": "Gather Victim Org Information",
     "is_subtechnique": false,
@@ -8681,7 +8681,7 @@
       }
     ]
   },
-  {
+  "T1591.001": {
     "ttp_id": "T1591.001",
     "ttp_name": "Determine Physical Locations",
     "is_subtechnique": true,
@@ -8692,7 +8692,7 @@
       }
     ]
   },
-  {
+  "T1591.002": {
     "ttp_id": "T1591.002",
     "ttp_name": "Business Relationships",
     "is_subtechnique": true,
@@ -8703,7 +8703,7 @@
       }
     ]
   },
-  {
+  "T1591.003": {
     "ttp_id": "T1591.003",
     "ttp_name": "Identify Business Tempo",
     "is_subtechnique": true,
@@ -8714,7 +8714,7 @@
       }
     ]
   },
-  {
+  "T1591.004": {
     "ttp_id": "T1591.004",
     "ttp_name": "Identify Roles",
     "is_subtechnique": true,
@@ -8725,7 +8725,7 @@
       }
     ]
   },
-  {
+  "T1592": {
     "ttp_id": "T1592",
     "ttp_name": "Gather Victim Host Information",
     "is_subtechnique": false,
@@ -8736,7 +8736,7 @@
       }
     ]
   },
-  {
+  "T1592.001": {
     "ttp_id": "T1592.001",
     "ttp_name": "Hardware",
     "is_subtechnique": true,
@@ -8747,7 +8747,7 @@
       }
     ]
   },
-  {
+  "T1592.002": {
     "ttp_id": "T1592.002",
     "ttp_name": "Software",
     "is_subtechnique": true,
@@ -8758,7 +8758,7 @@
       }
     ]
   },
-  {
+  "T1592.003": {
     "ttp_id": "T1592.003",
     "ttp_name": "Firmware",
     "is_subtechnique": true,
@@ -8769,7 +8769,7 @@
       }
     ]
   },
-  {
+  "T1592.004": {
     "ttp_id": "T1592.004",
     "ttp_name": "Client Configurations",
     "is_subtechnique": true,
@@ -8780,7 +8780,7 @@
       }
     ]
   },
-  {
+  "T1593": {
     "ttp_id": "T1593",
     "ttp_name": "Search Open Websites/Domains",
     "is_subtechnique": false,
@@ -8795,7 +8795,7 @@
       }
     ]
   },
-  {
+  "T1593.001": {
     "ttp_id": "T1593.001",
     "ttp_name": "Social Media",
     "is_subtechnique": true,
@@ -8806,7 +8806,7 @@
       }
     ]
   },
-  {
+  "T1593.002": {
     "ttp_id": "T1593.002",
     "ttp_name": "Search Engines",
     "is_subtechnique": true,
@@ -8817,7 +8817,7 @@
       }
     ]
   },
-  {
+  "T1593.003": {
     "ttp_id": "T1593.003",
     "ttp_name": "Code Repositories",
     "is_subtechnique": true,
@@ -8832,7 +8832,7 @@
       }
     ]
   },
-  {
+  "T1594": {
     "ttp_id": "T1594",
     "ttp_name": "Search Victim-Owned Websites",
     "is_subtechnique": false,
@@ -8843,7 +8843,7 @@
       }
     ]
   },
-  {
+  "T1595": {
     "ttp_id": "T1595",
     "ttp_name": "Active Scanning",
     "is_subtechnique": false,
@@ -8854,7 +8854,7 @@
       }
     ]
   },
-  {
+  "T1595.001": {
     "ttp_id": "T1595.001",
     "ttp_name": "Scanning IP Blocks",
     "is_subtechnique": true,
@@ -8865,7 +8865,7 @@
       }
     ]
   },
-  {
+  "T1595.002": {
     "ttp_id": "T1595.002",
     "ttp_name": "Vulnerability Scanning",
     "is_subtechnique": true,
@@ -8876,7 +8876,7 @@
       }
     ]
   },
-  {
+  "T1595.003": {
     "ttp_id": "T1595.003",
     "ttp_name": "Wordlist Scanning",
     "is_subtechnique": true,
@@ -8891,7 +8891,7 @@
       }
     ]
   },
-  {
+  "T1596": {
     "ttp_id": "T1596",
     "ttp_name": "Search Open Technical Databases",
     "is_subtechnique": false,
@@ -8902,7 +8902,7 @@
       }
     ]
   },
-  {
+  "T1596.001": {
     "ttp_id": "T1596.001",
     "ttp_name": "DNS/Passive DNS",
     "is_subtechnique": true,
@@ -8913,7 +8913,7 @@
       }
     ]
   },
-  {
+  "T1596.002": {
     "ttp_id": "T1596.002",
     "ttp_name": "WHOIS",
     "is_subtechnique": true,
@@ -8924,7 +8924,7 @@
       }
     ]
   },
-  {
+  "T1596.003": {
     "ttp_id": "T1596.003",
     "ttp_name": "Digital Certificates",
     "is_subtechnique": true,
@@ -8935,7 +8935,7 @@
       }
     ]
   },
-  {
+  "T1596.004": {
     "ttp_id": "T1596.004",
     "ttp_name": "CDNs",
     "is_subtechnique": true,
@@ -8946,7 +8946,7 @@
       }
     ]
   },
-  {
+  "T1596.005": {
     "ttp_id": "T1596.005",
     "ttp_name": "Scan Databases",
     "is_subtechnique": true,
@@ -8957,7 +8957,7 @@
       }
     ]
   },
-  {
+  "T1597": {
     "ttp_id": "T1597",
     "ttp_name": "Search Closed Sources",
     "is_subtechnique": false,
@@ -8968,7 +8968,7 @@
       }
     ]
   },
-  {
+  "T1597.001": {
     "ttp_id": "T1597.001",
     "ttp_name": "Threat Intel Vendors",
     "is_subtechnique": true,
@@ -8979,7 +8979,7 @@
       }
     ]
   },
-  {
+  "T1597.002": {
     "ttp_id": "T1597.002",
     "ttp_name": "Purchase Technical Data",
     "is_subtechnique": true,
@@ -8990,7 +8990,7 @@
       }
     ]
   },
-  {
+  "T1598": {
     "ttp_id": "T1598",
     "ttp_name": "Phishing for Information",
     "is_subtechnique": false,
@@ -9005,7 +9005,7 @@
       }
     ]
   },
-  {
+  "T1598.001": {
     "ttp_id": "T1598.001",
     "ttp_name": "Spearphishing Service",
     "is_subtechnique": true,
@@ -9016,7 +9016,7 @@
       }
     ]
   },
-  {
+  "T1598.002": {
     "ttp_id": "T1598.002",
     "ttp_name": "Spearphishing Attachment",
     "is_subtechnique": true,
@@ -9031,7 +9031,7 @@
       }
     ]
   },
-  {
+  "T1598.003": {
     "ttp_id": "T1598.003",
     "ttp_name": "Spearphishing Link",
     "is_subtechnique": true,
@@ -9046,7 +9046,7 @@
       }
     ]
   },
-  {
+  "T1598.004": {
     "ttp_id": "T1598.004",
     "ttp_name": "Spearphishing Voice",
     "is_subtechnique": true,
@@ -9057,7 +9057,7 @@
       }
     ]
   },
-  {
+  "T1599": {
     "ttp_id": "T1599",
     "ttp_name": "Network Boundary Bridging",
     "is_subtechnique": false,
@@ -9084,7 +9084,7 @@
       }
     ]
   },
-  {
+  "T1599.001": {
     "ttp_id": "T1599.001",
     "ttp_name": "Network Address Translation Traversal",
     "is_subtechnique": true,
@@ -9111,7 +9111,7 @@
       }
     ]
   },
-  {
+  "T1601": {
     "ttp_id": "T1601",
     "ttp_name": "Modify System Image",
     "is_subtechnique": false,
@@ -9142,7 +9142,7 @@
       }
     ]
   },
-  {
+  "T1601.001": {
     "ttp_id": "T1601.001",
     "ttp_name": "Patch System Image",
     "is_subtechnique": true,
@@ -9173,7 +9173,7 @@
       }
     ]
   },
-  {
+  "T1601.002": {
     "ttp_id": "T1601.002",
     "ttp_name": "Downgrade System Image",
     "is_subtechnique": true,
@@ -9204,7 +9204,7 @@
       }
     ]
   },
-  {
+  "T1602": {
     "ttp_id": "T1602",
     "ttp_name": "Data from Configuration Repository",
     "is_subtechnique": false,
@@ -9235,7 +9235,7 @@
       }
     ]
   },
-  {
+  "T1602.001": {
     "ttp_id": "T1602.001",
     "ttp_name": "SNMP (MIB Dump)",
     "is_subtechnique": true,
@@ -9266,7 +9266,7 @@
       }
     ]
   },
-  {
+  "T1602.002": {
     "ttp_id": "T1602.002",
     "ttp_name": "Network Device Configuration Dump",
     "is_subtechnique": true,
@@ -9297,7 +9297,7 @@
       }
     ]
   },
-  {
+  "T1606": {
     "ttp_id": "T1606",
     "ttp_name": "Forge Web Credentials",
     "is_subtechnique": false,
@@ -9320,7 +9320,7 @@
       }
     ]
   },
-  {
+  "T1606.001": {
     "ttp_id": "T1606.001",
     "ttp_name": "Web Cookies",
     "is_subtechnique": true,
@@ -9335,7 +9335,7 @@
       }
     ]
   },
-  {
+  "T1606.002": {
     "ttp_id": "T1606.002",
     "ttp_name": "SAML Tokens",
     "is_subtechnique": true,
@@ -9358,7 +9358,7 @@
       }
     ]
   },
-  {
+  "T1608": {
     "ttp_id": "T1608",
     "ttp_name": "Stage Capabilities",
     "is_subtechnique": false,
@@ -9369,7 +9369,7 @@
       }
     ]
   },
-  {
+  "T1608.001": {
     "ttp_id": "T1608.001",
     "ttp_name": "Upload Malware",
     "is_subtechnique": true,
@@ -9380,7 +9380,7 @@
       }
     ]
   },
-  {
+  "T1608.002": {
     "ttp_id": "T1608.002",
     "ttp_name": "Upload Tool",
     "is_subtechnique": true,
@@ -9391,7 +9391,7 @@
       }
     ]
   },
-  {
+  "T1608.003": {
     "ttp_id": "T1608.003",
     "ttp_name": "Install Digital Certificate",
     "is_subtechnique": true,
@@ -9402,7 +9402,7 @@
       }
     ]
   },
-  {
+  "T1608.004": {
     "ttp_id": "T1608.004",
     "ttp_name": "Drive-by Target",
     "is_subtechnique": true,
@@ -9413,7 +9413,7 @@
       }
     ]
   },
-  {
+  "T1608.005": {
     "ttp_id": "T1608.005",
     "ttp_name": "Link Target",
     "is_subtechnique": true,
@@ -9424,7 +9424,7 @@
       }
     ]
   },
-  {
+  "T1608.006": {
     "ttp_id": "T1608.006",
     "ttp_name": "SEO Poisoning",
     "is_subtechnique": true,
@@ -9435,7 +9435,7 @@
       }
     ]
   },
-  {
+  "T1609": {
     "ttp_id": "T1609",
     "ttp_name": "Container Administration Command",
     "is_subtechnique": false,
@@ -9462,7 +9462,7 @@
       }
     ]
   },
-  {
+  "T1610": {
     "ttp_id": "T1610",
     "ttp_name": "Deploy Container",
     "is_subtechnique": false,
@@ -9485,7 +9485,7 @@
       }
     ]
   },
-  {
+  "T1611": {
     "ttp_id": "T1611",
     "ttp_name": "Escape to Host",
     "is_subtechnique": false,
@@ -9512,7 +9512,7 @@
       }
     ]
   },
-  {
+  "T1612": {
     "ttp_id": "T1612",
     "ttp_name": "Build Image on Host",
     "is_subtechnique": false,
@@ -9535,7 +9535,7 @@
       }
     ]
   },
-  {
+  "T1613": {
     "ttp_id": "T1613",
     "ttp_name": "Container and Resource Discovery",
     "is_subtechnique": false,
@@ -9554,7 +9554,7 @@
       }
     ]
   },
-  {
+  "T1619": {
     "ttp_id": "T1619",
     "ttp_name": "Cloud Storage Object Discovery",
     "is_subtechnique": false,
@@ -9565,7 +9565,7 @@
       }
     ]
   },
-  {
+  "T1621": {
     "ttp_id": "T1621",
     "ttp_name": "Multi-Factor Authentication Request Generation",
     "is_subtechnique": false,
@@ -9584,7 +9584,7 @@
       }
     ]
   },
-  {
+  "T1647": {
     "ttp_id": "T1647",
     "ttp_name": "Plist File Modification",
     "is_subtechnique": false,
@@ -9595,7 +9595,7 @@
       }
     ]
   },
-  {
+  "T1648": {
     "ttp_id": "T1648",
     "ttp_name": "Serverless Execution",
     "is_subtechnique": false,
@@ -9610,7 +9610,7 @@
       }
     ]
   },
-  {
+  "T1649": {
     "ttp_id": "T1649",
     "ttp_name": "Steal or Forge Authentication Certificates",
     "is_subtechnique": false,
@@ -9633,7 +9633,7 @@
       }
     ]
   },
-  {
+  "T1650": {
     "ttp_id": "T1650",
     "ttp_name": "Acquire Access",
     "is_subtechnique": false,
@@ -9644,7 +9644,7 @@
       }
     ]
   },
-  {
+  "T1651": {
     "ttp_id": "T1651",
     "ttp_name": "Cloud Administration Command",
     "is_subtechnique": false,
@@ -9655,7 +9655,7 @@
       }
     ]
   },
-  {
+  "T1653": {
     "ttp_id": "T1653",
     "ttp_name": "Power Settings",
     "is_subtechnique": false,
@@ -9666,7 +9666,7 @@
       }
     ]
   },
-  {
+  "T1654": {
     "ttp_id": "T1654",
     "ttp_name": "Log Enumeration",
     "is_subtechnique": false,
@@ -9677,7 +9677,7 @@
       }
     ]
   },
-  {
+  "T1656": {
     "ttp_id": "T1656",
     "ttp_name": "Impersonation",
     "is_subtechnique": false,
@@ -9692,7 +9692,7 @@
       }
     ]
   },
-  {
+  "T1657": {
     "ttp_id": "T1657",
     "ttp_name": "Financial Theft",
     "is_subtechnique": false,
@@ -9707,7 +9707,7 @@
       }
     ]
   },
-  {
+  "T1659": {
     "ttp_id": "T1659",
     "ttp_name": "Content Injection",
     "is_subtechnique": false,
@@ -9722,7 +9722,7 @@
       }
     ]
   },
-  {
+  "T1666": {
     "ttp_id": "T1666",
     "ttp_name": "Modify Cloud Resource Hierarchy",
     "is_subtechnique": false,
@@ -9741,7 +9741,7 @@
       }
     ]
   },
-  {
+  "T1667": {
     "ttp_id": "T1667",
     "ttp_name": "Email Bombing",
     "is_subtechnique": false,
@@ -9756,7 +9756,7 @@
       }
     ]
   },
-  {
+  "T1669": {
     "ttp_id": "T1669",
     "ttp_name": "Wi-Fi Networks",
     "is_subtechnique": false,
@@ -9775,7 +9775,7 @@
       }
     ]
   },
-  {
+  "T1671": {
     "ttp_id": "T1671",
     "ttp_name": "Cloud Application Integration",
     "is_subtechnique": false,
@@ -9790,7 +9790,7 @@
       }
     ]
   },
-  {
+  "T1672": {
     "ttp_id": "T1672",
     "ttp_name": "Email Spoofing",
     "is_subtechnique": false,
@@ -9801,7 +9801,7 @@
       }
     ]
   },
-  {
+  "T1674": {
     "ttp_id": "T1674",
     "ttp_name": "Input Injection",
     "is_subtechnique": false,
@@ -9816,7 +9816,7 @@
       }
     ]
   },
-  {
+  "T1675": {
     "ttp_id": "T1675",
     "ttp_name": "ESXi Administration Command",
     "is_subtechnique": false,
@@ -9827,7 +9827,7 @@
       }
     ]
   },
-  {
+  "T1677": {
     "ttp_id": "T1677",
     "ttp_name": "Poisoned Pipeline Execution",
     "is_subtechnique": false,
@@ -9842,7 +9842,7 @@
       }
     ]
   },
-  {
+  "T1681": {
     "ttp_id": "T1681",
     "ttp_name": "Search Threat Vendor Data",
     "is_subtechnique": false,
@@ -9853,4 +9853,4 @@
       }
     ]
   }
-]
+}
