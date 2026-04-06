@@ -11,7 +11,7 @@ import src.graph.grafo as grafo
 
 import src.reporting.report as report
 
-
+import src.cyberrecom.mitre as mitre
 
 import src.risk.red_bayes as red_bayes
 import src.risk.id_test as id_test
@@ -114,6 +114,73 @@ def resolve_graph_impact(G_global, threat_vectors, report_data):
     
     return res_threat_prob, report_data
 
+
+def resolve_build_res_values(cm_states, countermeasures_data, dimension):
+    columns = []
+
+    for cm_id in cm_states:
+        columns.append(
+            countermeasures_data["countermeasures"][cm_id]["cpd"][dimension]["risk_low"]
+        )
+
+    for cm_id in cm_states:
+        columns.append(
+            countermeasures_data["countermeasures"][cm_id]["cpd"][dimension]["risk_high"]
+        )
+
+    values = [
+        [col[0] for col in columns],
+        [col[1] for col in columns],
+        [col[2] for col in columns],
+    ]
+
+    return values
+
+def resolve_bn_json_construction(res_threat_prob, threat_vectors, report_data):
+    '''
+    Esta función se encarga de sacar las mitigations recomendadas por cada TTP y construir el JSON de la red de Bayes para cada TTP, que luego se guardará en el reporte. Esto es necesario para poder hacer la inferencia posteriormente.
+    '''
+    # Cargamos el json bn_cpds.json
+    with open(Path(__file__).parent.parent.parent / "configs" / "bn_cpds.json", "r") as f:
+        bn_cpds = json.load(f)
+
+     # Cargamos el json countermeasures.json
+    with open(Path(__file__).parent.parent.parent / "configs" / "countermeasures.json", "r") as f:
+        countermeasures = json.load(f)
+
+    #{CM STATES}#
+
+    raw_mitigations = []
+    cm_states = []
+
+    #Añadimos los 3 primeros countermeasures como mitigaciones base, que son aplicables a cualquier TTP. Luego añadiremos las mitigaciones específicas de cada TTP.
+    cm_states.append(countermeasures[0:3]["name"]) 
+
+    # Construimos el JSON de la red de Bayes para cada TTP
+    for ttp_id, threat_vector in threat_vectors.items():
+        raw_mitigations.append(mitre.get_mitigations_for_ttp(ttp_id))
+
+
+    for cm in raw_mitigations:
+        cm_states.append({"id": cm["id"], "name": f"{cm['id']}-{cm['name']}"})
+
+    bn_cpds["CM"]["states"] = cm_states
+
+    #{PROBABILITIES}#
+   c_res_values = build_res_values(cm_states, countermeasures_data, "C_res")
+i_res_values = build_res_values(cm_states, countermeasures_data, "I_res")
+a_res_values = build_res_values(cm_states, countermeasures_data, "A_res")
+
+       
+
+
+
+
+
+
+
+
+    pass
 
 def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
     

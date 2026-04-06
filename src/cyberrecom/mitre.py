@@ -98,11 +98,16 @@ def get_possible_mitigations_for_ttp(ttp_id: str):
     if mitigations:
         print(f"Mitigaciones para TTP {ttp_id}:")
         print(mitigations["mitigations"])
+
+        mitigations.append()
         
         return mitigations["mitigations"]
+    
     else:
         print(f"No se encontraron mitigaciones para el TTP {ttp_id}.")
         raise ValueError(f"No mitigations found for TTP {ttp_id}")
+    
+
 def check_ttp_exists(ttp_id: str) -> bool:
     '''
     Verifica si una TTP con el ID dado existe en MITRE ATT&CK.
