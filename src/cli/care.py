@@ -127,6 +127,8 @@ def handle_db_create(args):
     scenario_description = args.description if hasattr(args, "description") else None
     source_file = args.source if hasattr(args, "source") else None
 
+   
+
     # Validar que no existe ya un escenario con ese nombre
     scenarios = grafo.list_scenarios(str(DB_PATH))
     scenario_names = [scenario[1] for scenario in scenarios]
@@ -141,6 +143,10 @@ def handle_db_create(args):
             footer="Choose a different scenario name and try again.",
         )
         return
+
+    context = json_load_context()
+    context["active_scenario"] = scenario_name
+    json_dump_context(context)
 
     if  source_file == None:
         # Crear un nuevo escenario vacío en la base de datos
