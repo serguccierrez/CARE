@@ -17,11 +17,22 @@ import src.cyberrecom.mitre as mitre
 import src.risk.red_bayes as red_bayes
 import src.risk.id_test as id_test
 
+import src.risk.optimization as optimization
+
 #=============================[CONSTANTS]===========================================#
 #DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
 DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog.db"
 EXCEL_PATH = Path(__file__).parent.parent.parent / "data" / "asset_catalog_validado_v1.0.0_ajustado.xlsx"
 
+
+
+#==============================[AUXILIARY FUNCTIONS]===========================================#
+def load_report_data_from_json(json_path=None):
+    if json_path is None:
+        json_path = Path(__file__).parent.parent / "reporting" / "report.json"
+    with open(json_path, 'r') as f:
+        report_data = json.load(f)
+    return report_data
 
 #==============================[MAIN FUNCTION]===========================================#
 
@@ -327,7 +338,19 @@ def resolve_risk_assessment(report_data):
     
     return report_data
     
-
+def resolve_optimization(optimization_objective, budget=50000, max_time_hours=210):
+    
+    report_data = load_report_data_from_json()
+    
+    # Generamos los escenarios de incidentes y combinaciones de contramedidas a nivel de activo
+    report_data = report.generate_incident_scenarios(report_data)
+    report_data = report.generate_asset_scenario_combinations(report_data)
+    
+    assets_scenarios_data, decision_vars, model = optimization.setup_optimization_problem(report_data, budget)
+    
+    opt_results = optimization.solve_optimization_problems(assets_scenarios_data, objective_type=optimization_objective, budget=budget, max_time_hours=max_time_hours)
+    
+    return opt_results
 
 def main(scenario_name, context ):
     

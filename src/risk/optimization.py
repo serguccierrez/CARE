@@ -449,7 +449,7 @@ def build_optimization_problem_with_objective(assets_scenarios_data, decision_va
     return model
 
 
-def solve_optimization_problems(assets_scenarios_data, decision_vars, objective_type="all", budget=50000, max_time_hours=210):
+def solve_optimization_problems(assets_scenarios_data, objective_type="all", budget=50000, max_time_hours=210):
     """
     Resuelve uno o múltiples problemas de optimización según el objetivo especificado.
     
@@ -521,6 +521,8 @@ def solve_optimization_problems(assets_scenarios_data, decision_vars, objective_
         results[objective_type] = solve_optimization_problem(
             decision_vars_copy, assets_scenarios_data, model, budget
         )
+    
+    save_solution(results)
     
     # Devolvemos nuestros resultados al código que nos llamó
     return results

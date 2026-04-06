@@ -25,6 +25,9 @@ def context_JSON_initialization():
         "selected_asset":[],
         "selected_ttps": [],
         "selected_confidences": [],
+        "optimization_objective": None,
+        "optimization_budget": None,
+        "optimization_time": None
     }
     return context
 
@@ -124,6 +127,8 @@ def handle_db_create(args):
     scenario_description = args.description if hasattr(args, "description") else None
     source_file = args.source if hasattr(args, "source") else None
 
+   
+
     # Validar que no existe ya un escenario con ese nombre
     scenarios = grafo.list_scenarios(str(DB_PATH))
     scenario_names = [scenario[1] for scenario in scenarios]
@@ -138,6 +143,10 @@ def handle_db_create(args):
             footer="Choose a different scenario name and try again.",
         )
         return
+
+    context = json_load_context()
+    context["active_scenario"] = scenario_name
+    json_dump_context(context)
 
     if  source_file == None:
         # Crear un nuevo escenario vacío en la base de datos
@@ -199,7 +208,7 @@ def handle_attack_run(args):
     
     runner.main(scenario_name, context=context)
     
-    return dashboard.main()
+    return dashboard.main(context=context)
         
 def handle_attack_select(args):
     context = json_load_context()
@@ -258,8 +267,99 @@ def render_dashboard_view(args: argparse.Namespace) -> None:
     """
     Renderiza la vista dashboard con el resumen del analisis de riesgos.
     """
-    dashboard.main()
+    context = json_load_context()
+    dashboard.main(context=context)
 
+
+#{OPTIMIZATION}#
+def handle_optimization_select(args: argparse.Namespace) -> None:
+    """
+    Placeholder handler for optimization configuration selection.
+    """
+    context = json_load_context()
+    scenario_name = context.get("active_scenario")
+
+    if not scenario_name:
+        run_blocked.main()
+        return
+    
+    if args.objective not in ["global", "confidentiality", "integrity", "availability", None]:
+        run_blocked.main(
+        title="CARE / INVALID OBJECTIVE",
+        header="Selected Objective Not Found",
+        description="The requested optimization objective is not valid.",
+        action_title="Suggested action",
+        action_text='care optimize config --objective <valid_objective>',
+        footer="Verify the optimization objective and try again.",
+)        
+        return
+    
+    if  args.budget is not None and args.budget < 0:
+        run_blocked.main(
+        title="CARE / INVALID BUDGET",
+        header="Invalid Budget Value",
+        description="The budget value must be a non-negative number.",
+        action_title="Suggested action",
+        action_text='care optimize config --budget <valid_budget_value>',
+        footer="Verify the budget value and try again.",
+)
+        return
+    
+    if  args.time is not None and args.time <= 0:
+        run_blocked.main(
+        title="CARE / INVALID TIME CONSTRAINT",
+        header="Invalid Time Constraint Value",
+        description="The time constraint value must be a positive number.",
+        action_title="Suggested action",
+        action_text='care optimize config --time <valid_time_value>',
+        footer="Verify the time constraint value and try again.",
+)
+        return
+
+    if args.objective:
+        context["optimization_objective"] = args.objective
+    
+    if args.budget:
+        context["optimization_budget"] = args.budget
+        
+    if args.time:    
+        context["optimization_time"] = args.time
+        
+    json_dump_context(context)
+    
+    return render_dashboard_view(args)
+
+def handle_optimization_run(args: argparse.Namespace) -> None:
+   
+    context = json_load_context()
+    scenario_name = context["active_scenario"]
+    
+    if not scenario_name:
+        run_blocked.main()
+        return
+    
+    if not context["optimization_objective"] or not context["optimization_budget"] or not context["optimization_time"]:
+        run_blocked.main(
+        title="CARE / INCOMPLETE OPTIMIZATION CONFIGURATION",
+        header="Missing Optimization Configuration",
+        description="Please ensure that the optimization objective, budget, and time constraints are all configured before running the optimization.",
+        action_title="Suggested action",
+        action_text='care optimize config --objective <objective> --budget <budget_value> --time <time_value>',
+        footer="Configure all optimization parameters and try again.",
+)
+        return
+    
+    optimization_results = runner.resolve_optimization(
+        context["optimization_objective"],
+        context["optimization_budget"],
+        context["optimization_time"]
+    )
+
+    return dashboard.main(
+        show_optimization=True,
+        optimization_results=optimization_results,
+        context=context
+    )
 
 #====================================[COMMAND LINE ARGUMENTS]====================================#
 parser = argparse.ArgumentParser(
@@ -411,8 +511,6 @@ attack_run_parser.add_argument(
 attack_run_parser.set_defaults(handler=handle_attack_run)
 
 
-
-
 #{DASHBOARD}#
 # Comando para renderizar la vista dashboard
 dashboard_parser = subparsers.add_parser(
@@ -422,6 +520,49 @@ dashboard_parser = subparsers.add_parser(
 )
 dashboard_parser.set_defaults(handler=render_dashboard_view)
 
+
+#{OPTIMIZATION}#
+optimization_parser = subparsers.add_parser(
+    "optimize",
+    help="Configure and run mitigation optimization",
+    description="Configure optimization parameters and run mitigation recommendation workflows.",
+)
+
+optimization_subparsers = optimization_parser.add_subparsers(dest="optimization_command")
+
+optimization_select_parser = optimization_subparsers.add_parser(
+    "config",
+    help="Select optimization objective and constraints",
+)
+
+optimization_select_parser.add_argument(
+    "--objective",
+    help="Optimization objective to store in the context",
+    required=False,
+)
+
+optimization_select_parser.add_argument(
+    "--budget",
+    help="Budget constraint for the optimization process",
+    type=float,
+    required=False,
+)
+
+optimization_select_parser.add_argument(
+    "--time",
+    help="Maximum deployment time in hours",
+    type=float,
+    required=False,
+)
+
+optimization_select_parser.set_defaults(handler=handle_optimization_select)
+
+optimization_run_parser = optimization_subparsers.add_parser(
+    "run",
+    help="Run the optimization process using the stored configuration",
+)
+
+optimization_run_parser.set_defaults(handler=handle_optimization_run)
 
 def main() -> None:
     """

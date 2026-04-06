@@ -1,0 +1,16 @@
+{
+    "active_scenario": "test",
+    "mode": "controlled",
+    "selected_asset": [
+        "asset_001"
+    ],
+    "selected_ttps": [
+        "T1133"
+    ],
+    "selected_confidences": [
+        0.7
+    ],
+    "optimization_objective": "confidentiality",
+    "optimization_budget": 50000.0,
+    "optimization_time": 15.0
+}
