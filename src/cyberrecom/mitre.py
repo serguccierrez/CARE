@@ -83,6 +83,7 @@ def ttp_simulation():
     print(f"Simulación de TTPs: {ttp_data}")
     
     return ttp_data  
+    t_possible_mitigations_for_ttp(ttp_id)
     
 
 def get_possible_mitigations_for_ttp(ttp_id: str):
@@ -90,7 +91,7 @@ def get_possible_mitigations_for_ttp(ttp_id: str):
     Dado un TTP, devuelve las posibles mitigaciones asociadas a ese TTP.
     '''
     # Cargamos el json ttps_to_mitigations.json
-    with open(Path(__file__).parent.parent.parent / "configs" / "ttps_to_mitigations.json", "r") as f:
+    with open(Path(__file__).parent.parent.parent / "configs" / "ttps_to_mitigations.json", "r", encoding="utf-8") as f:
         ttps_to_mitigations = json.load(f)
 
     mitigations = ttps_to_mitigations.get(ttp_id, [])
@@ -98,14 +99,19 @@ def get_possible_mitigations_for_ttp(ttp_id: str):
     if mitigations:
         print(f"Mitigaciones para TTP {ttp_id}:")
         print(mitigations["mitigations"])
-
-        mitigations.append()
         
         return mitigations["mitigations"]
     
     else:
         print(f"No se encontraron mitigaciones para el TTP {ttp_id}.")
         raise ValueError(f"No mitigations found for TTP {ttp_id}")
+
+
+def get_mitigations_for_ttp(ttp_id: str):
+    """
+    Alias de compatibilidad para reutilizar la llamada existente desde runner.
+    """
+    return get_possible_mitigations_for_ttp(ttp_id)
     
 
 def check_ttp_exists(ttp_id: str) -> bool:
