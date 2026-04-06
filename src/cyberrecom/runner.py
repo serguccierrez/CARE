@@ -91,12 +91,15 @@ def resolve_threat_vector(G_global, context) -> None:
 
             if isinstance(ttp, dict):
                 ttp_id = ttp["ttp_id"]
+                ttp_name = ttp.get("name") or mitre.get_ttp_name_from_ttp_id(ttp_id)
                 ttp_details = ttp.get("tactic") or mitre.get_ttp_details_from_ttp_id(ttp_id)
             else:
                 ttp_id = ttp
+                ttp_name = mitre.get_ttp_name_from_ttp_id(ttp_id)
                 ttp_details = mitre.get_ttp_details_from_ttp_id(ttp_id)
 
             threat_vectors[ttp_id] = {
+                "name": ttp_name or "Unknown",
                 "confidence": confidence,
                 "tactic": ttp_details,
                 "asset": asset

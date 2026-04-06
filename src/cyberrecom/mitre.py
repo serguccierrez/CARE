@@ -49,6 +49,19 @@ def get_ttp_details_from_ttp_id(ttp_id: str):
     print(tabulate(table_data, tablefmt="simple"))
     
     return ttp_kill_chain_phases
+
+
+def get_ttp_name_from_ttp_id(ttp_id: str):
+    """
+    Obtiene el nombre de una TTP sin imprimir detalles por consola.
+    """
+    try:
+        ttp = MITRE_ATTACK_DATA.get_object_by_attack_id(ttp_id, "attack-pattern")
+    except ValueError:
+        print(f"TTP with ID {ttp_id} not found.")
+        return None
+
+    return ttp.get("name")
    
     
 def ttp_simulation():
