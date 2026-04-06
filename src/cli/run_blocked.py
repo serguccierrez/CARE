@@ -52,7 +52,7 @@ def render_run_blocked_panel() -> Panel:
         header="No Active Scenario Loaded",
         description="Attack execution cannot start without an operational scenario.",
         action_title="Required action",
-        action_text='care db load --scenario "<scenario_name>"',
+        action_text='python -m src.cli.care db load --scenario "<scenario_name>"',
         footer="Load a scenario first and retry the operation.",
     )
 
@@ -62,7 +62,7 @@ def main(
     header: str = "No Active Scenario Loaded",
     description: str = "Attack execution cannot start without an operational scenario.",
     action_title: str | None = "Required action",
-    action_text: str | None = 'care db load --scenario "<scenario_name>"',
+    action_text: str | None = 'python -m src.cli.care db load --scenario "<scenario_name>"',
     footer: str | None = "Load a scenario first and retry the operation.",
     border_style: str = "red",
 ) -> None:

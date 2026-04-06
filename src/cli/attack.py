@@ -97,7 +97,7 @@ def render_assets_table(assets: list, scenario_name: str, panel_height: int | No
     return Panel(
         table,
         title="Random Initial Asset Candidates",
-        subtitle=f"View full asset inventory: care asset list --scenario \"{scenario_name}\"",
+        subtitle=f"View full asset inventory: python -m src.cli.care db asset-list --scenario \"{scenario_name}\"",
         border_style="blue",
         padding=(0, 1),
         height=panel_height,
@@ -124,7 +124,7 @@ def render_ttps_table(ttps: list, panel_height: int | None = None) -> Panel:
     return Panel(
         table,
         title="Random Threat Technique Sample",
-        subtitle="View full MITRE catalogue: care ttp list --limit 50",
+        subtitle="Use attack select to inject a known MITRE TTP into the active scenario",
         border_style="red",
         padding=(0, 1),
         height=panel_height,
@@ -153,9 +153,9 @@ def render_execution_modes_panel() -> Panel:
     modes_text.append("  [2] Controlled Attack Injection\n", style="cyan")
     modes_text.append("      Operator selects an initial asset from the scenario and one or more TTPs\n\n", style="dim")
     modes_text.append("  [3] Suggested Commands\n", style="cyan")
-    modes_text.append("      care run --random\n", style="yellow")
-    modes_text.append("      care run --asset <asset_id> --ttp <Txxxx>\n", style="yellow")
-    modes_text.append("      care run --asset <asset_id> --ttp <Txxxx> --ttp <Tyyyy>\n", style="yellow")
+    modes_text.append("      python -m src.cli.care attack run --random\n", style="yellow")
+    modes_text.append("      python -m src.cli.care attack select --asset <asset_id> --ttp <Txxxx>\n", style="yellow")
+    modes_text.append("      python -m src.cli.care attack run\n", style="yellow")
 
     return Panel(
         modes_text,

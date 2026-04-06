@@ -442,8 +442,10 @@ def render_optimizations_ask_panel(context=None) -> Panel:
   [bold]<availability>      Ensure service availability
                             -> Minimize disruptions and downtime
 
-[bold]Command:[/bold]
-  python care.py optimize [dim]--objective <global | confidentiality | integrity | availability>
+[bold]Commands:[/bold]
+  python -m src.cli.care optimize config --objective <global | confidentiality | integrity | availability>
+  python -m src.cli.care optimize config --budget <budget_value> --time <hours>
+  python -m src.cli.care optimize run
 """
 
     panel = Panel(

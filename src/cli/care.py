@@ -82,7 +82,7 @@ def handle_db_load(args):
         header="Selected Scenario Not Found",
         description="The requested scenario does not exist.",
         action_title="Suggested action",
-        action_text='care db load --scenario "<valid_scenario_name>"',
+        action_text='python -m src.cli.care db load --scenario "<valid_scenario_name>"',
         footer="Verify the scenario name and try again.",
         
     )
@@ -110,7 +110,7 @@ def handle_db_delete(args):
             header="Selected Scenario Not Found",
             description="The requested scenario does not exist.",
             action_title="Suggested action",
-            action_text='care db delete --scenario "<valid_scenario_name>"',
+            action_text='python -m src.cli.care db delete --scenario "<valid_scenario_name>"',
             footer="Verify the scenario name and try again.",
         )
         return
@@ -139,7 +139,7 @@ def handle_db_create(args):
             header="Selected Scenario Already Exists",
             description="A scenario with the same name already exists.",
             action_title="Suggested action",
-            action_text='care db create --scenario "<unique_scenario_name>"',
+            action_text='python -m src.cli.care db create --scenario "<unique_scenario_name>"',
             footer="Choose a different scenario name and try again.",
         )
         return
@@ -171,7 +171,7 @@ def handle_db_list(args):
             header="Selected Scenario Not Found",
             description="The requested scenario does not exist.",
             action_title="Suggested action",
-            action_text='care db asset-list --scenario "<valid_scenario_name>"',
+            action_text='python -m src.cli.care db asset-list --scenario "<valid_scenario_name>"',
             footer="Verify the scenario name and try again.",
         )
         return
@@ -226,7 +226,7 @@ def handle_attack_select(args):
         header="Selected Asset Not Found",
         description="The requested asset does not exist in the active scenario.",
         action_title="Suggested action",
-        action_text='care attack select --asset "<valid_asset_id>"',
+        action_text='python -m src.cli.care attack select --asset "<valid_asset_id>"',
         footer="Verify the asset ID and try again.",
 )
         return
@@ -236,7 +236,7 @@ def handle_attack_select(args):
         header="Selected TTP Not Found",
         description="The requested TTP does not exist in MITRE ATT&CK.",
         action_title="Suggested action",
-        action_text='care attack select --ttp "<valid_ttp_id>"',
+        action_text='python -m src.cli.care attack select --ttp "<valid_ttp_id>"',
         footer="Verify the TTP ID and try again.",
 )        
         return
@@ -246,7 +246,7 @@ def handle_attack_select(args):
         header="Invalid Confidence Value",
         description="The confidence value must be a float between 0.0 and 1.0.",
         action_title="Suggested action",
-        action_text='care attack select --confidence <valid_confidence_value>',
+        action_text='python -m src.cli.care attack select --confidence <valid_confidence_value>',
         footer="Verify the confidence value and try again.",
 )
         return
@@ -289,7 +289,7 @@ def handle_optimization_select(args: argparse.Namespace) -> None:
         header="Selected Objective Not Found",
         description="The requested optimization objective is not valid.",
         action_title="Suggested action",
-        action_text='care optimize config --objective <valid_objective>',
+        action_text='python -m src.cli.care optimize config --objective <valid_objective>',
         footer="Verify the optimization objective and try again.",
 )        
         return
@@ -300,7 +300,7 @@ def handle_optimization_select(args: argparse.Namespace) -> None:
         header="Invalid Budget Value",
         description="The budget value must be a non-negative number.",
         action_title="Suggested action",
-        action_text='care optimize config --budget <valid_budget_value>',
+        action_text='python -m src.cli.care optimize config --budget <valid_budget_value>',
         footer="Verify the budget value and try again.",
 )
         return
@@ -311,7 +311,7 @@ def handle_optimization_select(args: argparse.Namespace) -> None:
         header="Invalid Time Constraint Value",
         description="The time constraint value must be a positive number.",
         action_title="Suggested action",
-        action_text='care optimize config --time <valid_time_value>',
+        action_text='python -m src.cli.care optimize config --time <valid_time_value>',
         footer="Verify the time constraint value and try again.",
 )
         return
@@ -344,7 +344,7 @@ def handle_optimization_run(args: argparse.Namespace) -> None:
         header="Missing Optimization Configuration",
         description="Please ensure that the optimization objective, budget, and time constraints are all configured before running the optimization.",
         action_title="Suggested action",
-        action_text='care optimize config --objective <objective> --budget <budget_value> --time <time_value>',
+        action_text='python -m src.cli.care optimize config --objective <objective> --budget <budget_value> --time <time_value>',
         footer="Configure all optimization parameters and try again.",
 )
         return
