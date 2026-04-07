@@ -98,13 +98,14 @@ CREATE INDEX IF NOT EXISTS idx_deps_to_asset
 #===============================================[FUNCTIONS]===============================================
 def create_db(db_path: Path, recreate: bool) -> None:
     """
-    Crea (o recrea) una base de datos SQLite con el esquema definido en DataDefinitionLanguage.
+    Crea (o recrea) una base de datos SQLite con el esquema definido en DataDefinitionLanguage
     - db_path: ruta del fichero .db
     - recreate: si True, borra el fichero si existe y lo crea desde cero
     """
     # Crea el directorio si no existe
     db_path.parent.mkdir(parents=True, exist_ok=True)
     
+    # Si se indica recrear, borra el fichero de la BD si ya existe
     if recreate and db_path.exists():
         db_path.unlink()
 
@@ -118,6 +119,7 @@ def create_db(db_path: Path, recreate: bool) -> None:
         con.executescript(DataDefinitionLanguage)
 
         con.commit()
+        
     finally:
         con.close()
 
