@@ -10,10 +10,18 @@ DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog.db"
 #===============================================[DATA_LOADING]===============================================
 def load_data_from_excel(excel_path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Carga datos desde archivo Excel.
-    Retorna tupla (assets_df, deps_df)
+    Carga datos desde un archivo Excel con hojas "Assets" y "Dependencies".
+   
+    Args:
+        excel_path: Ruta del archivo Excel a cargar
+
+    Returns:
+        Tuple con dos DataFrames: (assets_df, deps_df)
     """
-    dfs = pd.read_excel(excel_path, sheet_name=None)
+
+    dfs = pd.read_excel(excel_path, sheet_name=None) # Carga todas las hojas en un diccionario {nombre_hoja: DataFrame}
+    
+    # Nos aseguramos de que las hojas "Assets" y "Dependencies" existen y hayamos columnas necesarias
     assets_df = dfs["Assets"].copy()
     deps_df = dfs["Dependencies"].copy()
     return assets_df, deps_df
@@ -22,10 +30,20 @@ def load_data_from_excel(excel_path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
 #==============================================[CREATE_SCENARIO]===============================================
 def create_scenario(con, scenario_name: str, description: str = None, source_file: str = None) -> int:
     """
-    Crea un nuevo escenario usando una conexion existente y devuelve su scenario_pk.
+    Crea un nuevo escenario usando una conexion con la DB existente y devuelve su scenario_pk
+
+    Args:
+        con: conexión SQLite abierta
+        scenario_name: nombre del escenario a crear
+        description: descripción opcional del escenario
+        source_file: ruta del archivo fuente (Excel) de donde se han cargado los datos
+
+    Returns:
+        scenario_pk del escenario recién creado
     """
     cur = con.cursor()
 
+    # Ejecutamos el comando para insertar un nuevo escenario y obtenemos su PK
     cur.execute("""
         INSERT INTO scenarios (scenario_name, description, source_file)
         VALUES (?, ?, ?)
@@ -40,8 +58,18 @@ def create_empty_scenario(db_path: Path, scenario_name: str, description: str = 
 
     Pensado para handlers de CLI que necesitan registrar un escenario
     sin cargar todavia assets ni dependencias.
+
+    Args:
+        db_path: ruta del fichero .db
+        scenario_name: nombre del escenario a crear
+        description: descripción opcional del escenario
+        source_file: ruta del archivo fuente (Excel) de donde se han cargado los datos
+
+    Returns:
+        scenario_pk del escenario recién creado
     """
     con = sqlite3.connect(db_path)
+
     try:
         scenario_pk = create_scenario(con, scenario_name, description, source_file)
         con.commit()
@@ -55,7 +83,14 @@ def create_empty_scenario(db_path: Path, scenario_name: str, description: str = 
 #===============================================[COLUMN_MAPPING]===============================================
 def map_columns(assets_df: pd.DataFrame, deps_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Mapea columnas de Excel a nombres esperados por SQLite.
+    Mapea columnas de Excel a nombres esperados por SQLite
+
+    Args:
+        assets_df: DataFrame con datos de activos cargados desde Excel
+        deps_df: DataFrame con datos de dependencias cargados desde Excel   
+
+    Returns:
+        Tuple con DataFrames renombrados: (assets_df_renamed, deps_df_
     """
     assets_df = assets_df.rename(columns={
         "asset_id": "asset_id",
@@ -75,7 +110,16 @@ def map_columns(assets_df: pd.DataFrame, deps_df: pd.DataFrame) -> tuple[pd.Data
 #===============================================[COLUMN_SELECTION]===============================================
 def select_required_columns(assets_df: pd.DataFrame, deps_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Selecciona solo las columnas requeridas por SQLite.
+    Selecciona de cada DataFrame solo las columnas necesarias para la inserción en la base de datos.
+     - Para assets: asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state
+     - Para dependencies: dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a
+
+    Args:
+        assets_df: DataFrame con datos de activos cargados desde Excel
+        deps_df: DataFrame con datos de dependencias cargados desde Excel
+
+    Returns:
+        Tuple con DataFrames filtrados: (assets_df_filtered, deps_df_filtered)
     """
     assets_df = assets_df[[
         "asset_id",
