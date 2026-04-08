@@ -6,6 +6,7 @@ permitiendo al operador de seguridad comprender de un vistazo el estado de criti
 
 #==============================================[IMPORTS]==============================================#
 import json
+import math
 from rich.console import Console, Group
 from rich.panel import Panel
 from rich.text import Text
@@ -32,6 +33,16 @@ def load_report_data() -> dict:
     
     with open(report_path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def load_countermeasures_catalog() -> dict:
+    """
+    Carga el catalogo de contramedidas para enriquecer la vista de optimizacion.
+    """
+    countermeasures_path = Path(__file__).parent.parent.parent / "configs" / "countermeasures.json"
+
+    with open(countermeasures_path, "r", encoding="utf-8") as f:
+        return json.load(f).get("countermeasures", {})
 
 
 def extract_report_data(report_data) -> dict:
@@ -422,29 +433,16 @@ def render_optimizations_ask_panel(context=None) -> Panel:
     budget_text = f"{budget:.0f}" if isinstance(budget, (int, float)) else "Not configured"
     time_text = f"{time_limit:.1f} h" if isinstance(time_limit, (int, float)) else "Not configured"
 
-    optimization_text = f"""[bold]Current optimization configuration:[/bold]
+    optimization_text = f"""[bold]Current config:[/bold] objective={objective} | budget={budget_text} | time={time_text}
 
-  [bold]Objective:[/bold] {objective}
-  [bold]Budget:[/bold] {budget_text}
-  [bold]Time limit:[/bold] {time_text}
-
-[bold]Select protection objective:[/bold]
-
-  [bold]<global>            Minimize overall system risk
-                            -> Balanced reduction across confidentiality, integrity, availability
-
-  [bold]<confidentiality>   Protect sensitive data
-                            -> Reduce exposure and data exfiltration risk
-
-  [bold]<integrity>         Protect data integrity
-                            -> Prevent unauthorized modification and tampering
-
-  [bold]<availability>      Ensure service availability
-                            -> Minimize disruptions and downtime
+[bold]Objectives:[/bold]
+  [bold]global[/bold]           Overall risk
+  [bold]confidentiality[/bold]  Data exposure / exfiltration
+  [bold]integrity[/bold]        Unauthorized modification
+  [bold]availability[/bold]     Downtime / disruption
 
 [bold]Commands:[/bold]
-  python -m src.cli.care optimize config --objective <global | confidentiality | integrity | availability>
-  python -m src.cli.care optimize config --budget <budget_value> --time <hours>
+  python -m src.cli.care optimize config --objective <objective> --budget <value> --time <hours>
   python -m src.cli.care optimize run
 """
 
@@ -485,6 +483,7 @@ def extract_optimization_data(report_data, optimization_results, context=None) -
     solution = optimization_results.get(objective, {})
 
     report_assets = get_report_assets(report_data)
+    countermeasures_catalog = load_countermeasures_catalog()
     selected_assets = []
     countermeasures_by_asset = {}
 
@@ -521,7 +520,15 @@ def extract_optimization_data(report_data, optimization_results, context=None) -
             "time_hours": float(decision.get("time_hours", 0.0) or 0.0),
         }
         selected_assets.append(selected_asset)
-        countermeasures_by_asset.setdefault(selected_asset["countermeasure"], []).append(selected_asset["asset_id"])
+        cm_id = selected_asset["countermeasure"]
+        cm_info = countermeasures_catalog.get(cm_id, {})
+        if cm_id not in countermeasures_by_asset:
+            countermeasures_by_asset[cm_id] = {
+                "id": cm_id,
+                "name": cm_info.get("name", cm_id),
+                "assets": [],
+            }
+        countermeasures_by_asset[cm_id]["assets"].append(selected_asset["asset_id"])
 
     selected_assets.sort(key=lambda asset: asset["delta_risk"])
 
@@ -588,6 +595,67 @@ def format_objective_label(objective: str) -> str:
         "availability": "Availability Risk",
     }
     return labels.get(objective, "Optimization Objective")
+
+
+def estimate_wrapped_lines(text: str, width: int) -> int:
+    """
+    Estima cuantas lineas ocupara un texto al envolverlo en una anchura dada.
+    """
+    if not text:
+        return 1
+    safe_width = max(width, 1)
+    return max(1, math.ceil(len(text) / safe_width))
+
+
+def optimization_top_panel_height(info) -> int:
+    """
+    Ajusta la altura del resumen superior para evitar huecos o recortes.
+    """
+    summary = info["summary"]
+    budget_percent = (summary["total_cost"] / summary["budget"] * 100) if summary["budget"] else 0.0
+    summary_lines = 6
+    risk_lines = 7
+    base_height = 6
+
+    if budget_percent >= 100:
+        summary_lines += 1
+
+    return base_height + max(summary_lines, risk_lines)
+
+
+def optimization_analysis_panel_height(info, console_width: int) -> int:
+    """
+    Calcula la altura necesaria para las tablas de optimizacion segun filas visibles
+    y el posible wrapping del agrupado de despliegue.
+    """
+    asset_rows = info["summary"]["asset_rows"][:8]
+    grouped_countermeasures = info["summary"]["grouped_countermeasures"]
+
+    asset_name_width = 14 if console_width >= 170 else 12
+    asset_cm_width = 10
+    asset_table_lines = 3
+    for row in asset_rows:
+        name_lines = estimate_wrapped_lines(row["asset_name"], asset_name_width)
+        cm_lines = estimate_wrapped_lines(row["countermeasure"], asset_cm_width)
+        asset_table_lines += max(name_lines, cm_lines, 1)
+
+    if console_width >= 170:
+        name_column_width = 28
+        assets_column_width = max(int(console_width * 0.18), 28)
+    else:
+        name_column_width = 24
+        assets_column_width = max(console_width - 24, 24)
+
+    grouping_lines = 3
+    for cm_data in sorted(grouped_countermeasures.values(), key=lambda item: (-len(item["assets"]), item["id"])):
+        asset_text = ", ".join(cm_data["assets"])
+        grouping_lines += max(
+            estimate_wrapped_lines(cm_data["name"], name_column_width),
+            estimate_wrapped_lines(asset_text, assets_column_width),
+        )
+
+    base_height = 5
+    return base_height + max(asset_table_lines, grouping_lines)
 
 
 def render_optimization_summary_panel(info, panel_height=None) -> Panel:
@@ -707,19 +775,25 @@ def render_optimization_assets_table(info, panel_height=None) -> Panel:
 
 def render_countermeasure_distribution_panel(info, panel_height=None) -> Panel:
     """
-    Agrupa que activos reciben cada contramedida para una lectura rapida.
+    Presenta las contramedidas seleccionadas en un formato mas legible.
     """
     table = Table(show_header=True, header_style="bold", expand=True, box=box.SIMPLE)
-    table.add_column("COUNTERMEASURE", style="magenta", min_width=14, justify="center", no_wrap=True)
-    table.add_column("ASSETS", style="green", min_width=20, justify="left", overflow="fold")
+    table.add_column("CM", style="magenta", min_width=8, justify="center", no_wrap=True)
+    table.add_column("COUNTERMEASURE", style="yellow", min_width=24, justify="left", overflow="fold")
+    table.add_column("ASSETS", style="green", min_width=14, justify="center", no_wrap=True)
 
     grouped_countermeasures = info["summary"]["grouped_countermeasures"]
-    for cm_name, assets in sorted(grouped_countermeasures.items(), key=lambda item: (-len(item[1]), item[0])):
-        table.add_row(cm_name, ", ".join(assets))
+    for cm_data in sorted(grouped_countermeasures.values(), key=lambda item: (-len(item["assets"]), item["id"])):
+        assets = cm_data["assets"]
+        table.add_row(
+            cm_data["id"],
+            cm_data["name"],
+            f"{len(assets)} asset(s)",
+        )
 
     panel = Panel(
         Align.center(table, vertical="middle"),
-        title="Deployment Grouping",
+        title="Selected Countermeasures",
         padding=(0, 0),
         box=box.SIMPLE,
         expand=True,
@@ -745,9 +819,8 @@ def build_dashboard(info, optimization_mode=False, context=None):
     """
     console_width = console.size.width
     if optimization_mode:
-        top_panel_height = 14
-        n_assets = len(info["summary"]["asset_rows"])
-        analysis_panel_height = 8 + max(min(n_assets, 8), 1)
+        top_panel_height = optimization_top_panel_height(info)
+        analysis_panel_height = optimization_analysis_panel_height(info, console_width)
         top_sections = [
             render_optimization_summary_panel(info, panel_height=top_panel_height),
             render_optimization_risk_panel(info, panel_height=top_panel_height)
@@ -760,7 +833,7 @@ def build_dashboard(info, optimization_mode=False, context=None):
         top_panel_height = 10
         n_critical_assets = len(info["summary"]["critical_assets"])
         n_ttps = len(info["summary"]["ttps"])
-        analysis_panel_height = 7 + max(n_critical_assets, n_ttps, 1)
+        analysis_panel_height = 11 + max(n_critical_assets, n_ttps, 1)
         top_sections = [
             render_summary_panel(info, panel_height=top_panel_height),
             render_risk_panel(info, panel_height=top_panel_height)

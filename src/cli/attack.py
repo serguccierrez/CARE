@@ -30,6 +30,21 @@ console = Console()
 ATTACK_WIDE_LAYOUT_BREAKPOINT = 150
 
 
+def confidence_color(value) -> str:
+    """
+    Devuelve el color semaforico usado para representar el nivel de confianza.
+    """
+    if 0.0 <= value < 0.5:
+        return "green"
+    if 0.5 <= value < 0.6:
+        return "yellow"
+    if 0.6 <= value <= 0.8:
+        return "orange3"
+    if 0.8 < value <= 1.0:
+        return "red"
+    return "white"
+
+
 def render_attack_header() -> Panel:
     """
     Renderiza el encabezado del modulo de ejecucion de ataques.
@@ -189,8 +204,16 @@ def render_selected_vectors_panel(context: dict ) -> Panel:
             ttp = selected_ttps[idx] if idx < len(selected_ttps) else "-"
             confidence = selected_confidences[idx] if idx < len(selected_confidences) else "-"
 
-            confidence_value = f"{float(confidence):.2f}" if isinstance(confidence, (int, float)) else str(confidence)
-            table.add_row(str(asset), str(ttp), confidence_value)
+            if isinstance(confidence, (int, float)):
+                confidence_value = f"{float(confidence):.2f}"
+                confidence_render = Text(
+                    confidence_value,
+                    style=f"bold {confidence_color(float(confidence))}",
+                )
+            else:
+                confidence_render = str(confidence)
+
+            table.add_row(str(asset), str(ttp), confidence_render)
 
     return Panel(
         table,
