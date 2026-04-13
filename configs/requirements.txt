@@ -1,0 +1,12 @@
+pandas
+openpyxl
+networkx
+matplotlib
+rich
+tabulate
+mitreattack-python
+pgmpy
+pyAgrum
+numpy
+scipy
+pulp

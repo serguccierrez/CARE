@@ -1,94 +1,374 @@
-# 🛡️ Motor de Recomendación de Contramedidas Cibernéticas
+# CARE - Cyber Action Recommendation Engine
 
-## Trabajo Fin de Grado (TFG)
-
-Este repositorio contiene el **código fuente** desarrollado en el marco del **Trabajo Fin de Grado (TFG)** del Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación (GITST), ETSIT.
-
-El proyecto consiste en el diseño e implementación de un **motor de recomendación de contramedidas de ciberseguridad** frente a ataques cibernéticos, orientado a **escenarios multidominio** y basado en **modelos formales de riesgo, dependencias entre activos y conocimiento doctrinal**.
+> **ES:** Repositorio del Trabajo de Fin de Grado **“Diseño y desarrollo de un sistema de apoyo a la decisión en ciberseguridad para la recomendación de contramedidas”**.<br>
+> **EN:** Repository for the Final Degree Project **“Design and development of a cybersecurity decision-support system for countermeasure recommendation”**.
 
 ---
 
-## 📌 Descripción del Proyecto
+## Overview
 
-El objetivo del TFG es desarrollar un motor capaz de:
+**ES**
 
-* **Analizar una amenaza cibernética** (por ejemplo, técnicas y tácticas MITRE ATT&CK).
-* **Evaluar su impacto potencial** sobre un conjunto de activos interdependientes.
-* **Estimar el riesgo residual** sobre los atributos de seguridad (Confidencialidad, Integridad y Disponibilidad – CIA).
-* **Recomendar contramedidas cibernéticas** que mitiguen dicho riesgo, minimizando la interrupción operativa.
+Este repositorio recoge el desarrollo de un sistema de apoyo a la decisión orientado al análisis de incidentes y a la recomendación de contramedidas frente a ataques cibernéticos. El proyecto parte de la necesidad de asistir la toma de decisiones cuando una amenaza ya ha sido detectada y es necesario evaluar, con criterios consistentes, qué medidas pueden aplicarse para reducir el riesgo sobre una infraestructura compuesta por activos interdependientes.
 
-El sistema no se centra en la detección de la amenaza, sino en la **correlación, análisis y recomendación automática de contramedidas** una vez la amenaza ha sido identificada.
+El sistema modela activos y dependencias, incorpora conocimiento procedente de **MITRE ATT&CK**, estima riesgo residual en las dimensiones **Confidentiality, Integrity and Availability (CIA)** y construye recomendaciones justificadas bajo restricciones operativas. Su propósito no es automatizar la respuesta, sino proporcionar una base analítica trazable para comparar alternativas de mitigación. En este sentido, el sistema también puede utilizarse como motor de simulación *what-if* para estudiar cómo cambian el riesgo y las recomendaciones ante diferentes incidentes, niveles de confianza o medidas aplicadas.
 
----
+**EN**
 
-## 🧠 Enfoque Conceptual
+This repository contains the development of a decision-support system focused on incident analysis and countermeasure recommendation for cyber attacks. The project addresses the need to support decision-making once a threat has already been detected and it becomes necessary to evaluate, using consistent criteria, which measures can be applied to reduce risk over an infrastructure composed of interdependent assets.
 
-El motor combina varios elementos clave:
-
-* **Catálogo de activos y dependencias**, modelado como un grafo dirigido.
-* **Modelo de amenazas**, basado en técnicas y tácticas de MITRE ATT&CK.
-* **Modelo probabilístico (Red Bayesiana)** para la estimación de riesgo e impacto.
-* **Evaluación de contramedidas**, diferenciando entre medidas preventivas y reactivas.
-* **Soporte a escenarios multidominio**, considerando dependencias cruzadas entre activos.
-
-El resultado es un sistema que permite **razonar sobre el riesgo** y **priorizar contramedidas** de forma coherente y justificable.
+The system models assets and dependencies, incorporates knowledge from **MITRE ATT&CK**, estimates residual risk across **Confidentiality, Integrity and Availability (CIA)** dimensions, and builds justified recommendations under operational constraints. Its purpose is not to automate the response, but to provide a traceable analytical basis for comparing mitigation alternatives. In that sense, it can also be used as a *what-if* simulation engine to study how risk and recommendations evolve under different incidents, confidence levels, or applied measures.
 
 ---
 
-## 🛠️ Contenido del Repositorio
+## Academic Scope
 
-Este repositorio aloja exclusivamente el **código del motor**, incluyendo:
+**ES**
 
-* Creación y carga del catálogo de activos.
-* Definición y construcción del grafo de dependencias.
-* Integración del modelo MITRE ATT&CK.
-* Implementación de la red bayesiana de riesgo.
-* Ejecución del pipeline de análisis y recomendación.
+El trabajo se enmarca en el ámbito del análisis de riesgo y el apoyo a la decisión en ciberseguridad. La propuesta estudia cómo representar un incidente, cómo propagar su efecto sobre un conjunto de activos relacionados y cómo valorar distintas acciones de respuesta bajo incertidumbre. Para ello, combina modelos probabilísticos, modelos de decisión y técnicas de optimización sobre una arquitectura modular implementada en Python.
 
-La documentación teórica, la memoria del TFG y los resultados experimentales se mantienen fuera de este repositorio o en carpetas separadas.
+El enfoque se apoya en principios generales de gestión del riesgo y en referencias ampliamente utilizadas en ciberseguridad, con especial atención a la trazabilidad entre la información de entrada del incidente, el análisis realizado y la recomendación final generada por el sistema.
 
----
+**EN**
 
-## ⚙️ Tecnologías Utilizadas
+The project is framed within cybersecurity risk analysis and decision support. It studies how to represent an incident, how to propagate its effect across a set of related assets, and how to assess different response actions under uncertainty. To do so, it combines probabilistic models, decision models, and optimization techniques within a modular Python-based architecture.
 
-* **Python 3**
-* **NetworkX** (modelado de grafos)
-* **pgmpy** (redes bayesianas)
-* **SQLite** (catálogo de activos)
-* **JSON** (modelos y configuraciones)
+The approach relies on general risk-management principles and on widely adopted cybersecurity references, with particular attention to traceability between incident input data, the performed analysis, and the final recommendation generated by the system.
 
 ---
 
-## ▶️ Ejecución
+## Project Goal
 
-Instalar dependencias:
+**ES**
 
-```bash
-pip install -r requirements.txt
+El objetivo del sistema es:
+
+1. Gestionar escenarios de activos y dependencias a partir de un catálogo estructurado.
+2. Representar la infraestructura como un grafo dirigido multidominio.
+3. Asociar vectores de amenaza basados en técnicas MITRE ATT&CK a activos concretos.
+4. Analizar la propagación potencial del impacto a través de dependencias.
+5. Estimar el riesgo residual mediante modelos probabilísticos.
+6. Evaluar alternativas de mitigación y seleccionar recomendaciones bajo restricciones de coste y tiempo.
+7. Servir como soporte para análisis *what-if* sobre incidentes, parámetros de amenaza y medidas de respuesta.
+
+**EN**
+
+The system is designed to:
+
+1. Manage asset and dependency scenarios from a structured catalog.
+2. Represent the infrastructure as a directed multidomain graph.
+3. Associate MITRE ATT&CK-based threat vectors with specific assets.
+4. Analyze the potential propagation of impact through dependencies.
+5. Estimate residual risk using probabilistic models.
+6. Evaluate mitigation alternatives and select recommendations under cost and time constraints.
+7. Support *what-if* analyses over incidents, threat parameters, and response measures.
+
+---
+
+## Technical Approach
+
+**ES**
+
+La solución se estructura en cuatro capas principales:
+
+- **Modelo de datos**: persistencia de escenarios, activos y dependencias en SQLite.
+- **Modelo de amenaza**: integración de técnicas, tácticas y mitigaciones de MITRE ATT&CK Enterprise.
+- **Modelo de riesgo**: construcción del grafo, propagación del impacto e inferencia bayesiana en dimensiones CIA.
+- **Modelo de decisión**: diagramas de influencia y optimización lineal para comparar y seleccionar contramedidas.
+
+**EN**
+
+The solution is organized into four main layers:
+
+- **Data model**: persistence of scenarios, assets, and dependencies in SQLite.
+- **Threat model**: integration of techniques, tactics, and mitigations from MITRE ATT&CK Enterprise.
+- **Risk model**: graph construction, impact propagation, and Bayesian inference over CIA dimensions.
+- **Decision model**: influence diagrams and linear optimization to compare and select countermeasures.
+
+---
+
+## End-to-End Workflow
+
+**ES**
+
+El flujo general del sistema puede resumirse del siguiente modo:
+
+1. **Creación del escenario**
+   Se registra un escenario en la base de datos y se cargan, desde un Excel proporcionado mediante `--source`, los activos, sus atributos y las dependencias entre ellos.
+
+2. **Construcción del grafo**
+   A partir de la información persistida se genera un grafo dirigido donde los nodos representan activos y las aristas representan relaciones de dependencia.
+
+3. **Definición del incidente**
+   El sistema puede trabajar con selección aleatoria de amenazas o con inyección controlada. En ambos casos, asocia uno o varios TTPs de MITRE ATT&CK a activos concretos y fija un nivel de confianza para cada vector de amenaza.
+
+4. **Análisis de propagación**
+   Desde el activo inicialmente comprometido, el motor identifica nodos y dependencias afectadas en distintos niveles del grafo, obteniendo así un escenario de impacto potencial.
+
+5. **Construcción dinámica de la red bayesiana**
+   El `runner` ajusta las CPDs activas en función de las contramedidas candidatas y construye la red bayesiana necesaria para analizar cada combinación relevante de activo y amenaza.
+
+6. **Inferencia y evaluación por dimensión**
+   Sobre esa red se calcula la probabilidad residual de impacto en confidencialidad, integridad y disponibilidad. A continuación, se resuelven diagramas de influencia para estimar la utilidad esperada de las distintas contramedidas.
+
+7. **Agregación del riesgo**
+   Los resultados se consolidan a nivel de incidente, después a nivel de activo y finalmente a nivel global del sistema, teniendo en cuenta los pesos CIA y la criticidad de cada activo.
+
+8. **Generación de escenarios de decisión**
+   Con las contramedidas candidatas se construyen alternativas por activo. Cada alternativa representa una posible medida de mitigación y su efecto esperado sobre el riesgo residual.
+
+9. **Optimización**
+   El problema final se formula como un modelo de optimización lineal binaria que selecciona, para cada activo, la alternativa que minimiza el riesgo objetivo bajo restricciones de presupuesto y tiempo de despliegue.
+
+10. **Exportación de resultados**
+    El sistema genera un reporte estructurado del análisis y, cuando procede, una solución de optimización con las contramedidas recomendadas.
+
+**EN**
+
+The overall system workflow can be summarized as follows:
+
+1. **Scenario creation**
+   A scenario is registered in the database and the assets, their attributes, and their dependencies are loaded from an Excel file provided through `--source`.
+
+2. **Graph construction**
+   Using the persisted information, a directed graph is generated where nodes represent assets and edges represent dependency relationships.
+
+3. **Incident definition**
+   The system can operate either with random threat selection or with controlled injection. In both cases, it associates one or more MITRE ATT&CK TTPs with specific assets and assigns a confidence level to each threat vector.
+
+4. **Propagation analysis**
+   Starting from the initially compromised asset, the engine identifies affected nodes and dependencies across different graph levels, thereby building a potential impact scenario.
+
+5. **Dynamic Bayesian network construction**
+   The `runner` adjusts the active CPDs according to the candidate countermeasures and builds the Bayesian network required to analyze each relevant asset-threat combination.
+
+6. **Inference and per-dimension evaluation**
+   The model estimates residual impact probability for confidentiality, integrity, and availability. Influence diagrams are then solved to estimate the expected utility of the available countermeasures.
+
+7. **Risk aggregation**
+   Results are consolidated at incident level, then at asset level, and finally at system level, taking into account CIA weights and asset criticality.
+
+8. **Decision scenario generation**
+   Based on the candidate countermeasures, the system builds alternative scenarios per asset. Each alternative represents a possible mitigation measure and its expected effect on residual risk.
+
+9. **Optimization**
+   The final problem is formulated as a binary linear optimization model that selects, for each asset, the alternative that minimizes the target risk under budget and deployment-time constraints.
+
+10. **Result export**
+    The system generates a structured analysis report and, when applicable, an optimization solution containing the recommended countermeasures.
+
+---
+
+## Screenshots
+
+### Inicialización del sistema | System initialization
+![CARE init](./images/init.png)
+
+### Gestión de escenarios | Scenario management
+![CARE database](./images/db.png)
+
+### Inyección de amenazas | Threat injection
+![CARE attack](./images/attack.png)
+
+### Dashboard de riesgo | Risk dashboard
+![CARE dashboard](./images/dashboard.png)
+
+### Optimización de contramedidas | Countermeasure optimization
+![CARE optimization](./images/optimize.png)
+
+---
+
+## Technologies
+
+- **Python 3.10+** - lenguaje principal del proyecto.
+- **SQLite** - persistencia de escenarios, activos y dependencias.
+- **Pandas / OpenPyXL** - carga y procesamiento del catálogo Excel.
+- **NetworkX** - construcción y análisis del grafo de dependencias.
+- **MITRE ATT&CK STIX** - consulta de técnicas, tácticas y mitigaciones.
+- **pgmpy** - construcción e inferencia sobre redes bayesianas.
+- **pyAgrum** - modelado y resolución de diagramas de influencia.
+- **PuLP** - optimización lineal para la selección de contramedidas.
+- **Rich** - interfaz CLI con tablas, paneles y dashboards en terminal.
+- **JSON** - configuración, persistencia intermedia y exportación de resultados.
+
+---
+
+## Repository Structure
+
+```text
+TFG_motor-contramedidas-ciberneticas/
+|-- configs/                    # CPDs, matrices, contramedidas y mappings MITRE
+|-- data/                       # Dataset MITRE ATT&CK y otros datos de entrada
+|-- images/                     # Capturas utilizadas en el README
+|-- src/
+|   |-- cli/                    # Interfaz CARE: init, db, attack, dashboard, optimize
+|   |-- cyberrecom/             # Orquestación del pipeline y lógica MITRE
+|   |-- database/               # Creación, carga y consulta de SQLite
+|   |-- graph/                  # Construcción y análisis del grafo multidominio
+|   |-- reporting/              # Exportación de reportes y soluciones
+|   |-- risk/                   # Red bayesiana, diagramas de influencia y optimización
+|-- README.md
 ```
 
-Ejecutar el motor (según configuración actual):
+---
+
+## Data and Configuration
+
+**ES**
+
+El sistema utiliza como principales artefactos de entrada y configuración:
+
+- `--source <excel_path>` → archivo Excel con el catálogo de activos y dependencias del escenario.
+- `data/enterprise-attack.json` → dataset local de MITRE ATT&CK Enterprise.
+- `configs/countermeasures.json` → catálogo de contramedidas, coste, tiempo de despliegue y efecto sobre riesgo.
+- `configs/bn_CPDs_template.json` y `configs/bn_CPDs.json` → plantillas y CPDs activas para la red bayesiana.
+- `configs/ttps_to_mitigations.json` → correspondencia entre técnicas MITRE y mitigaciones candidatas.
+
+**EN**
+
+The main input and configuration artifacts are:
+
+- `--source <excel_path>` → Excel file containing the scenario asset and dependency catalog.
+- `data/enterprise-attack.json` → local MITRE ATT&CK Enterprise dataset.
+- `configs/countermeasures.json` → countermeasure catalog with cost, deployment time, and risk effect.
+- `configs/bn_CPDs_template.json` and `configs/bn_CPDs.json` → templates and active CPDs for the Bayesian network.
+- `configs/ttps_to_mitigations.json` → mapping between MITRE techniques and candidate mitigations.
+
+---
+
+## Execution
+
+**ES**
+
+Desde la raíz del repositorio:
 
 ```bash
-python main.py
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r configs/requirements.txt
 ```
 
+Inicializar la consola:
+
+```bash
+python -m src.cli.care init
+```
+
+Gestionar escenarios:
+
+```bash
+python -m src.cli.care db
+python -m src.cli.care db load --scenario "<scenario_name>"
+python -m src.cli.care db asset-list --scenario "<scenario_name>"
+```
+
+Crear un escenario desde un Excel:
+
+```bash
+python -m src.cli.care db create --scenario "<scenario_name>" --description "<description>" --source "<excel_path>"
+```
+
+Ejecutar una simulación aleatoria:
+
+```bash
+python -m src.cli.care attack run --random
+```
+
+Ejecutar una inyección controlada:
+
+```bash
+python -m src.cli.care attack select --asset "<asset_id>" --ttp "T1190" --confidence 0.75
+python -m src.cli.care attack run
+```
+
+Consultar el dashboard:
+
+```bash
+python -m src.cli.care dashboard
+```
+
+Configurar y ejecutar la optimización:
+
+```bash
+python -m src.cli.care optimize config --objective global --budget 50000 --time 210
+python -m src.cli.care optimize run
+```
+
+**EN**
+
+From the repository root:
+
+```bash
+python -m venv .venv
+.\.venv\Scripts\activate
+pip install -r configs/requirements.txt
+```
+
+Then use the `CARE` CLI to initialize the system, manage scenarios, execute threat simulations, inspect the risk dashboard, and run the optimization workflow.
+
 ---
 
-## 📚 Contexto Académico
+## CLI
 
-Este proyecto se desarrolla con fines **estrictamente académicos** como parte de un **Trabajo Fin de Grado**.
-El repositorio permite:
+```text
+python -m src.cli.care {init,db,attack,dashboard,optimize}
+```
 
-* Control de versiones del código.
-* Trazabilidad del desarrollo.
-* Posibilidad de auditoría técnica por parte del tribunal evaluador.
+- `init` → renderiza la pantalla inicial de CARE.
+- `db` → gestiona escenarios, activos y carga de datos.
+- `attack` → configura e inyecta amenazas aleatorias o controladas.
+- `dashboard` → muestra el resumen del análisis de riesgo.
+- `optimize` → configura restricciones y ejecuta la recomendación de contramedidas.
 
 ---
 
-## 👤 Autor
+## Outputs
 
-**Sergi**
-Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación
-ETSIT – Universidad Politécnica de Madrid
+**ES**
 
+Durante la ejecución, el sistema genera los siguientes artefactos:
+
+- `src/reporting/report.json` → reporte estructurado del incidente, propagación, inferencia probabilística y riesgo global.
+- `src/reporting/optimization_solution.json` → solución de optimización con contramedidas seleccionadas por activo.
+- `configs/bn_CPDs.json` → CPDs dinámicas adaptadas a las contramedidas candidatas del escenario activo.
+- `src/cli/context.json` → estado operativo de la sesión CLI.
+
+**EN**
+
+During execution, the system generates the following artifacts:
+
+- `src/reporting/report.json` → structured report containing incident, propagation, probabilistic inference, and global risk data.
+- `src/reporting/optimization_solution.json` → optimization solution with the selected countermeasures by asset.
+- `configs/bn_CPDs.json` → dynamic CPDs adapted to the candidate countermeasures of the active scenario.
+- `src/cli/context.json` → operational state of the CLI session.
+
+---
+
+## Academic Context
+
+**ES**
+
+Este repositorio forma parte del desarrollo de un **Trabajo de Fin de Grado** del Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación en la **ETSIT - Universidad Politécnica de Madrid**.
+
+El proyecto prioriza la trazabilidad técnica, la reproducibilidad del análisis y la separación clara entre datos, modelos de riesgo, lógica de decisión e interfaz operativa.
+
+**EN**
+
+This repository is part of a **Final Degree Project** for the Degree in Engineering of Telecommunication Technologies and Services at **ETSIT - Universidad Politécnica de Madrid**.
+
+The project prioritizes technical traceability, reproducible analysis, and a clear separation between data, risk models, decision logic, and the operational interface.
+
+---
+
+## Author
+
+**Sergi Gutiérrez**<br>
+Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación<br>
+ETSIT - Universidad Politécnica de Madrid
+
+GitHub: [serguccierrez](https://github.com/serguccierrez)
+
+---
+
+> _CARE transforma un escenario de amenaza en una recomendación trazable de contramedidas._<br>
+> _CARE turns a threat scenario into a traceable countermeasure recommendation._
