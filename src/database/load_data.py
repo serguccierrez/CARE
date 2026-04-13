@@ -1,3 +1,10 @@
+"""
+
+Este Script se encarga de cargar datos desde un archivo Excel, procesarlos y luego insertarlos en una base de datos SQLite.
+Pobla la db para dejar listo el sistema para ejecutar análisis y generar informes.
+
+"""
+
 #===============================================[IMPORTS]===============================================
 import pandas as pd
 import sqlite3
