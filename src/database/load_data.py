@@ -1,3 +1,10 @@
+"""
+
+Este Script se encarga de cargar datos desde un archivo Excel, procesarlos y luego insertarlos en una base de datos SQLite.
+Pobla la db para dejar listo el sistema para ejecutar análisis y generar informes.
+
+"""
+
 #===============================================[IMPORTS]===============================================
 import pandas as pd
 import sqlite3
@@ -148,7 +155,14 @@ def select_required_columns(assets_df: pd.DataFrame, deps_df: pd.DataFrame) -> t
 #===============================================[DATA_CLEANING]===============================================
 def clean_data(assets_df: pd.DataFrame, deps_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Limpia datos (elimina espacios extra).
+    Limpia datos (elimina espacios extra) y asegura que columnas clave sean strings
+
+    Args:
+        assets_df: DataFrame con datos de activos cargados desde Excel
+        deps_df: DataFrame con datos de dependencias cargados desde Excel
+
+    Returns:
+        Tuple con DataFrames limpios: (assets_df_cleaned, deps_df_cleaned)
     """
     for col in ["asset_id", "name", "asset_type", "domain", "operational_state"]:
         assets_df[col] = assets_df[col].astype(str).str.strip()
@@ -162,17 +176,29 @@ def clean_data(assets_df: pd.DataFrame, deps_df: pd.DataFrame) -> tuple[pd.DataF
 def validate_data(assets_df: pd.DataFrame, deps_df: pd.DataFrame) -> None:
     """
     Valida integridad de datos antes de cargar en BD.
-    Lanza excepciones si hay problemas.
+    Lanza excepciones si hay problemas
+
+    Args:
+        assets_df: DataFrame con datos de activos cargados desde Excel
+        deps_df: DataFrame con datos de dependencias cargados desde Excel
+
+    Returns:
+        None. Lanza ValueError si hay problemas de validación.
     """
+
+    
+    # Comprobamos que no haya activos con el mismo asset_id
     if assets_df["asset_id"].duplicated().any():
         dup = assets_df.loc[assets_df["asset_id"].duplicated(), "asset_id"].unique().tolist()
         raise ValueError(f"asset_id duplicado(s): {dup}")
 
+    # Comprobamos que la suma de los pesos CIA de cada activo sea aproximadamente 1
     s = pd.to_numeric(assets_df["cia_c"]) + pd.to_numeric(assets_df["cia_i"]) + pd.to_numeric(assets_df["cia_a"])
     bad = assets_df.loc[(s - 1.0).abs() > 0.01, ["asset_id", "cia_c", "cia_i", "cia_a"]]
     if not bad.empty:
         raise ValueError("Hay activos cuya suma CIA no es ~1:\n" + bad.to_string(index=False))
 
+    # Comprobamos que las dependencias apunten a activos que existen
     keys = set(assets_df["asset_id"].tolist())
     missing_from = sorted(set(deps_df["from_asset"]) - keys)
     missing_to = sorted(set(deps_df["to_asset"]) - keys)
@@ -187,6 +213,17 @@ def validate_data(assets_df: pd.DataFrame, deps_df: pd.DataFrame) -> None:
 def insert_into_database(assets_df: pd.DataFrame, deps_df: pd.DataFrame, db_path: Path, scenario_name: str, description: str = None, source_file: str = None ) -> None:
     """
     Inserta un nuevo escenario en la base de datos junto con sus activos y dependencias.
+
+    Args:
+        assets_df: DataFrame con datos de activos limpios y validados
+        deps_df: DataFrame con datos de dependencias limpios y validados
+        db_path: ruta del fichero .db
+        scenario_name: nombre del escenario a crear
+        description: descripción opcional del escenario
+        source_file: ruta del archivo fuente (Excel) de donde se han cargado los datos
+
+    Returns:
+        None. Lanza excepciones si hay problemas de inserción.
     """
     con = sqlite3.connect(db_path)
 
@@ -225,6 +262,15 @@ def load_and_insert_data(excel_path: Path, db_path: Path, scenario_name: str, de
     """
     Orquesta el flujo completo: carga, mapeo, limpieza, validación e inserción.
     Función principal para ser llamada desde otro módulo.
+
+    Args:
+        excel_path: ruta del archivo Excel a cargar
+        db_path: ruta del fichero .db
+        scenario_name: nombre del escenario a crear
+        description: descripción opcional del escenario
+
+    Returns:
+        None. Lanza excepciones si hay problemas en cualquier paso del proceso.
     """
     # Cargamos datos desde Excel
     assets_df, deps_df = load_data_from_excel(excel_path)

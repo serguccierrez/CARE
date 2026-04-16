@@ -1,5 +1,8 @@
 """
-Este script recoge los datos de la DB creada en create_db.py y los usa para representarlos en un grafo
+Este script recoge los datos de la DB creada en create_db.py y los usa para representarlos en un grafo que será
+la base para el análisis de nodos afectados por un compromiso. El grafo se construye usando la librería NetworkX,
+y se pueden realizar análisis de propagación de compromisos a través de las dependencias entre activos.
+
 """
 from pathlib import Path
 import sqlite3
@@ -10,7 +13,13 @@ import networkx as nx
 #===============================================[CONSTANTS]===============================================
 def load_constants() -> dict:
     """
-    Carga las constantes desde el archivo JSON de configuración.
+    Carga las constantes desde el archivo JSON de configuración
+
+    Args:
+        None
+    
+    Returns:
+        dict: Un diccionario con las constantes cargadas desde el archivo JSON
     """
     config_path = Path(__file__).parent.parent.parent / "Configs" / "constants.json"
     with open(config_path, 'r', encoding='utf-8') as f:
@@ -18,6 +27,16 @@ def load_constants() -> dict:
     return config
 
 def load_dependency_probabilities() -> dict:
+    """
+    Carga las probabilidades de propagación de compromisos para cada tipo de dependencia y
+    táctica desde el archivo JSON de configuración
+
+    Args:
+        None
+
+    Returns:
+        dict: Un diccionario con las probabilidades de propagación de compromisos
+    """
     config_path = Path(__file__).parent.parent.parent / "Configs" / "dependency_matrix.json"
     with open(config_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
@@ -109,11 +128,19 @@ def get_domain_inter_dependencies(db_path: str, scenario_pk: int, domain: str):
     finally:
         con.close()
         
-        
-        
-def list_scenarios(db_path: str):
+
+
+def list_scenarios(db_path: str) -> list[tuple]:
     """
     Retorna todos los escenarios disponibles en la base de datos.
+
+    Args:
+        db_path (str): Ruta a la base de datos SQLite.
+
+    Returns:
+        list[tuple]: Lista de tuplas con los escenarios disponibles.
+        Formato esperado:
+        (scenario_pk, scenario_name, description, source_file, created_at)
     """
     con = sqlite3.connect(db_path)
     try:
@@ -132,11 +159,18 @@ def list_scenarios(db_path: str):
 def delete_scenario(db_path: str, scenario_name: str):
     """
     Elimina un escenario específico de la base de datos, junto con sus activos y dependencias asociadas.
+
+    Args:
+        db_path (str): Ruta a la base de datos SQLite.
+        scenario_name (str): Nombre del escenario a eliminar.
+
+    Returns:
+        None. Imprime mensajes de éxito o error según corresponda.
     """
     con = sqlite3.connect(db_path)
     try:
         cur = con.cursor()
-        # Obtener el scenario_pk del escenario a eliminar
+        # Obtenemos el scenario_pk del escenario a eliminar
         cur.execute("""
             SELECT scenario_pk
             FROM scenarios
@@ -147,7 +181,8 @@ def delete_scenario(db_path: str, scenario_name: str):
         if row is None:
             print(f"Error: El escenario '{scenario_name}' no existe en la base de datos.")
             return
-        
+
+        # Guardamos la pk del scenario para eliminar sus datos asociados
         scenario_pk = row[0]
         
         # Eliminar dependencias asociadas al escenario
@@ -180,12 +215,19 @@ def get_scenario_pk(db_path: str, scenario_name: str = None):
     Obtiene el scenario_pk:
     - Si se proporciona scenario_name, busca ese escenario.
     - Si no se proporciona, devuelve el último escenario creado.
+
+    Args:
+        db_path (str): Ruta a la base de datos SQLite.
+        scenario_name (str, opcional): Nombre del escenario a buscar. Si es None, se devuelve el último escenario.
+
+    Returns:
+        int: El scenario_pk del escenario encontrado.
     """
     con = sqlite3.connect(db_path)
     try:
         cur = con.cursor()
 
-        # Caso 1: NO se pasa nombre → coger el último escenario
+        # Caso 1: NO se pasa nombre -> cogemos el último escenario
         if not scenario_name:
             cur.execute("""
                 SELECT scenario_pk, scenario_name
@@ -203,7 +245,7 @@ def get_scenario_pk(db_path: str, scenario_name: str = None):
 
             return scenario_pk
 
-        # Caso 2: se pasa nombre → buscarlo
+        # Caso 2: se pasa nombre -> buscamos ese escenario concreto
         cur.execute("""
             SELECT scenario_pk
             FROM scenarios
@@ -259,6 +301,14 @@ def build_intra_domain_graph(domain: str, assets_rows, deps_rows) -> nx.DiGraph:
     
     Assets tupla: (asset_pk, scenario_fk, asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state)
     Deps tupla: (dep_pk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
+
+    Args:
+        domain (str): El dominio para el cual se construirá el grafo.
+        assets_rows (list[tuple]): Lista de tuplas con los activos del dominio.
+        deps_rows (list[tuple]): Lista de tuplas con las dependencias internas del dominio
+
+    Returns:
+        nx.DiGraph: Un grafo dirigido de NetworkX representando los activos y dependencias del dominio.
     """
     G = nx.DiGraph(domain=domain)
 
@@ -356,6 +406,16 @@ def process_and_build_graph_domain(db_path: str,scenario_pk: int,domain: str,all
     construye el grafo intra-dominio y acumula los datos en las estructuras globales.
     
     Retorna el grafo construido para el dominio especificado.
+
+    Args:
+        db_path (str): Ruta a la base de datos SQLite.
+        scenario_pk (int): La clave primaria del escenario a procesar.
+        domain (str): El dominio a procesar.
+        all_assets (list): Lista global para acumular activos de todos los dominios.
+        all_deps_dict (dict): Diccionario global para acumular dependencias de todos los dominios, usando dep_pk como clave para evitar duplicados.
+
+    Returns:
+        nx.DiGraph: El grafo dirigido de NetworkX construido para el dominio especificado.
     """
     # Activos del dominio
     print(f"\n{'='*60}")
@@ -416,30 +476,37 @@ def process_and_build_graph_domain(db_path: str,scenario_pk: int,domain: str,all
 def build_MDO_graph(db_path: str, scenario_name: str) -> nx.DiGraph:
     """
     Ejecuta el análisis completo del MDO: procesa todos los dominios,
-    construye el grafo global y realiza análisis de nodos afectados.
+    construye el grafo global MDO.
+
+    Args:
+        db_path (str): Ruta a la base de datos SQLite.
+        scenario_name (str): Nombre del escenario a procesar.
+
+    Returns:
+        nx.DiGraph: El grafo global MDO construido con todos los activos y dependencias del escenario.
     """
     # Acumuladores globales
     all_assets = []
-    all_deps_dict = {}  # Usar dict con dep_pk como clave para evitar duplicados
+    all_deps_dict = {}  # Usamos dict con dep_pk como clave para evitar duplicados
     
     scenario_pk = get_scenario_pk(db_path, scenario_name)
     
-    # Procesar cada dominio
+    # Procesamos cada dominio
     for dominio in DOMINIOS:
         process_and_build_graph_domain(db_path, scenario_pk, dominio, all_assets, all_deps_dict)
     
-    # Convertir dict a lista (ya sin duplicados)
+    # Convertimos dict a lista (ya sin duplicados)
     all_deps = list(all_deps_dict.values())
     
-    # Construcción del grafo global MDO
+    # Iniciamos el proceso de construcción del grafo global MDO con todos los activos y dependencias acumulados
     print(f"\n{'='*60}")    
     print(f"Construcción del grafo global MDO:")
     print(f"{'='*60}")
     
-    print(f" Total de dependencias únicas: {len(all_deps)}")
+    print(f"Total de dependencias únicas: {len(all_deps)}")
     
     G_global = build_MDO_global_graph(all_assets, all_deps)
-    print(f"\n Grafo global MDO construido:")
+    print(f"\nGrafo global MDO construido:")
     print(f"    - Nodos: {G_global.number_of_nodes()}")
     print(f"    - Aristas: {G_global.number_of_edges()}")
     
@@ -456,9 +523,16 @@ def get_infected_nodes(graph: nx.DiGraph, compromised_node: str):
     2. Nodos que dependen de los nodos afectados en el paso anterior (2 saltos).
     3. Y así sucesivamente hasta que no haya más nodos afectados o se alcance un bucle.
     
-    Retorna: Dict[int, List[str]] donde la clave es el nivel de salto y el valor es la lista de nodos afectados en ese nivel.
+    Args:
+        graph (nx.DiGraph): El grafo dirigido que representa los activos y sus dependencias.
+        compromised_node (str): El nodo que ha sido comprometido inicialmente.
+
+    Returns:
+        Tuple[Dict[int, List[str]], Dict[int, List[Dict]]]: 
+        - Un diccionario donde la clave es el nivel de salto (1, 2, 3, ...) y el valor es una lista de nodos afectados en ese nivel.
+        - Un diccionario opcional con las aristas afectadas en cada nivel, incluyendo detalles de la dependencia.
     """
-    #=== Inicialización de variables ===#
+    #=== {Inicialización de variables} ===#
     affected_nodes_by_level = {} # Dict[int, List[str]]
     affected_edges_by_level = {} # Dict[int, List[Tuple[str, str]]] (opcional, si queremos también las aristas afectadas)
     visited_nodes = set() # Set[str] de los nodos que ya han sido visitados
@@ -467,16 +541,16 @@ def get_infected_nodes(graph: nx.DiGraph, compromised_node: str):
     affected_nodes_by_level[level] = [compromised_node] # Nivel 0 es el nodo comprometido
     visited_nodes.add(compromised_node) # Marcamos el nodo comprometido como visitado
 
-    
-    
-    #=== Verificación de existencia del nodo comprometido ===#
+
+
+    #=== {Verificamos la existencia del nodo comprometido} ===#
     try:
         graph.nodes[compromised_node] # Verificamos que el nodo exista en el grafo
     except KeyError:
         print(f"Error: El nodo comprometido '{compromised_node}' no existe en el grafo.")
         return {}
-    
-    #=== Búsqueda de nodos afectados por niveles de salto ===#
+
+    #=== {Búsqueda de nodos afectados por niveles de salto} ===#
     while current_level_nodes: # Mientras haya nodos en el nivel actual
         level += 1
         next_level_nodes = [] #Nodos a procesar para la siguiente iteración
