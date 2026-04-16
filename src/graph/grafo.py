@@ -392,7 +392,7 @@ def process_and_build_graph_domain(db_path: str,scenario_pk: int,domain: str,all
         
     # Construcción del grafo intra-dominio
     G = build_intra_domain_graph(domain, assets, intraDomainDeps)
-    print(f"\n✓ Grafo construido para '{domain}':")
+    print(f"\n Grafo construido para '{domain}':")
     print(f"    - Nodos: {G.number_of_nodes()}")
     print(f"    - Aristas: {G.number_of_edges()}")
     
@@ -436,10 +436,10 @@ def build_MDO_graph(db_path: str, scenario_name: str) -> nx.DiGraph:
     print(f"Construcción del grafo global MDO:")
     print(f"{'='*60}")
     
-    print(f"✓ Total de dependencias únicas: {len(all_deps)}")
+    print(f" Total de dependencias únicas: {len(all_deps)}")
     
     G_global = build_MDO_global_graph(all_assets, all_deps)
-    print(f"\n✓ Grafo global MDO construido:")
+    print(f"\n Grafo global MDO construido:")
     print(f"    - Nodos: {G_global.number_of_nodes()}")
     print(f"    - Aristas: {G_global.number_of_edges()}")
     

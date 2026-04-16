@@ -219,7 +219,7 @@ def confidence_color(value) -> str:
 console = Console()  # Motor de renderizado terminal
 
 
-def render_header(info, optimization_mode=False) -> Panel:
+def render_header(info, optimization_mode=False, context=None) -> Panel:
     """
     Renderiza el encabezado visual del dashboard: CARE/AEGIS.
     
@@ -230,12 +230,15 @@ def render_header(info, optimization_mode=False) -> Panel:
         Panel: Componente gráfico con título, subtítulo y timestamp.
     """
     analysis_timestamp = info["summary"].get("analysis_timestamp", "N/A")
+    context = context or {}
+    scenario_name = context.get("active_scenario") or "N/A"
 
     header_text = Text(justify="center")
     header_text.append("CARE / AEGIS\n", style="bold cyan")
     header_text.append("Cyber Action Recommendation Engine\n", style="dim")
     if optimization_mode:
         header_text.append("Optimization Decision View\n", style="bold green")
+    header_text.append(f"Scenario: {scenario_name}\n", style="dim")
     header_text.append(f"Last analysis: {analysis_timestamp}", style="dim white")
 
     header = Panel(
@@ -430,7 +433,7 @@ def render_optimizations_ask_panel(context=None) -> Panel:
     budget = context.get("optimization_budget")
     time_limit = context.get("optimization_time")
 
-    budget_text = f"{budget:.0f}" if isinstance(budget, (int, float)) else "Not configured"
+    budget_text = f"{budget:.0f} €" if isinstance(budget, (int, float)) else "Not configured"
     time_text = f"{time_limit:.1f} h" if isinstance(time_limit, (int, float)) else "Not configured"
 
     optimization_text = f"""[bold]Current config:[/bold] objective={objective} | budget={budget_text} | time={time_text}
@@ -870,13 +873,13 @@ def build_dashboard(info, optimization_mode=False, context=None):
 
     if optimization_mode:
         return Group(
-            render_header(info, optimization_mode=True),
+            render_header(info, optimization_mode=True, context=context),
             top_content,
             analysis_panel,
         )
 
     return Group(
-        render_header(info),
+        render_header(info, context=context),
         top_content,
         analysis_panel,
         render_optimizations_ask_panel(context),

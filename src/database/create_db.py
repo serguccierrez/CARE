@@ -93,7 +93,32 @@ CREATE INDEX IF NOT EXISTS idx_deps_from_asset
 
 CREATE INDEX IF NOT EXISTS idx_deps_to_asset
   ON dependencies(scenario_fk, to_asset);
+
+-- ===============================================
+-- Tabla de runs (para almacenar resultados de análisis)
+-- ===============================================
+CREATE TABLE IF NOT EXISTS runs (
+  run_pk            INTEGER PRIMARY KEY AUTOINCREMENT,
+  scenario_fk       INTEGER NOT NULL,
+  run_name          TEXT NOT NULL,
+  description       TEXT,
+  created_at        TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  context_json      TEXT NOT NULL,
+  bn_cpds_json      TEXT NOT NULL,
+  reports_json      TEXT NOT NULL,
+  optimization_json TEXT,
+  narrative_report  TEXT,
+
+  FOREIGN KEY (scenario_fk) REFERENCES scenarios(scenario_pk) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_runs_scenario_fk
+  ON runs(scenario_fk);
+
+CREATE INDEX IF NOT EXISTS idx_runs_created_at
+  ON runs(created_at);
 """
+
 
 #===============================================[FUNCTIONS]===============================================
 def create_db(db_path: Path, recreate: bool) -> None:

@@ -241,7 +241,7 @@ def load_and_insert_data(excel_path: Path, db_path: Path, scenario_name: str, de
     # Insertamos datos en BD
     insert_into_database(assets_df, deps_df, db_path, scenario_name, description, source_file=str(excel_path))
     
-    print(f"✓ Datos cargados exitosamente en {db_path}")
+    print(f" Datos cargados exitosamente en {db_path}")
     print(f"  - Activos: {len(assets_df)}")
     print(f"  - Dependencias: {len(deps_df)}")
 
