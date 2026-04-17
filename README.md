@@ -1,13 +1,13 @@
 # CARE - Cyber Action Recommendation Engine
 
-**Motor de analisis de riesgo en ciberseguridad y recomendacion de contramedidas.**
+**Motor de simulacion y analisis de riesgo en ciberseguridad para evaluar estrategias de mitigacion.**
 
-CARE es un sistema de apoyo a la decision desarrollado como Trabajo de Fin de Grado. Modela activos y dependencias, simula escenarios de amenaza basados en MITRE ATT&CK, estima riesgo residual en Confidencialidad, Integridad y Disponibilidad, y recomienda contramedidas bajo restricciones de coste y tiempo.
+CARE es un sistema de apoyo a la decision desarrollado como Trabajo de Fin de Grado. Modela activos y dependencias, simula escenarios de amenaza basados en MITRE ATT&CK, estima riesgo residual en Confidencialidad, Integridad y Disponibilidad, y permite comparar estrategias de mitigacion bajo restricciones de coste y tiempo.
 
-El objetivo no es automatizar la respuesta ante incidentes ni sustituir el criterio experto, sino proporcionar una base analitica, transparente y reproducible para comparar alternativas de mitigacion.
+El objetivo es proporcionar una base analitica, transparente y reproducible para explorar escenarios what-if y estudiar como distintas medidas preventivas podrian modificar el riesgo del sistema.
 
 > **English summary**  
-> CARE is a cybersecurity decision-support engine developed as a Final Degree Project. It combines dependency graphs, MITRE ATT&CK knowledge, probabilistic inference, CIA risk assessment and constrained optimization to produce traceable countermeasure recommendations.
+> CARE is a cybersecurity decision-support and what-if simulation engine developed as a Final Degree Project. It combines dependency graphs, MITRE ATT&CK knowledge, probabilistic inference, CIA risk assessment and constrained optimization to compare traceable mitigation strategies.
 
 ---
 
@@ -18,7 +18,7 @@ El objetivo no es automatizar la respuesta ante incidentes ni sustituir el crite
 - Inyeccion de amenazas basada en MITRE ATT&CK, en modo aleatorio o controlado.
 - Inferencia bayesiana para estimar riesgo residual.
 - Agregacion de riesgo por incidente, activo y sistema en dimensiones CIA.
-- Optimizacion de contramedidas bajo restricciones de presupuesto y tiempo.
+- Evaluacion y optimizacion de estrategias de mitigacion bajo restricciones de presupuesto y tiempo.
 - Interfaz CLI con paneles, tablas, dashboards y vistas operativas.
 - Generacion de informes Markdown al guardar una ejecucion.
 
@@ -45,7 +45,7 @@ Propagacion de impacto
 Estimacion bayesiana de riesgo
     |
     v
-Escenarios de contramedidas
+Escenarios de mitigacion
     |
     v
 Optimizacion con restricciones
@@ -61,8 +61,8 @@ CARE sigue un flujo de analisis completo:
 3. Se asocian vectores de amenaza a activos concretos mediante tecnicas MITRE ATT&CK.
 4. El impacto potencial se propaga a traves de los niveles de dependencia.
 5. Se estima el riesgo residual en Confidencialidad, Integridad y Disponibilidad.
-6. Se generan escenarios de decision con contramedidas candidatas.
-7. Un modelo de optimizacion selecciona recomendaciones bajo limites de coste y tiempo.
+6. Se generan escenarios de decision con mitigaciones candidatas.
+7. Un modelo de optimizacion compara alternativas bajo limites de coste y tiempo.
 8. Los resultados se exportan como artefactos estructurados, dashboards e informes narrativos.
 
 ---
@@ -85,7 +85,7 @@ CARE sigue un flujo de analisis completo:
 
 ![CARE dashboard](./images/dashboard.png)
 
-### Optimizacion de contramedidas
+### Optimizacion de mitigaciones
 
 ![CARE optimization](./images/optimize.png)
 
@@ -116,7 +116,7 @@ TFG_motor-contramedidas-ciberneticas/
 |-- README.md
 ```
 
-El repositorio separa responsabilidades de interfaz, persistencia, analisis de grafo, modelado de riesgo, reporting y optimizacion. Esta division permite seguir el proceso desde los datos de entrada hasta la recomendacion final.
+El repositorio separa responsabilidades de interfaz, persistencia, analisis de grafo, modelado de riesgo, reporting y optimizacion. Esta division permite seguir el proceso desde los datos de entrada hasta la comparativa final de escenarios.
 
 ---
 
@@ -191,7 +191,7 @@ python -m src.cli.care reports load --run_name "<run_name>"
 | `db` | Gestiona escenarios, activos y dependencias. |
 | `attack` | Configura y ejecuta simulaciones de amenaza. |
 | `dashboard` | Muestra el analisis de riesgo mas reciente. |
-| `optimize` | Configura restricciones y ejecuta la seleccion de contramedidas. |
+| `optimize` | Configura restricciones y ejecuta la comparacion optimizada de mitigaciones. |
 | `reports` | Lista, guarda y restaura ejecuciones persistidas. |
 
 ---
@@ -203,7 +203,7 @@ python -m src.cli.care reports load --run_name "<run_name>"
 | `src/cli/context.json` | Estado actual de la sesion CLI. |
 | `configs/bn_CPDs.json` | CPDs dinamicas utilizadas durante la inferencia bayesiana. |
 | `src/reporting/report.json` | Reporte estructurado del analisis de riesgo. |
-| `src/reporting/optimization_solution.json` | Resultado de optimizacion y contramedidas seleccionadas. |
+| `src/reporting/optimization_solution.json` | Resultado de optimizacion y mitigaciones seleccionadas en la simulacion. |
 | `src/reporting/<run_name>.md` | Informe narrativo generado al guardar una ejecucion. |
 | `src/database/tfg_catalog.db` | Base de datos SQLite con escenarios, activos, dependencias y runs. |
 
@@ -214,7 +214,7 @@ python -m src.cli.care reports load --run_name "<run_name>"
 | Fichero | Funcion |
 | --- | --- |
 | `data/enterprise-attack.json` | Dataset local de MITRE ATT&CK Enterprise. |
-| `configs/countermeasures.json` | Catalogo de contramedidas con coste, tiempo de despliegue y efecto esperado. |
+| `configs/countermeasures.json` | Catalogo de mitigaciones con coste, tiempo de despliegue y efecto esperado. |
 | `configs/ttps_to_mitigations.json` | Relacion entre tecnicas MITRE y mitigaciones candidatas. |
 | `configs/bn_CPDs_template.json` | Plantilla base de CPDs probabilisticas. |
 | `configs/requirements.txt` | Dependencias Python del proyecto. |
@@ -242,10 +242,10 @@ python -m src.cli.care reports load --run_name "<run_name>"
 
 | Criterio | Significado |
 | --- | --- |
-| Trazabilidad | Las recomendaciones pueden vincularse con datos de escenario, amenazas, propagacion, riesgo y restricciones. |
+| Trazabilidad | Los resultados pueden vincularse con datos de escenario, amenazas, propagacion, riesgo y restricciones. |
 | Reproducibilidad | Las ejecuciones pueden exportarse, almacenarse y restaurarse. |
 | Modularidad | Datos, grafo, riesgo, optimizacion, reporting y CLI se mantienen separados. |
-| Explicabilidad | El sistema expone el contexto de riesgo que justifica cada recomendacion. |
+| Explicabilidad | El sistema expone el contexto de riesgo que justifica cada comparativa de mitigacion. |
 | Flexibilidad analitica | Pueden variar incidentes, confianzas, objetivos, presupuesto y tiempo disponible. |
 
 ---
@@ -254,7 +254,7 @@ python -m src.cli.care reports load --run_name "<run_name>"
 
 Este repositorio forma parte de un **Trabajo de Fin de Grado** del Grado en Ingenieria de Tecnologias y Servicios de Telecomunicacion en la **ETSIT - Universidad Politecnica de Madrid**.
 
-El proyecto se centra en el analisis de riesgo y el apoyo a la decision en ciberseguridad. Su aportacion principal es integrar modelado estructural de dependencias, conocimiento de amenazas basado en MITRE, estimacion probabilistica de riesgo y optimizacion de contramedidas dentro de un flujo reproducible.
+El proyecto se centra en el analisis de riesgo, la simulacion de escenarios y el apoyo a la decision en ciberseguridad. Su aportacion principal es integrar modelado estructural de dependencias, conocimiento de amenazas basado en MITRE, estimacion probabilistica de riesgo y optimizacion de mitigaciones dentro de un flujo reproducible.
 
 ---
 
@@ -264,7 +264,7 @@ CARE es un prototipo academico y analitico:
 
 - Los resultados dependen de la calidad del catalogo de activos y dependencias.
 - Las probabilidades y efectos de mitigacion proceden de modelos configurables.
-- Las recomendaciones deben interpretarse como apoyo a la decision, no como acciones automaticas.
+- Los resultados deben interpretarse como apoyo a la decision y analisis what-if, no como acciones automaticas.
 - La validacion final requiere revision experta y adaptacion al contexto real de uso.
 
 ---
@@ -279,4 +279,4 @@ GitHub: [serguccierrez](https://github.com/serguccierrez)
 
 ---
 
-> CARE convierte un escenario de amenaza en una recomendacion trazable, cuantitativa y reproducible de contramedidas.
+> CARE convierte un escenario de amenaza en una comparativa trazable, cuantitativa y reproducible de estrategias de mitigacion.
