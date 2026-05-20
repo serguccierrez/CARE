@@ -1,3 +1,8 @@
+"""
+Se guardan y recuperan informes de ejecución en la base de datos SQLite.
+También se genera un informe narrativo en Markdown a partir de los JSON producidos por CARE.
+"""
+
 #=============================================================[IMPORTS]===============================================
 import json
 import sqlite3
@@ -8,7 +13,23 @@ import src.graph.grafo as grafo
 
 #=============================================================[FUNCTIONS]===============================================
 def save_reports_to_db(db_path: str, run_name: str, context_json_path: str, bn_cpds_json_path: str, reports_json_path: str, optimization_json_path: str, narrative_report_path: str):
-    # Leemos los archivos JSON y el informe narrativo
+    """
+    Guarda en base de datos los artefactos generados por una ejecución.
+    Se leen los JSON disponibles, el informe narrativo y se asocian al escenario activo.
+
+    Args:
+        db_path: Ruta del fichero .db donde se guarda la ejecución.
+        run_name: Nombre identificativo de la ejecución.
+        context_json_path: Ruta del JSON de contexto.
+        bn_cpds_json_path: Ruta opcional del JSON con CPDs de la red bayesiana.
+        reports_json_path: Ruta opcional del JSON de reporte de riesgo.
+        optimization_json_path: Ruta opcional del JSON de optimización.
+        narrative_report_path: Ruta opcional del informe narrativo en texto.
+
+    Returns:
+        None. Se inserta un nuevo registro en la tabla runs.
+    """
+    # Se leen los archivos JSON y el informe narrativo disponibles
     with open(context_json_path, 'r', encoding='utf-8') as f:
         context_json = json.load(f)
 
@@ -36,18 +57,18 @@ def save_reports_to_db(db_path: str, run_name: str, context_json_path: str, bn_c
     else:
         narrative_report = None
 
-    # Conectamos con la base de datos SQLite
+    # Se abre la conexión con la base de datos SQLite
     conn = sqlite3.connect(db_path)
 
     try:
         conn.execute("PRAGMA foreign_keys = ON;")
         cursor = conn.cursor()
 
-        # Obtenemos el scenario_fk del escenario qeu viene el el conteex.json
+        # Se obtiene el escenario activo indicado en el contexto de ejecución
         scenario_name = context_json["active_scenario"]
         scenario_fk = grafo.get_scenario_pk(db_path, scenario_name)
         
-        # Insertamos un nuevo run con los datos obtenidos
+        # Se registra la ejecución junto con sus artefactos serializados
         cursor.execute(
             """
             INSERT INTO runs (scenario_fk, run_name, description, context_json, bn_cpds_json, reports_json, optimization_json, narrative_report)
@@ -65,18 +86,31 @@ def save_reports_to_db(db_path: str, run_name: str, context_json_path: str, bn_c
             )
         )
         
-        # Guardamos los cambios y cerramos la conexión
+        # Se confirman los cambios en la base de datos
         conn.commit()
 
     finally:
+        # Se cierra la conexión con la base de datos
         conn.close()
 
 
 def list_runs(db_path: str, scenario_name: str = None):
+    """
+    Lista ejecuciones almacenadas en la base de datos.
+    Se puede filtrar por escenario cuando se proporciona su nombre.
+
+    Args:
+        db_path: Ruta del fichero .db que contiene las ejecuciones.
+        scenario_name: Nombre opcional del escenario por el que se filtra.
+
+    Returns:
+        Lista de tuplas con run_pk, run_name, description y created_at.
+    """
     conn = sqlite3.connect(db_path)
     try:
         cursor = conn.cursor()
         
+        # Se filtran las ejecuciones por escenario si se indica uno concreto
         if scenario_name:
             scenario_fk = grafo.get_scenario_pk(db_path, scenario_name)
             cursor.execute("SELECT run_pk, run_name, description, created_at FROM runs WHERE scenario_fk = ?", (scenario_fk,))
@@ -86,16 +120,28 @@ def list_runs(db_path: str, scenario_name: str = None):
         runs = cursor.fetchall()
         return runs
     finally:
+        # Se cierra la conexión con la base de datos
         conn.close()
         
         
 def get_run_reports(db_path: str, run_name: str):
+    """
+    Recupera los informes asociados a una ejecución concreta.
+    Se deserializan los campos JSON antes de devolverlos al llamador.
+
+    Args:
+        db_path: Ruta del fichero .db donde se buscan los informes.
+        run_name: Nombre de la ejecución que se desea recuperar.
+
+    Returns:
+        Tuple con contexto, CPDs, reporte, optimización e informe narrativo.
+        Devuelve None si no se encuentra la ejecución.
+    """
     conn = sqlite3.connect(db_path)
     try:
         cursor = conn.cursor()
         
-    
-        
+        # Se localizan los artefactos guardados para la ejecución solicitada
         cursor.execute("SELECT context_json, bn_cpds_json, reports_json, optimization_json, narrative_report FROM runs WHERE run_name = ?", (run_name,))
         result = cursor.fetchone()
         
@@ -109,13 +155,25 @@ def get_run_reports(db_path: str, run_name: str):
             return context_json, bn_cpds_json, reports_json, optimization_json, narrative_report
     
     finally:
+        # Se cierra la conexión con la base de datos
         conn.close()
         
 
 def generate_report_md(context_json_path: str = None, reports_json_path: str = None, optimization_json_path: str = None, output_path: str = None):
     """
-    Genera un informe narrativo en Markdown a partir de los ultimos JSON generados.
+    Genera un informe narrativo en Markdown a partir de los últimos JSON generados.
+    Se combinan contexto, reporte de riesgo y resultados de optimización.
+
+    Args:
+        context_json_path: Ruta opcional del JSON de contexto.
+        reports_json_path: Ruta opcional del JSON de reporte de riesgo.
+        optimization_json_path: Ruta opcional del JSON de optimización.
+        output_path: Ruta opcional donde se escribe el informe Markdown.
+
+    Returns:
+        Contenido completo del informe generado en formato Markdown.
     """
+    # Se resuelven rutas por defecto para los artefactos de entrada y salida
     base_path = Path(__file__).parent.parent.parent
     
     context_json_path = Path(context_json_path) if context_json_path is not None else base_path / "src" / "cli" / "context.json"
@@ -124,26 +182,72 @@ def generate_report_md(context_json_path: str = None, reports_json_path: str = N
     output_path = Path(output_path) if output_path is not None else base_path / "src" / "reporting" / "generated_report.md"
     
     def load_json_file(json_path: Path):
+        """
+        Carga un archivo JSON si existe.
+
+        Args:
+            json_path: Ruta del archivo JSON que se intenta cargar.
+
+        Returns:
+            Diccionario con el contenido del JSON o None si no existe.
+        """
         if json_path.exists():
             with open(json_path, "r", encoding="utf-8") as f:
                 return json.load(f)
         return None
     
     def format_number(value):
+        """
+        Formatea valores numéricos para mostrarlos en el informe.
+
+        Args:
+            value: Valor que se va a representar.
+
+        Returns:
+            Valor formateado con tres decimales o N/A si no existe.
+        """
         if isinstance(value, float):
             return f"{value:.3f}"
         return value if value is not None else "N/A"
 
     def format_delta(value):
+        """
+        Formatea variaciones numéricas con signo.
+
+        Args:
+            value: Valor de variación que se va a representar.
+
+        Returns:
+            Texto con la variación formateada o N/A si no es numérica.
+        """
         if not isinstance(value, (int, float)):
             return "N/A"
         sign = "+" if value > 0 else ""
         return f"{sign}{value:.3f}"
 
     def color_text(text, color):
+        """
+        Envuelve texto en una etiqueta HTML con color.
+
+        Args:
+            text: Texto que se desea colorear.
+            color: Color CSS aplicado al texto.
+
+        Returns:
+            Cadena HTML con el texto resaltado.
+        """
         return f'<span style="color:{color}"><strong>{text}</strong></span>'
 
     def risk_color(value):
+        """
+        Asigna un color visual en función del nivel de riesgo.
+
+        Args:
+            value: Valor de riesgo que se evalúa.
+
+        Returns:
+            Código de color CSS asociado al nivel de riesgo.
+        """
         if not isinstance(value, (int, float)):
             return "#AAB2BF"
         if 0.0 <= value < 2.5:
@@ -155,11 +259,29 @@ def generate_report_md(context_json_path: str = None, reports_json_path: str = N
         return "#E74C3C"
 
     def format_risk_value(value):
+        """
+        Formatea un valor de riesgo con color asociado.
+
+        Args:
+            value: Valor de riesgo que se va a mostrar.
+
+        Returns:
+            Texto HTML con el valor de riesgo coloreado.
+        """
         if not isinstance(value, (int, float)):
             return "N/A"
         return color_text(format_number(value), risk_color(value))
 
     def format_delta_value(value):
+        """
+        Formatea una variación de riesgo con color según mejora o empeoramiento.
+
+        Args:
+            value: Variación de riesgo que se va a mostrar.
+
+        Returns:
+            Texto HTML con la variación coloreada.
+        """
         if not isinstance(value, (int, float)):
             return "N/A"
         if value < 0:
@@ -171,6 +293,15 @@ def generate_report_md(context_json_path: str = None, reports_json_path: str = N
         return color_text(format_delta(value), color)
 
     def get_report_assets(report_data):
+        """
+        Extrae los activos analizados desde el JSON de reporte.
+
+        Args:
+            report_data: Diccionario con el reporte de riesgo.
+
+        Returns:
+            Diccionario indexado por identificador de activo.
+        """
         assets = {}
         for block in report_data.get("nodes_analysis", []):
             for asset_id, asset_info in block.items():
@@ -178,6 +309,18 @@ def generate_report_md(context_json_path: str = None, reports_json_path: str = N
         return assets
 
     def build_optimization_comparison(report_data, optimization_data, objective):
+        """
+        Construye una comparativa de riesgo antes y después de la optimización.
+        Se ponderan los riesgos optimizados por criticidad de los activos.
+
+        Args:
+            report_data: Diccionario con el reporte de riesgo base.
+            optimization_data: Diccionario con la solución de optimización.
+            objective: Objetivo de optimización seleccionado.
+
+        Returns:
+            Diccionario con riesgos antes, después y delta del objetivo.
+        """
         if not optimization_data:
             return {}
 
@@ -212,6 +355,7 @@ def generate_report_md(context_json_path: str = None, reports_json_path: str = N
             "objective_delta": risk_after[objective_key] - risk_before[objective_key],
         }
     
+    # Se cargan los artefactos JSON necesarios para construir el informe
     context_json = load_json_file(context_json_path)
     reports_json = load_json_file(reports_json_path)
     optimization_json = load_json_file(optimization_json_path)
@@ -220,6 +364,7 @@ def generate_report_md(context_json_path: str = None, reports_json_path: str = N
     reports_json = reports_json or {}
     optimization_json = optimization_json or {}
     
+    # Se extraen datos principales del contexto y del reporte de riesgo
     scenario_name = context_json["active_scenario"]
     mode = context_json["mode"] 
     selected_assets = context_json["selected_asset"]
@@ -231,6 +376,7 @@ def generate_report_md(context_json_path: str = None, reports_json_path: str = N
     graph_metadata = reports_json["graph_metadata"]
     global_system_risk = reports_json["global_system_risk"]
     
+    # Se prepara la lista de activos ordenada por riesgo medio
     nodes_risk = []
     for block in reports_json["nodes_analysis"]:
         for asset_id, asset_info in block.items():
@@ -245,6 +391,7 @@ def generate_report_md(context_json_path: str = None, reports_json_path: str = N
             
     nodes_risk = sorted(nodes_risk, key=lambda item: item[2], reverse=True)
     
+    # Se selecciona el resultado de optimización correspondiente al objetivo activo
     optimization_objective = context_json["optimization_objective"]
     if optimization_objective and optimization_objective in optimization_json:
         optimization_result = optimization_json[optimization_objective]
@@ -254,6 +401,7 @@ def generate_report_md(context_json_path: str = None, reports_json_path: str = N
     else:
         optimization_result = {}
     
+    # Se construye el contenido Markdown del informe
     lines = []
     lines.append("# Informe de Analisis CARE")
     lines.append("")
@@ -498,6 +646,7 @@ def generate_report_md(context_json_path: str = None, reports_json_path: str = N
     
     markdown_report = "\n".join(str(line) for line in lines)
     
+    # Se escribe el informe generado en la ruta de salida indicada
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(markdown_report)

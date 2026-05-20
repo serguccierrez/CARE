@@ -1,3 +1,8 @@
+"""
+Se orquesta el flujo principal de análisis CARE sobre un escenario seleccionado.
+Se construye el grafo, se resuelven amenazas, inferencias, reporte de riesgo y optimización.
+"""
+
 #=============================[IMPORTS]===========================================#
 from datetime import datetime
 import copy
@@ -28,6 +33,15 @@ EXCEL_PATH = Path(__file__).parent.parent.parent / "data" / "asset_catalog_valid
 
 #==============================[AUXILIARY FUNCTIONS]===========================================#
 def load_report_data_from_json(json_path=None):
+    """
+    Carga desde JSON el reporte de riesgo generado previamente.
+
+    Args:
+        json_path: Ruta opcional del archivo de reporte. Si no se indica, se usa report.json.
+
+    Returns:
+        Diccionario con los datos del reporte.
+    """
     if json_path is None:
         json_path = Path(__file__).parent.parent / "reporting" / "report.json"
     with open(json_path, 'r') as f:
@@ -38,12 +52,30 @@ def load_report_data_from_json(json_path=None):
 
 
 def resolve_scenario(scenario_name: str) -> None:
+    """
+    Construye el grafo MDO global para el escenario indicado.
+
+    Args:
+        scenario_name: Nombre del escenario que se desea analizar.
+
+    Returns:
+        Grafo global construido a partir de la base de datos.
+    """
     G_global = grafo.build_MDO_graph(str(DB_PATH), scenario_name )
     
     return G_global
 
 
 def _ensure_list(value):
+    """
+    Normaliza un valor para tratarlo siempre como lista.
+
+    Args:
+        value: Valor individual, lista o None.
+
+    Returns:
+        Lista equivalente al valor recibido.
+    """
     if value is None:
         return []
     if isinstance(value, list):
@@ -51,6 +83,17 @@ def _ensure_list(value):
     return [value]
     
 def resolve_threat_vector(G_global, context) -> None:
+    """
+    Resuelve los vectores de amenaza que se aplican sobre el grafo.
+    Se permite modo aleatorio o selección explícita desde el contexto de ejecución.
+
+    Args:
+        G_global: Grafo global del escenario analizado.
+        context: Diccionario con modo, activos, TTPs y confianzas seleccionadas.
+
+    Returns:
+        Tuple con vectores de amenaza y estructura inicial del reporte.
+    """
     
     mode = context["mode"]
     selected_assets = _ensure_list(context.get("selected_asset"))
@@ -59,19 +102,20 @@ def resolve_threat_vector(G_global, context) -> None:
     
     if mode == "random":
     
-        #Simulamos una amenaza aleatoria que puede contener 1 o más vectores de ataque (TTPs) con un cierto nivel de confidence. Solo selecciona TTPs que existen realmente en MITRE ATT&CK.
+        # Se simulan TTPs aleatorias válidas y se asigna un activo afectado a cada una
         threat_vectors = mitre.ttp_simulation()  # Es un diccionario con keys 'ttp_id' y 'confidence' (puede haber más de un TTP)
         
         for ttp_id, threat_vector in threat_vectors.items():
-            random_asset = random.choice(list(G_global.nodes)) #Seleccionamos un activo aleatorio del grafo MDO para simular que es el activo afectado por esta amenazañ
+            random_asset = random.choice(list(G_global.nodes))
             print(threat_vector)
             confidence = threat_vector['confidence']
             ttp_tactic = threat_vector['tactic']
-            threat_vector['asset'] = random_asset #Añadimos el activo afectado a cada TTP del vector de amenaza
+            threat_vector['asset'] = random_asset
             
             print(f"\nSimulación de amenaza: TTP={ttp_id}, Confidence={confidence:.5f}, Asset={random_asset}, Tactic={ttp_tactic}")
     
     else:
+        # Se construyen vectores de amenaza a partir de selecciones explícitas o valores por defecto
         threat_vectors = {}
         max_len = max(len(selected_assets), len(selected_ttps), len(selected_confidences), 1)
 
@@ -105,7 +149,7 @@ def resolve_threat_vector(G_global, context) -> None:
                 "asset": asset
             }
             
-    #{Inicializo JSON de reporte}
+    # Se inicializa el reporte con amenazas y metadatos del grafo
     report_data = report.initialize_simulation_data(threat_vectors)
     report_data = report.add_graph_metadata(report_data, G_global)
     
@@ -113,8 +157,20 @@ def resolve_threat_vector(G_global, context) -> None:
     
     
 def resolve_graph_impact(G_global, threat_vectors, report_data):
+    """
+    Calcula el impacto de cada vector de amenaza sobre el grafo.
+    Se obtienen nodos y aristas afectados y se propagan probabilidades de amenaza.
+
+    Args:
+        G_global: Grafo global del escenario.
+        threat_vectors: Diccionario con TTPs, activos y confianzas.
+        report_data: Diccionario del reporte en construcción.
+
+    Returns:
+        Tuple con probabilidades por nodo afectado y reporte actualizado.
+    """
     
-    # Definimos diccionarios para almacenar nodos y aristas afectados por cada TTP de los vectores de amenaza
+    # Se almacenan nodos y aristas afectados por cada TTP
     affected_nodes = {}
     affected_edges = {}
 
@@ -131,6 +187,18 @@ def resolve_graph_impact(G_global, threat_vectors, report_data):
 
 
 def resolve_build_res_values(cm_states, countermeasures_data, dimension):
+    """
+    Construye la matriz de valores residuales para una dimensión CIA.
+    Se extraen columnas de riesgo bajo y alto para cada contramedida activa.
+
+    Args:
+        cm_states: Lista de contramedidas incluidas en la CPD.
+        countermeasures_data: Catálogo de contramedidas con CPDs asociadas.
+        dimension: Dimensión residual que se desea construir.
+
+    Returns:
+        Matriz de valores para la CPD de la dimensión indicada.
+    """
     columns = []
 
     for cm_id in cm_states:
@@ -153,31 +221,35 @@ def resolve_build_res_values(cm_states, countermeasures_data, dimension):
 
 
 def resolve_bn_json_construction(threat_vectors):
-    '''
-    Esta función se encarga de sacar las mitigations recomendadas por cada TTP y construir el JSON de la red de Bayes para cada TTP, que luego se guardará en el reporte. Esto es necesario para poder hacer la inferencia posteriormente.
-    '''
+    """
+    Construye dinámicamente las CPDs activas de la red bayesiana para la simulación.
+    Se combinan contramedidas base y mitigaciones recomendadas para las TTPs analizadas.
+
+    Args:
+        threat_vectors: Diccionario con TTPs seleccionadas o simuladas.
+
+    Returns:
+        Diccionario con las CPDs dinámicas generadas.
+    """
     bn_cpds_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs_template.json"
 
-    # Cargamos el json bn_cpds.json
+    # Se cargan plantilla de CPDs y catálogo de contramedidas
     with open(bn_cpds_path, "r", encoding="utf-8") as f:
         bn_cpds = json.load(f)
 
-     # Cargamos el json countermeasures.json
     with open(Path(__file__).parent.parent.parent / "configs" / "countermeasures.json", "r", encoding="utf-8") as f:
         countermeasures_data = json.load(f)
 
     dynamic_bn_cpds = copy.deepcopy(bn_cpds)
 
-    #{CM STATES}#
+    # Se preparan estados de contramedidas base y específicas de las TTPs
     raw_mitigations = []
     cm_states = []
 
-    #Añadimos los 3 primeros countermeasures como mitigaciones base, que son aplicables a cualquier TTP. Luego añadiremos las mitigaciones específicas de cada TTP.
     for base_cm_id in ["none", "firewall", "ids"]:
         if base_cm_id in countermeasures_data["countermeasures"]:
             cm_states.append(base_cm_id)
 
-    # Construimos el JSON de la red de Bayes para cada TTP
     for ttp_id, threat_vector in threat_vectors.items():
         try:
             raw_mitigations.extend(mitre.get_mitigations_for_ttp(ttp_id))
@@ -196,18 +268,30 @@ def resolve_bn_json_construction(threat_vectors):
     dynamic_bn_cpds["CM"]["states"] = cm_states
     dynamic_bn_cpds["CM"]["values"] = [round(1 / len(cm_states), 6) for _ in cm_states]
 
-    #{PROBABILITIES}#
+    # Se recalculan las CPDs residuales según las contramedidas activas
     dynamic_bn_cpds["C_res"]["values"] = resolve_build_res_values(cm_states, countermeasures_data, "C_res")
     dynamic_bn_cpds["I_res"]["values"] = resolve_build_res_values(cm_states, countermeasures_data, "I_res")
     dynamic_bn_cpds["A_res"]["values"] = resolve_build_res_values(cm_states, countermeasures_data, "A_res")
 
-    # Sobrescribimos la plantilla con las CPDs activas de esta simulacion.
+    # Se guarda el JSON activo que usarán red bayesiana y diagrama de influencia
     with open(Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json", "w", encoding="utf-8") as f:
         json.dump(dynamic_bn_cpds, f, indent=2, ensure_ascii=False)
 
     return dynamic_bn_cpds
 
 def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
+    """
+    Ejecuta inferencia bayesiana y análisis con diagramas de influencia.
+    Se calculan impactos residuales, contramedidas óptimas, utilidades esperadas y entropía de política.
+
+    Args:
+        res_threat_prob: Probabilidades de amenaza propagadas por activo y TTP.
+        threat_vectors: Diccionario con TTPs, tácticas y activos afectados.
+        report_data: Diccionario del reporte en construcción.
+
+    Returns:
+        Diccionario del reporte con análisis por nodo incorporado.
+    """
     
     for ttp_id, threat_vector in threat_vectors.items():
         for asset, info_asset in res_threat_prob.items():
@@ -222,7 +306,7 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
                 info_asset['threats_by_ttp'][ttp_id]['P(Threat)']
             )
 
-            # Hacemos las queries
+            # Se consultan impactos residuales sin contramedida en la red bayesiana
             threat_prob = red_bayes_model.query(variables=["Threat"])
             c_res = red_bayes_model.query(variables=["C_res"], evidence={"CM": "none"})
             c_res_levels = red_bayes.get_cia_res_levels(c_res)
@@ -233,7 +317,7 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
             a_res = red_bayes_model.query(variables=["A_res"], evidence={"CM": "none"})
             a_res_levels = red_bayes.get_cia_res_levels(a_res)
 
-            # Guardar resultados por TTP, para no sobreescribitr si hay varios TTPs afectando al mismo activo
+            # Se guardan resultados por TTP para evitar sobrescrituras entre amenazas
             info_asset.setdefault('bayesian_network_inference_by_ttp', {})
             info_asset['bayesian_network_inference_by_ttp'][ttp_id] = {
                 'queries': {
@@ -249,38 +333,35 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
             print(f"P(A_res | CM=none): {a_res_levels}")
 
 
-            #========================================== PASO 10: Análisis con diagrama de influencia =========================================#
+            # Se resuelven diagramas de influencia por dimensión CIA
             CPDS = id_test.read_constants()
             
             influence_diagram_C, ie_C = id_test.create_and_solve_dimension("C", "C_res",  threat_vector['tactic'], info_asset['threats_by_ttp'][ttp_id]['P(Threat)'], CPDS)
             influence_diagram_I, ie_I = id_test.create_and_solve_dimension("I", "I_res",  threat_vector['tactic'], info_asset['threats_by_ttp'][ttp_id]['P(Threat)'], CPDS)
             influence_diagram_A, ie_A = id_test.create_and_solve_dimension("A", "A_res",  threat_vector['tactic'], info_asset['threats_by_ttp'][ttp_id]['P(Threat)'], CPDS)
 
-            # Para cada dimensión
+            # Se extraen contramedidas óptimas y utilidades esperadas
             optimal_cm_C = ie_C.optimalDecision("CM")
             optimal_cm_I = ie_I.optimalDecision("CM")
             optimal_cm_A = ie_A.optimalDecision("CM")
 
             
 
-            # Calcular EU por CM para cada dimensión
             EU_by_cm_C, p_cm_C, h_C = id_test.expected_utility_per_cm(influence_diagram_C, CPDS)
             EU_by_cm_I, p_cm_I, h_I = id_test.expected_utility_per_cm(influence_diagram_I, CPDS)
             EU_by_cm_A, p_cm_A, h_A = id_test.expected_utility_per_cm(influence_diagram_A, CPDS)
 
 
-            # Lo transformamos en algo que podamos meter en el reporte en formato JSON
+            # Se transforma la salida para serializarla en el reporte JSON
             best_cm_C = CPDS["CM"]["states"][EU_by_cm_C.index(max(EU_by_cm_C))]
             best_cm_I = CPDS["CM"]["states"][EU_by_cm_I.index(max(EU_by_cm_I))]
             best_cm_A = CPDS["CM"]["states"][EU_by_cm_A.index(max(EU_by_cm_A))]
 
-            # Devolvemos la utilidad a un valor > 0
             EU_by_cm_C = [abs(x) for x in EU_by_cm_C]
             EU_by_cm_I = [abs(x) for x in EU_by_cm_I]
             EU_by_cm_A = [abs(x) for x in EU_by_cm_A]
 
 
-            # Guardar resultados ID por TTP
             info_asset.setdefault('influence_diagram_results_by_ttp', {})
             info_asset['influence_diagram_results_by_ttp'][ttp_id] = {
         
@@ -308,7 +389,7 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
 
             
             
-            # Imprimir resultados
+            # Se muestran por consola los resultados de cada dimensión
             print("CONFIDENTIALITY:")
             print(f"  Optimal CM: {optimal_cm_C}")
             for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_C, p_cm_C):
@@ -333,6 +414,15 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
 
 
 def resolve_risk_assessment(report_data):
+    """
+    Calcula riesgos finales del reporte y exporta el JSON resultante.
+
+    Args:
+        report_data: Diccionario del reporte con inferencias y análisis por nodo.
+
+    Returns:
+        Diccionario del reporte con riesgos calculados.
+    """
     report_data = report.calculate_incident_risk(report_data)
     report_data = report.total_risk_by_asset(report_data)
     report_data = report.calculate_global_system_risk(report_data)
@@ -342,10 +432,22 @@ def resolve_risk_assessment(report_data):
     return report_data
     
 def resolve_optimization(optimization_objective, budget=50000, max_time_hours=210):
+    """
+    Ejecuta la optimización de contramedidas sobre el último reporte generado.
+    Se generan escenarios de incidente, escenarios por activo y soluciones por objetivo.
+
+    Args:
+        optimization_objective: Objetivo de optimización solicitado.
+        budget: Presupuesto disponible para contramedidas.
+        max_time_hours: Tiempo máximo permitido para desplegar contramedidas.
+
+    Returns:
+        Diccionario con resultados de optimización.
+    """
     
     report_data = load_report_data_from_json()
     
-    # Generamos los escenarios de incidentes y combinaciones de contramedidas a nivel de activo
+    # Se generan escenarios necesarios para alimentar el modelo de optimización
     report_data = report.generate_incident_scenarios(report_data)
     report_data = report.generate_asset_scenario_combinations(report_data)
     
@@ -356,23 +458,33 @@ def resolve_optimization(optimization_objective, budget=50000, max_time_hours=21
     return opt_results
 
 def main(scenario_name, context ):
+    """
+    Ejecuta el flujo completo de análisis para un escenario y contexto dados.
+
+    Args:
+        scenario_name: Nombre del escenario que se analiza.
+        context: Configuración de ejecución con modo, activos, TTPs y confianzas.
+
+    Returns:
+        Diccionario final del reporte generado.
+    """
     
-    #{Constuimos el grafo con el escenario seleccionado}#
+    # Se construye el grafo con el escenario seleccionado
     G_global = resolve_scenario(scenario_name)
     
-    #{Construimos o simulamos el vector de amenaza}#
+    # Se construye o simula el vector de amenaza
     threat_vectors, report_data = resolve_threat_vector(G_global, context)
     
-    #{Calculamos el impacto en el grafo}#
+    # Se calcula el impacto en el grafo
     res_threat_prob, report_data = resolve_graph_impact(G_global, threat_vectors, report_data)
 
-    #{Construimos las CPDs dinámicas de la red de Bayes para esta simulación}#
+    # Se construyen CPDs dinámicas para la red bayesiana
     resolve_bn_json_construction(threat_vectors)
     
-    #{Realizamos inferencia en la red de Bayes y análisis con diagrama de influencia para cada activo afectado por cada TTP}#
+    # Se ejecuta inferencia bayesiana y análisis con diagramas de influencia
     report_data = resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data)
     
-    #{Calculamos el riesgo del incidente y exportamos el reporte}#
+    # Se calcula el riesgo del incidente y se exporta el reporte
     report_data = resolve_risk_assessment(report_data)
     
     return report_data

@@ -1,8 +1,6 @@
 """
-Este script recoge los datos de la DB creada en create_db.py y los usa para representarlos en un grafo que será
-la base para el análisis de nodos afectados por un compromiso. El grafo se construye usando la librería NetworkX,
-y se pueden realizar análisis de propagación de compromisos a través de las dependencias entre activos.
-
+Se cargan activos y dependencias desde SQLite para construir grafos con NetworkX.
+Se permite analizar escenarios, dominios y propagación de compromiso entre activos.
 """
 from pathlib import Path
 import sqlite3
@@ -13,13 +11,14 @@ import networkx as nx
 #===============================================[CONSTANTS]===============================================
 def load_constants() -> dict:
     """
-    Carga las constantes desde el archivo JSON de configuración
+    Carga las constantes generales desde el archivo JSON de configuración.
+    Se leen dominios, tipos de dependencias y tipos de activos.
 
     Args:
-        None
+        None.
     
     Returns:
-        dict: Un diccionario con las constantes cargadas desde el archivo JSON
+        Diccionario con las constantes cargadas desde el archivo JSON.
     """
     config_path = Path(__file__).parent.parent.parent / "Configs" / "constants.json"
     with open(config_path, 'r', encoding='utf-8') as f:
@@ -28,21 +27,21 @@ def load_constants() -> dict:
 
 def load_dependency_probabilities() -> dict:
     """
-    Carga las probabilidades de propagación de compromisos para cada tipo de dependencia y
-    táctica desde el archivo JSON de configuración
+    Carga las probabilidades de propagación por táctica y tipo de dependencia.
+    Se obtiene la matriz de dependencias desde el archivo JSON de configuración.
 
     Args:
-        None
+        None.
 
     Returns:
-        dict: Un diccionario con las probabilidades de propagación de compromisos
+        Diccionario con las probabilidades de propagación de compromisos.
     """
     config_path = Path(__file__).parent.parent.parent / "Configs" / "dependency_matrix.json"
     with open(config_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
     return config
 
-# Cargar configuración
+# Se carga la configuración necesaria para construir y analizar grafos
 _config = load_constants()
 DOMINIOS = _config["dominios"]
 DEPENDENCIES_TYPES = _config["dependencies_types"]
@@ -54,8 +53,15 @@ DEPENDENCY_MATRIX = load_dependency_probabilities()
 def get_domain_assets(db_path: str, scenario_pk: int, domain: str):
     """
     Obtiene y retorna los activos del dominio especificado para un escenario concreto.
-    Retorna tuplas:
-    (asset_pk, scenario_fk, asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state)
+    Se consultan únicamente los activos asociados al scenario_pk recibido.
+
+    Args:
+        db_path: Ruta de la base de datos SQLite.
+        scenario_pk: Clave primaria del escenario analizado.
+        domain: Dominio del que se desean obtener los activos.
+
+    Returns:
+        Lista de tuplas con los activos del dominio.
     """
     con = sqlite3.connect(db_path)
     try:
@@ -73,8 +79,15 @@ def get_domain_assets(db_path: str, scenario_pk: int, domain: str):
 def get_domain_intra_dependencies(db_path: str, scenario_pk: int, domain: str):
     """
     Obtiene y retorna las dependencias internas del dominio para un escenario concreto.
-    Retorna tuplas:
-    (dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
+    Se seleccionan dependencias cuyo origen y destino pertenecen al mismo dominio.
+
+    Args:
+        db_path: Ruta de la base de datos SQLite.
+        scenario_pk: Clave primaria del escenario analizado.
+        domain: Dominio del que se desean obtener dependencias internas.
+
+    Returns:
+        Lista de tuplas con dependencias internas del dominio.
     """
     con = sqlite3.connect(db_path)
     try:
@@ -101,11 +114,16 @@ def get_domain_intra_dependencies(db_path: str, scenario_pk: int, domain: str):
         
 def get_domain_inter_dependencies(db_path: str, scenario_pk: int, domain: str):
     """
-    Obtiene y retorna las dependencias inter-dominio que involucran al dominio especificado
-    para un escenario concreto.
-    Retorna tuplas:
-    (dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type,
-     cia_couple_c, cia_couple_i, cia_couple_a, from_domain, to_domain)
+    Obtiene dependencias inter-dominio que involucran al dominio especificado.
+    Se incluyen los dominios de origen y destino para facilitar el análisis global.
+
+    Args:
+        db_path: Ruta de la base de datos SQLite.
+        scenario_pk: Clave primaria del escenario analizado.
+        domain: Dominio usado como referencia de la consulta.
+
+    Returns:
+        Lista de tuplas con dependencias inter-dominio y sus dominios asociados.
     """
     con = sqlite3.connect(db_path)
     try:
@@ -133,14 +151,13 @@ def get_domain_inter_dependencies(db_path: str, scenario_pk: int, domain: str):
 def list_scenarios(db_path: str) -> list[tuple]:
     """
     Retorna todos los escenarios disponibles en la base de datos.
+    Se ordenan por clave primaria para mantener una salida estable.
 
     Args:
-        db_path (str): Ruta a la base de datos SQLite.
+        db_path: Ruta a la base de datos SQLite.
 
     Returns:
-        list[tuple]: Lista de tuplas con los escenarios disponibles.
-        Formato esperado:
-        (scenario_pk, scenario_name, description, source_file, created_at)
+        Lista de tuplas con los escenarios disponibles.
     """
     con = sqlite3.connect(db_path)
     try:
@@ -159,10 +176,11 @@ def list_scenarios(db_path: str) -> list[tuple]:
 def delete_scenario(db_path: str, scenario_name: str):
     """
     Elimina un escenario específico de la base de datos, junto con sus activos y dependencias asociadas.
+    Se borran primero las relaciones dependientes y finalmente el escenario.
 
     Args:
-        db_path (str): Ruta a la base de datos SQLite.
-        scenario_name (str): Nombre del escenario a eliminar.
+        db_path: Ruta a la base de datos SQLite.
+        scenario_name: Nombre del escenario a eliminar.
 
     Returns:
         None. Imprime mensajes de éxito o error según corresponda.
@@ -170,7 +188,7 @@ def delete_scenario(db_path: str, scenario_name: str):
     con = sqlite3.connect(db_path)
     try:
         cur = con.cursor()
-        # Obtenemos el scenario_pk del escenario a eliminar
+        # Se obtiene el scenario_pk del escenario a eliminar
         cur.execute("""
             SELECT scenario_pk
             FROM scenarios
@@ -182,22 +200,20 @@ def delete_scenario(db_path: str, scenario_name: str):
             print(f"Error: El escenario '{scenario_name}' no existe en la base de datos.")
             return
 
-        # Guardamos la pk del scenario para eliminar sus datos asociados
+        # Se conserva la clave primaria para eliminar los datos asociados
         scenario_pk = row[0]
         
-        # Eliminar dependencias asociadas al escenario
+        # Se eliminan dependencias, activos y escenario en orden
         cur.execute("""
             DELETE FROM dependencies
             WHERE scenario_fk = ?;
         """, (scenario_pk,))
         
-        # Eliminar activos asociados al escenario
         cur.execute("""
             DELETE FROM assets
             WHERE scenario_fk = ?;
         """, (scenario_pk,))
         
-        # Eliminar el escenario
         cur.execute("""
             DELETE FROM scenarios
             WHERE scenario_pk = ?;
@@ -212,22 +228,21 @@ def delete_scenario(db_path: str, scenario_name: str):
         
 def get_scenario_pk(db_path: str, scenario_name: str = None):
     """
-    Obtiene el scenario_pk:
-    - Si se proporciona scenario_name, busca ese escenario.
-    - Si no se proporciona, devuelve el último escenario creado.
+    Obtiene la clave primaria de un escenario.
+    Se busca por nombre si se proporciona, o se usa el último escenario creado.
 
     Args:
-        db_path (str): Ruta a la base de datos SQLite.
-        scenario_name (str, opcional): Nombre del escenario a buscar. Si es None, se devuelve el último escenario.
+        db_path: Ruta a la base de datos SQLite.
+        scenario_name: Nombre opcional del escenario a buscar.
 
     Returns:
-        int: El scenario_pk del escenario encontrado.
+        Clave primaria del escenario encontrado.
     """
     con = sqlite3.connect(db_path)
     try:
         cur = con.cursor()
 
-        # Caso 1: NO se pasa nombre -> cogemos el último escenario
+        # Se usa el último escenario creado cuando no se proporciona nombre
         if not scenario_name:
             cur.execute("""
                 SELECT scenario_pk, scenario_name
@@ -245,7 +260,7 @@ def get_scenario_pk(db_path: str, scenario_name: str = None):
 
             return scenario_pk
 
-        # Caso 2: se pasa nombre -> buscamos ese escenario concreto
+        # Se busca el escenario concreto indicado por nombre
         cur.execute("""
             SELECT scenario_pk
             FROM scenarios
@@ -265,16 +280,14 @@ def get_scenario_pk(db_path: str, scenario_name: str = None):
 def list_assets_by_scenario(db_path: str, scenario_name: str):
     """
     Retorna todos los activos asociados a un escenario concreto.
+    Se ordenan por dominio e identificador de activo.
 
     Args:
-        db_path (str): Ruta a la base de datos SQLite.
-        scenario_name (str): Nombre del escenario.
+        db_path: Ruta a la base de datos SQLite.
+        scenario_name: Nombre del escenario.
 
     Returns:
-        list[tuple]: Lista de tuplas con los activos del escenario.
-        Formato esperado:
-        (asset_pk, scenario_fk, asset_id, name, asset_type, domain,
-         criticality, cia_c, cia_i, cia_a, operational_state)
+        Lista de tuplas con los activos del escenario.
     """
     con = sqlite3.connect(db_path)
     
@@ -298,21 +311,19 @@ def list_assets_by_scenario(db_path: str, scenario_name: str):
 def build_intra_domain_graph(domain: str, assets_rows, deps_rows) -> nx.DiGraph:
     """
     Construye y retorna un grafo dirigido de NetworkX para el dominio especificado.
-    
-    Assets tupla: (asset_pk, scenario_fk, asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state)
-    Deps tupla: (dep_pk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
+    Se incorporan activos como nodos y dependencias internas como aristas ponderadas.
 
     Args:
-        domain (str): El dominio para el cual se construirá el grafo.
-        assets_rows (list[tuple]): Lista de tuplas con los activos del dominio.
-        deps_rows (list[tuple]): Lista de tuplas con las dependencias internas del dominio
+        domain: Dominio para el cual se construye el grafo.
+        assets_rows: Tuplas con los activos del dominio.
+        deps_rows: Tuplas con las dependencias internas del dominio.
 
     Returns:
-        nx.DiGraph: Un grafo dirigido de NetworkX representando los activos y dependencias del dominio.
+        Grafo dirigido de NetworkX con activos y dependencias del dominio.
     """
     G = nx.DiGraph(domain=domain)
 
-    # Agregar nodos desde tuplas de assets
+    # Se agregan nodos a partir de los activos del dominio
     for asset in assets_rows:
         asset_pk, scenario_fk ,asset_id, name, asset_type, dom, criticality, cia_c, cia_i, cia_a, operational_state = asset
         
@@ -328,9 +339,8 @@ def build_intra_domain_graph(domain: str, assets_rows, deps_rows) -> nx.DiGraph:
             operational_state=operational_state,
         )
         
-    # Agregar aristas desde tuplas de dependencias
+    # Se agregan aristas a partir de las dependencias internas
     for dep in deps_rows:
-        # La BD retorna: (dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
         dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a = dep[:9]
         
         cc = float(cia_couple_c)
@@ -354,13 +364,18 @@ def build_intra_domain_graph(domain: str, assets_rows, deps_rows) -> nx.DiGraph:
 def build_MDO_global_graph(all_assets, all_deps) -> nx.DiGraph:
     """
     Construye y retorna un grafo dirigido de NetworkX con todos los activos y dependencias.
-    
-    Assets tupla: (asset_pk, scenario_fk, asset_id, name, asset_type, domain, criticality, cia_c, cia_i, cia_a, operational_state)
-    Deps tupla: (dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a)
+    Se usa como representación global MDO del escenario completo.
+
+    Args:
+        all_assets: Tuplas con todos los activos acumulados del escenario.
+        all_deps: Tuplas con todas las dependencias acumuladas del escenario.
+
+    Returns:
+        Grafo dirigido global con activos y dependencias del escenario.
     """
     G = nx.DiGraph(domain="MDO Global")
 
-    # Agregar nodos desde tuplas de assets
+    # Se agregan los activos como nodos del grafo global
     for asset in all_assets:
         asset_pk, scenario_fk, asset_id, name, asset_type, dom, criticality, cia_c, cia_i, cia_a, operational_state = asset
         
@@ -376,9 +391,9 @@ def build_MDO_global_graph(all_assets, all_deps) -> nx.DiGraph:
             operational_state=operational_state,
         )
         
-    # Agregar aristas desde tuplas de dependencias
+    # Se agregan las dependencias como aristas del grafo global
     for dep in all_deps:
-        # Tomar solo los primeros 9 elementos (ignorar los dominios si vienen al final)
+        # Se toman solo los campos base cuando la tupla incluye dominios al final
         dep_pk, scenario_fk, dependency_id, from_asset, to_asset, dependency_type, cia_couple_c, cia_couple_i, cia_couple_a = dep[:9]
         
         cc = float(cia_couple_c)
@@ -402,22 +417,20 @@ def build_MDO_global_graph(all_assets, all_deps) -> nx.DiGraph:
     
 def process_and_build_graph_domain(db_path: str,scenario_pk: int,domain: str,all_assets: list,all_deps_dict: dict) -> nx.DiGraph:
     """
-    Procesa un dominio individual: obtiene activos, dependencias internas e inter-dominio,
-    construye el grafo intra-dominio y acumula los datos en las estructuras globales.
-    
-    Retorna el grafo construido para el dominio especificado.
+    Procesa un dominio individual dentro de un escenario.
+    Se obtienen activos y dependencias, se construye el grafo del dominio y se acumulan datos globales.
 
     Args:
-        db_path (str): Ruta a la base de datos SQLite.
-        scenario_pk (int): La clave primaria del escenario a procesar.
-        domain (str): El dominio a procesar.
-        all_assets (list): Lista global para acumular activos de todos los dominios.
-        all_deps_dict (dict): Diccionario global para acumular dependencias de todos los dominios, usando dep_pk como clave para evitar duplicados.
+        db_path: Ruta a la base de datos SQLite.
+        scenario_pk: Clave primaria del escenario a procesar.
+        domain: Dominio a procesar.
+        all_assets: Lista acumuladora de activos de todos los dominios.
+        all_deps_dict: Diccionario acumulador de dependencias, indexado por dep_pk.
 
     Returns:
-        nx.DiGraph: El grafo dirigido de NetworkX construido para el dominio especificado.
+        None. Los datos se acumulan en las estructuras recibidas por parámetro.
     """
-    # Activos del dominio
+    # Se muestran y acumulan los activos del dominio
     print(f"\n{'='*60}")
     print(f"Activos en el dominio '{domain}':")
     print(f"{'='*60}")
@@ -428,12 +441,11 @@ def process_and_build_graph_domain(db_path: str,scenario_pk: int,domain: str,all
         for asset in assets:
             # asset[1] = asset_id, asset[2] = name
             print(f"  - {asset[2]}: {asset[3]}")
-            # Acumular en all_assets
             all_assets.append(asset)
     else:
         print(f"  --> No hay activos en {domain}")
     
-    # Dependencias internas del dominio
+    # Se muestran y acumulan las dependencias internas del dominio
     print(f"\n{'-'*60}")
     print(f"Dependencias internas en '{domain}':")
     print(f"{'-'*60}")
@@ -443,20 +455,19 @@ def process_and_build_graph_domain(db_path: str,scenario_pk: int,domain: str,all
     if intraDomainDeps:
         for dep in intraDomainDeps:
             print(f"  {dep[3]} --> {dep[4]} ({dep[5]})")
-            # Acumular en all_deps_dict usando dep_pk como clave
             dep_pk = dep[0]
             if dep_pk not in all_deps_dict:
                 all_deps_dict[dep_pk] = dep
     else:
         print(f"  --> No hay dependencias internas en {domain}")
         
-    # Construcción del grafo intra-dominio
+    # Se construye el grafo intra-dominio para mostrar sus métricas básicas
     G = build_intra_domain_graph(domain, assets, intraDomainDeps)
     print(f"\n Grafo construido para '{domain}':")
     print(f"    - Nodos: {G.number_of_nodes()}")
     print(f"    - Aristas: {G.number_of_edges()}")
     
-    # Dependencias inter-dominio del dominio
+    # Se muestran y acumulan las dependencias inter-dominio relacionadas
     print(f"\n{'-'*60}")
     print(f"Dependencias inter-dominio que involucran a '{domain}':")
     print(f"{'-'*60}")
@@ -465,7 +476,6 @@ def process_and_build_graph_domain(db_path: str,scenario_pk: int,domain: str,all
     if interDomainDeps:
         for dep in interDomainDeps:
             print(f"  ({dep[9]}){dep[3]} --> ({dep[10]}){dep[4]} ({dep[5]})")
-            # Acumular en all_deps_dict usando dep_pk como clave
             dep_pk = dep[0]
             if dep_pk not in all_deps_dict:
                 all_deps_dict[dep_pk] = dep
@@ -475,30 +485,30 @@ def process_and_build_graph_domain(db_path: str,scenario_pk: int,domain: str,all
 
 def build_MDO_graph(db_path: str, scenario_name: str) -> nx.DiGraph:
     """
-    Ejecuta el análisis completo del MDO: procesa todos los dominios,
-    construye el grafo global MDO.
+    Ejecuta el proceso completo de construcción del grafo MDO.
+    Se recorren todos los dominios configurados y se consolidan activos y dependencias.
 
     Args:
-        db_path (str): Ruta a la base de datos SQLite.
-        scenario_name (str): Nombre del escenario a procesar.
+        db_path: Ruta a la base de datos SQLite.
+        scenario_name: Nombre del escenario a procesar.
 
     Returns:
-        nx.DiGraph: El grafo global MDO construido con todos los activos y dependencias del escenario.
+        Grafo global MDO con todos los activos y dependencias del escenario.
     """
-    # Acumuladores globales
+    # Se inicializan acumuladores globales para activos y dependencias únicas
     all_assets = []
-    all_deps_dict = {}  # Usamos dict con dep_pk como clave para evitar duplicados
+    all_deps_dict = {}
     
     scenario_pk = get_scenario_pk(db_path, scenario_name)
     
-    # Procesamos cada dominio
+    # Se procesa cada dominio definido en la configuración
     for dominio in DOMINIOS:
         process_and_build_graph_domain(db_path, scenario_pk, dominio, all_assets, all_deps_dict)
     
-    # Convertimos dict a lista (ya sin duplicados)
+    # Se convierten las dependencias acumuladas a lista sin duplicados
     all_deps = list(all_deps_dict.values())
     
-    # Iniciamos el proceso de construcción del grafo global MDO con todos los activos y dependencias acumulados
+    # Se construye el grafo global MDO con los datos acumulados
     print(f"\n{'='*60}")    
     print(f"Construcción del grafo global MDO:")
     print(f"{'='*60}")
@@ -518,56 +528,51 @@ def build_MDO_graph(db_path: str, scenario_name: str) -> nx.DiGraph:
 #===============================================[ANALYSIS_FUNCTIONS]===============================================
 def get_infected_nodes(graph: nx.DiGraph, compromised_node: str):
     """
-    Dado un grafo dirigido y un nodo comprometido, retorna una lista de nodos afectados por niveles de salto a través de las dependencias.
-    1. Nodos que dependen directamente del nodo comprometido (1 salto).
-    2. Nodos que dependen de los nodos afectados en el paso anterior (2 saltos).
-    3. Y así sucesivamente hasta que no haya más nodos afectados o se alcance un bucle.
+    Calcula los nodos afectados por niveles de salto desde un nodo comprometido.
+    Se recorren predecesores para identificar activos que dependen directa o indirectamente del nodo inicial.
     
     Args:
-        graph (nx.DiGraph): El grafo dirigido que representa los activos y sus dependencias.
-        compromised_node (str): El nodo que ha sido comprometido inicialmente.
+        graph: Grafo dirigido que representa activos y dependencias.
+        compromised_node: Nodo comprometido inicialmente.
 
     Returns:
-        Tuple[Dict[int, List[str]], Dict[int, List[Dict]]]: 
-        - Un diccionario donde la clave es el nivel de salto (1, 2, 3, ...) y el valor es una lista de nodos afectados en ese nivel.
-        - Un diccionario opcional con las aristas afectadas en cada nivel, incluyendo detalles de la dependencia.
+        Tuple con nodos afectados por nivel y aristas afectadas por nivel.
+        Devuelve un diccionario vacío si el nodo comprometido no existe.
     """
-    #=== {Inicialización de variables} ===#
-    affected_nodes_by_level = {} # Dict[int, List[str]]
-    affected_edges_by_level = {} # Dict[int, List[Tuple[str, str]]] (opcional, si queremos también las aristas afectadas)
-    visited_nodes = set() # Set[str] de los nodos que ya han sido visitados
-    current_level_nodes = {compromised_node} # Nodos del nivel actual que tenemos que procesar( obtener sus dependencias)
-    level = 0 # Nivel de salto actual
-    affected_nodes_by_level[level] = [compromised_node] # Nivel 0 es el nodo comprometido
-    visited_nodes.add(compromised_node) # Marcamos el nodo comprometido como visitado
+    # Se inicializan estructuras para recorrer la propagación por niveles
+    affected_nodes_by_level = {}
+    affected_edges_by_level = {}
+    visited_nodes = set()
+    current_level_nodes = {compromised_node}
+    level = 0
+    affected_nodes_by_level[level] = [compromised_node]
+    visited_nodes.add(compromised_node)
 
-
-
-    #=== {Verificamos la existencia del nodo comprometido} ===#
+    # Se verifica que el nodo comprometido exista en el grafo
     try:
-        graph.nodes[compromised_node] # Verificamos que el nodo exista en el grafo
+        graph.nodes[compromised_node]
     except KeyError:
         print(f"Error: El nodo comprometido '{compromised_node}' no existe en el grafo.")
         return {}
 
-    #=== {Búsqueda de nodos afectados por niveles de salto} ===#
-    while current_level_nodes: # Mientras haya nodos en el nivel actual
+    # Se recorren niveles sucesivos hasta no encontrar nuevos nodos afectados
+    while current_level_nodes:
         level += 1
-        next_level_nodes = [] #Nodos a procesar para la siguiente iteración
-        edges_current_level = [] # Aristas afectadas en el nivel actual (opcional)
+        next_level_nodes = []
+        edges_current_level = []
         
         for current_node in current_level_nodes:
-            dependent_nodes = list(graph.predecessors(current_node)) # Nodos que dependen del nodo actual
+            dependent_nodes = list(graph.predecessors(current_node))
            
             for dependent_node in dependent_nodes:
                 if dependent_node in visited_nodes:
-                    continue # Ya hemos visitado este nodo, lo saltamos (evitamos bucles)
+                    continue
                 
                 if dependent_node not in next_level_nodes:
-                    next_level_nodes.append(dependent_node) # Añadimos a la lista de nodos para el siguiente nivel
-                    visited_nodes.add(dependent_node) # Marcamos el nodo como visitado
+                    next_level_nodes.append(dependent_node)
+                    visited_nodes.add(dependent_node)
 
-                # Obtener datos de la arista directamente con NetworkX
+                # Se recuperan los datos de la arista afectada desde NetworkX
                 edge_data = graph.get_edge_data(dependent_node, current_node)
                 
                 edges_current_level.append({
@@ -578,20 +583,32 @@ def get_infected_nodes(graph: nx.DiGraph, compromised_node: str):
                 })
         
         
-        if next_level_nodes: # Si hemos encontrado predecesores del nodo actual, los guardamos en el dict
+        if next_level_nodes:
             affected_nodes_by_level[level] = next_level_nodes
             affected_edges_by_level[level] = edges_current_level
         
-        current_level_nodes = next_level_nodes  # Actualizar para la siguiente iteración
+        current_level_nodes = next_level_nodes
     
     return affected_nodes_by_level, affected_edges_by_level
 
 
 def get_dependency_probs_by_tactic(tactic, affected_edges_by_level):
+    """
+    Añade probabilidades de propagación a las aristas afectadas según la táctica.
+    Se consulta la matriz de dependencias cargada desde configuración.
+
+    Args:
+        tactic: Táctica utilizada para consultar la matriz de dependencias.
+        affected_edges_by_level: Diccionario de aristas afectadas agrupadas por nivel.
+
+    Returns:
+        Diccionario de aristas afectadas con probabilidades añadidas por táctica.
+    """
     if tactic not in DEPENDENCY_MATRIX:
         print(f"Error: La táctica '{tactic}' no existe en la matriz de dependencias.")
         return {}
     
+    # Se añade la probabilidad correspondiente a cada arista afectada
     for level, edges in affected_edges_by_level.items():
         for edge in edges:
             dep_type = edge['dependency_type']
@@ -599,7 +616,7 @@ def get_dependency_probs_by_tactic(tactic, affected_edges_by_level):
                 prob = DEPENDENCY_MATRIX[tactic][dep_type]
                 edge[f'probability_({tactic})'] = prob
             else:
-                edge[f'probability_({tactic})'] = 0.0 # Si el tipo de dependencia no está definido para la táctica, asignamos probabilidad 0
+                edge[f'probability_({tactic})'] = 0.0
     
     return affected_edges_by_level
     
@@ -608,10 +625,17 @@ def get_dependency_probs_by_tactic(tactic, affected_edges_by_level):
 def main() -> None:
     """
     Punto de entrada principal del programa.
+
+    Args:
+        None.
+
+    Returns:
+        None. Se muestran escenarios, se construye el grafo global y se ejecuta una prueba básica.
     """
     db_path = str(Path(__file__).parent.parent / "database" / "tfg_catalog.db")
 
    
+    # Se muestran los escenarios disponibles antes de solicitar selección
     scenarios = list_scenarios(db_path)
     print("\nEscenarios disponibles en la BD:")
     print("-" * 80)
@@ -623,8 +647,10 @@ def main() -> None:
 
     scenario_name = input("Ingrese el nombre del escenario: ")
 
+    # Se construye el grafo global del escenario seleccionado
     G_global = build_MDO_graph(db_path, scenario_name)
 
+    # Se ejecuta un bloque de prueba manual sobre un activo concreto
     print("\nEL CODIGO A CONTINUACIÓN ES DE TEST:")
     affected_nodes, affected_edges = get_infected_nodes(G_global, 'asset_002')
 

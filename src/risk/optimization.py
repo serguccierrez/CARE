@@ -1,3 +1,8 @@
+"""
+Se preparan y resuelven problemas de optimización de contramedidas con PuLP.
+Se minimiza el riesgo de los activos bajo restricciones de presupuesto y tiempo.
+"""
+
 #=============================================[IMPORTS]=============================================
 import json
 from pathlib import Path
@@ -7,12 +12,30 @@ import pulp
 #===========================================[CARGA DE DATOS NECESARIOS]===========================================
 
 def load_report_data():
+    """
+    Carga el reporte JSON generado por el análisis de riesgo.
+
+    Args:
+        None.
+
+    Returns:
+        Diccionario con los datos del reporte.
+    """
     report_path = Path(__file__).parent.parent / "reporting" / "report.json"
     
     with open(report_path, "r", encoding="utf-8") as f:
         return json.load(f)
     
 def load_countermeasures_config():
+    """
+    Carga el catálogo de contramedidas desde configuración.
+
+    Args:
+        None.
+
+    Returns:
+        Diccionario con las contramedidas, costes y tiempos de despliegue.
+    """
     config_path = Path(__file__).parent.parent.parent / "configs" / "countermeasures.json"
 
     
@@ -24,19 +47,17 @@ def load_countermeasures_config():
 def extract_asset_scenarios_info(report_data, cm_config):
     """
     Extrae información de escenarios por activo y enriquece con propiedades de contramedidas.
-    
-    Fusiona la extracción de propiedades de contramedidas con el enriquecimiento de escenarios
-    en una sola pasada para eficiencia.
+    Se combinan riesgos del reporte con coste y tiempo definidos en el catálogo.
     
     Args:
-        report_data: Datos del reporte con escenarios de activos
-        cm_config: Configuración de contramedidas con información de coste y tiempo
+        report_data: Datos del reporte con escenarios de activos.
+        cm_config: Configuración de contramedidas con coste y tiempo.
     
     Returns:
-        Diccionario con escenarios de cada activo enriquecidos con coste y tiempo
+        Diccionario con escenarios de cada activo enriquecidos con coste y tiempo.
     """
     
-    # Extraer propiedades de contramedidas directamente desde el catálogo
+    # Se indexan propiedades de contramedidas para enriquecer los escenarios
     cm_properties = {}
     for cm_id, cm_data in cm_config.get("countermeasures", {}).items():
         cm_properties[cm_id] = {
@@ -55,21 +76,18 @@ def extract_asset_scenarios_info(report_data, cm_config):
             if not asset_scenarios:
                 continue
             
-            # Variable auxiliar para cargar los escenarios y añadir datos adicionales
             scenarios = {}
     
             for scenario_key, scenario_data in asset_scenarios.items():
                 
-                # Extraemos el nombre de la contramedida aplicada para cada escenario
+                # Se valida que la contramedida exista en el catálogo antes de usar sus propiedades
                 cm_name = scenario_data["countermeasure_applied"]
                 
-                # Comprobamos que la cm esté modelada en el catálogo y extraemos sus propiedades
                 if cm_name not in cm_properties:
                         raise ValueError(f"[ERROR] Contramedida '{cm_name}' no encontrada en el catálogo")
                 cost = cm_properties[cm_name]["cost"]
                 time_hours = cm_properties[cm_name]["time"]
                 
-                # Creamos un nuevo diccionario con la información relevante para cada escenario
                 scenarios[scenario_key] = {
                     "countermeasure": cm_name,
                     "risk_total": scenario_data["total_asset_risk"],
@@ -94,10 +112,10 @@ def create_decision_variables(assets_scenarios_data):
     Crea variables de decisión binarias para cada escenario de cada activo.
     
     Args:
-        assets_scenarios_data: Diccionario con escenarios de cada activo enriquecidos con coste y tiempo
+        assets_scenarios_data: Diccionario con escenarios de cada activo enriquecidos.
     
     Returns:
-        Diccionario con variables de decisión para cada escenario de cada activo
+        Diccionario con variables binarias por activo y escenario.
     """
     
     decision_vars = {}
@@ -110,25 +128,23 @@ def create_decision_variables(assets_scenarios_data):
             
             var_name = f"x_{asset_name}_{scenario_name}"
             
-            # Creamos una variable de decisión binaria para cada escenario de cada activo con la fomra x['asset_name']['scenario_name']
-            # Serán variabales binarias que indicarán si se selecciona o no ese escenario para ese activo
-            # Ejemplo: x['asset_001']['scenario_1'] = 1 si se selecciona el escenario 1 para el activo 001, 0 en caso contrario
+            # Se crea una variable binaria que indica si se selecciona ese escenario para el activo
             decision_vars[asset_name][scenario_name] = pulp.LpVariable(var_name, cat="Binary")
     
     return decision_vars
 
-#===============================================[OBJECTIVE FUNCTIONs]=============================================
+#===============================================[OBJECTIVE_FUNCTIONS]=============================================
 def define_global_objective_function(decision_vars, assets_scenarios_data, model):
     """
     Define la función objetivo para minimizar el riesgo total ponderado por criticidad.
     
     Args:
-        model: Instancia del modelo de optimización de PuLP
-        decision_vars: Diccionario con variables de decisión para cada escenario de cada activo
-        assets_scenarios_data: Diccionario con escenarios de cada activo enriquecidos con coste y tiempo
+        decision_vars: Diccionario con variables de decisión por activo y escenario.
+        assets_scenarios_data: Diccionario con escenarios enriquecidos por activo.
+        model: Instancia del modelo de optimización de PuLP.
     
     Returns:
-        None (la función objetivo se agrega directamente al modelo)
+        None. La función objetivo se agrega directamente al modelo.
     """
     
 
@@ -152,6 +168,17 @@ def define_global_objective_function(decision_vars, assets_scenarios_data, model
     
     
 def define_confidentiality_objective_function(decision_vars, assets_scenarios_data, model):
+    """
+    Define la función objetivo para minimizar riesgo de confidencialidad ponderado.
+
+    Args:
+        decision_vars: Diccionario con variables de decisión por activo y escenario.
+        assets_scenarios_data: Diccionario con escenarios enriquecidos por activo.
+        model: Instancia del modelo de optimización de PuLP.
+
+    Returns:
+        None. La función objetivo se agrega directamente al modelo.
+    """
     
     
     objective = 0
@@ -174,6 +201,17 @@ def define_confidentiality_objective_function(decision_vars, assets_scenarios_da
     
     
 def define_integrity_objective_function(decision_vars, assets_scenarios_data, model):
+    """
+    Define la función objetivo para minimizar riesgo de integridad ponderado.
+
+    Args:
+        decision_vars: Diccionario con variables de decisión por activo y escenario.
+        assets_scenarios_data: Diccionario con escenarios enriquecidos por activo.
+        model: Instancia del modelo de optimización de PuLP.
+
+    Returns:
+        None. La función objetivo se agrega directamente al modelo.
+    """
     
     
     objective = 0
@@ -196,6 +234,17 @@ def define_integrity_objective_function(decision_vars, assets_scenarios_data, mo
     
 
 def define_availability_objective_function(decision_vars, assets_scenarios_data, model):
+    """
+    Define la función objetivo para minimizar riesgo de disponibilidad ponderado.
+
+    Args:
+        decision_vars: Diccionario con variables de decisión por activo y escenario.
+        assets_scenarios_data: Diccionario con escenarios enriquecidos por activo.
+        model: Instancia del modelo de optimización de PuLP.
+
+    Returns:
+        None. La función objetivo se agrega directamente al modelo.
+    """
     
     objective = 0
     
@@ -224,11 +273,11 @@ def unique_cm_per_asset_constraint(decision_vars, model):
     Agrega la restricción de que solo se puede seleccionar un escenario (contramedida) por activo.
     
     Args:
-        model: Instancia del modelo de optimización de PuLP
-        decision_vars: Diccionario con variables de decisión para cada escenario de cada activo
+        decision_vars: Diccionario con variables de decisión por activo y escenario.
+        model: Instancia del modelo de optimización de PuLP.
     
     Returns:
-        None (las restricciones se agregan directamente al modelo)
+        None. Las restricciones se agregan directamente al modelo.
     """
     
     for asset_name, asset_data in decision_vars.items():
@@ -242,13 +291,13 @@ def budget_constraint(decision_vars, assets_scenarios_data, budget, model):
     Agrega la restricción de presupuesto total para las contramedidas seleccionadas.
     
     Args:
-        model: Instancia del modelo de optimización de PuLP
-        decision_vars: Diccionario con variables de decisión para cada escenario de cada activo
-        assets_scenarios_data: Diccionario con escenarios de cada activo enriquecidos con coste y tiempo
-        budget: Presupuesto total disponible para las contramedidas
+        decision_vars: Diccionario con variables de decisión por activo y escenario.
+        assets_scenarios_data: Diccionario con escenarios enriquecidos por activo.
+        budget: Presupuesto total disponible para contramedidas.
+        model: Instancia del modelo de optimización de PuLP.
     
     Returns:
-        None (la restricción se agrega directamente al modelo)
+        None. La restricción se agrega directamente al modelo.
     """
     
     total_cost = 0
@@ -264,11 +313,24 @@ def budget_constraint(decision_vars, assets_scenarios_data, budget, model):
     
     
 def time_constraint(decision_vars, assets_scenarios_data, max_time_hours, model):
+    """
+    Agrega restricciones de tiempo máximo de despliegue por escenario.
+    Se impide seleccionar escenarios cuya contramedida excede el límite permitido.
+
+    Args:
+        decision_vars: Diccionario con variables de decisión por activo y escenario.
+        assets_scenarios_data: Diccionario con escenarios enriquecidos por activo.
+        max_time_hours: Tiempo máximo permitido para desplegar una contramedida.
+        model: Instancia del modelo de optimización de PuLP.
+
+    Returns:
+        None. Las restricciones se agregan directamente al modelo.
+    """
     for asset_name, asset_info in assets_scenarios_data.items():
         for scenario_name, scenario_data in asset_info["scenarios"].items():
             time_hours = scenario_data["time_hours"]
             
-            # Si excede el límite, no se puede seleccionar
+            # Se bloquean escenarios que superan el tiempo máximo permitido
             if time_hours > max_time_hours:
                 model += decision_vars[asset_name][scenario_name] == 0, f"Time_Limit_{asset_name}_{scenario_name}"
     
@@ -280,12 +342,14 @@ def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budg
     Resuelve el problema de optimización utilizando el solver de PuLP.
     
     Args:
-        model: Instancia del modelo de optimización de PuLP con función objetivo y restricciones definidas
-        budget: Presupuesto total disponible para las contramedidas
-        report_data: Datos del informe para almacenar información sobre la solución
+        decision_vars: Diccionario con variables de decisión por activo y escenario.
+        assets_scenarios_data: Diccionario con escenarios enriquecidos por activo.
+        model: Instancia del modelo de optimización de PuLP.
+        budget: Presupuesto total disponible para contramedidas.
+        report_data: Datos del informe para contextualizar la solución.
+
     Returns:
-        status: Estado de la solución (Optimal, Infeasible, etc.)
-        solution: Diccionario con la solución óptima encontrada para las variables de decisión
+        Diccionario con estado, riesgo, coste y decisiones seleccionadas.
     """
     
     if report_data is None:
@@ -300,7 +364,7 @@ def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budg
         print(f"[WARN] Solución no óptima: {status}")
     
     
-    # Obtenemos la suma de criticidades para su posterior normalización del riesgo total
+    # Se calcula la suma de criticidades para normalizar el riesgo objetivo
     total_criticality = sum(
         asset_info.get("criticality", 1.0) 
         for asset_info in assets_scenarios_data.values()
@@ -308,15 +372,15 @@ def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budg
     
     
     
-    optimal_risk_weighted = pulp.value(model.objective) # Valor objetivo (suma ponderada - numerador)
-    optimal_risk_normalized = optimal_risk_weighted / total_criticality # Riesgo total normalizado (dividido por la suma de criticidades - denominador)
+    optimal_risk_weighted = pulp.value(model.objective)
+    optimal_risk_normalized = optimal_risk_weighted / total_criticality
     
     print(f"Riesgo global mínimo (ponderado): {optimal_risk_weighted:.4f}")
     print(f"Riesgo global mínimo (normalizado): {optimal_risk_normalized:.4f}")
     print(f"Suma de criticidades: {total_criticality:.4f}")
     
     
-    # Creamos un diccionario con la solución óptima encontrada para cada activo y escenario
+    # Se construye la estructura de salida con métricas globales y decisiones por activo
     solution = {
         "status": status,
         "baseline_risk": report_data["global_system_risk"]["overall_risk"],
@@ -330,10 +394,10 @@ def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budg
         "total_cost_used_percent": 0.0
     }
     
-    # Para cada activo, determinar qué escenario fue seleccionado
+    # Se registra el escenario seleccionado para cada activo
     for asset_name, scenarios in decision_vars.items():
         for scenario_name, scenario_var in scenarios.items():
-            if scenario_var.varValue == 1:  # Si este escenario ha sido seleccionado (valor = 1)
+            if scenario_var.varValue == 1:
                 scenario_data = assets_scenarios_data[asset_name]["scenarios"][scenario_name]
                 criticality = assets_scenarios_data[asset_name]["criticality"]
                 
@@ -353,7 +417,7 @@ def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budg
                 solution["total_cost"] += scenario_data["cost"]
     solution["total_cost_used_percent"] = str((solution["total_cost"] / budget) * 100 if budget != 0 else 0) + "%"
    
-    # Mostrar resumen de contramedidas seleccionadas
+    # Se muestra un resumen operativo de contramedidas seleccionadas
     print("\n" + "="*80)
     print("RESUMEN DE CONTRAMEDIDAS SELECCIONADAS")
     print("="*80)
@@ -383,22 +447,23 @@ def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budg
 #======================================================[LP INTEGRATION]======================================================
 def build_optimization_problem(assets_scenarios_data, decision_vars, budget = 50000, max_time_hours = 210):
     """
-    Ejecuta el proceso completo de optimización: creación de variables, definición de función objetivo, adición de restricciones y resolución del problema.
+    Construye el problema de optimización global.
+    Se define el objetivo global y se añaden restricciones comunes.
     
     Args:
-        assets_scenarios_data: Diccionario con escenarios de cada activo enriquecidos con coste y tiempo
-        decision_vars: Variables de decisión para cada activo y escenario
-        budget: Presupuesto total disponible para las contramedidas
-        max_time_hours: Tiempo máximo total disponible para desplegar las contramedidas (en horas) por cm 
+        assets_scenarios_data: Diccionario con escenarios enriquecidos por activo.
+        decision_vars: Variables de decisión para cada activo y escenario.
+        budget: Presupuesto total disponible para contramedidas.
+        max_time_hours: Tiempo máximo permitido para desplegar una contramedida.
+
     Returns:
+        Modelo de optimización configurado.
     """
-    # Primero creamos el problema de optimización
+    # Se crea el modelo de minimización y se añaden objetivo y restricciones
     model = pulp.LpProblem("Minimize_Global_Risk", pulp.LpMinimize)
     
-    # Definimos la función objetivo
     define_global_objective_function( decision_vars, assets_scenarios_data, model)
     
-    # Añadimos las restricciones
     unique_cm_per_asset_constraint(decision_vars, model)
     budget_constraint(decision_vars, assets_scenarios_data, budget, model)
     time_constraint(decision_vars, assets_scenarios_data, max_time_hours, model)
@@ -406,6 +471,17 @@ def build_optimization_problem(assets_scenarios_data, decision_vars, budget = 50
     return model
 
 def setup_optimization_problem( report_data, budget = 50000, max_time_hours = 210):
+    """
+    Prepara datos, variables y modelo de optimización global.
+
+    Args:
+        report_data: Diccionario del reporte de riesgo. Si es None, se carga desde disco.
+        budget: Presupuesto total disponible para contramedidas.
+        max_time_hours: Tiempo máximo permitido para desplegar una contramedida.
+
+    Returns:
+        Tuple con escenarios enriquecidos, variables de decisión y modelo configurado.
+    """
     
     if report_data is None:
         report_data = load_report_data()
@@ -427,21 +503,20 @@ def build_optimization_problem_with_objective(assets_scenarios_data, decision_va
     Construye un problema de optimización con una función objetivo específica.
     
     Args:
-        assets_scenarios_data: Escenarios de cada activo
-        decision_vars: Variables de decisión
-        objective_func: Función objetivo a utilizar (ej: define_global_objective_function)
-        budget: Presupuesto total
-        max_time_hours: Tiempo máximo de despliegue
+        assets_scenarios_data: Escenarios enriquecidos de cada activo.
+        decision_vars: Variables de decisión del modelo.
+        objective_func: Función objetivo que se desea utilizar.
+        budget: Presupuesto total disponible para contramedidas.
+        max_time_hours: Tiempo máximo permitido para desplegar una contramedida.
     
     Returns:
-        Modelo de optimización configurado
+        Modelo de optimización configurado.
     """
     model = pulp.LpProblem("Optimization_Problem", pulp.LpMinimize)
     
-    # Aplicar la función objetivo específica
+    # Se aplica el objetivo elegido y las restricciones comunes
     objective_func(decision_vars, assets_scenarios_data, model)
     
-    # Añadir restricciones (comunes a todos los objetivos)
     unique_cm_per_asset_constraint(decision_vars, model)
     budget_constraint(decision_vars, assets_scenarios_data, budget, model)
     time_constraint(decision_vars, assets_scenarios_data, max_time_hours, model)
@@ -454,17 +529,16 @@ def solve_optimization_problems(assets_scenarios_data, objective_type="all", bud
     Resuelve uno o múltiples problemas de optimización según el objetivo especificado.
     
     Args:
-        assets_scenarios_data: Diccionario con escenarios de cada activo
-        decision_vars: Variables de decisión originales (no se usan directamente)
-        objective_type: "all" (resuelve los 4), o "global", "confidentiality", "integrity", "availability"
-        budget: Presupuesto total disponible
-        max_time_hours: Tiempo máximo de despliegue
+        assets_scenarios_data: Diccionario con escenarios enriquecidos por activo.
+        objective_type: Objetivo a resolver: all, global, confidentiality, integrity o availability.
+        budget: Presupuesto total disponible para contramedidas.
+        max_time_hours: Tiempo máximo permitido para desplegar una contramedida.
     
     Returns:
-        Diccionario con la/las solución/soluciones
+        Diccionario con la solución o soluciones calculadas.
     """
     
-    # Creamos un diccionario para hacer mapeo con todos los objetivos disponibles para poder seleccionar dinámicamente cual resolver
+    # Se mapean los objetivos disponibles para seleccionar dinámicamente la función objetivo
     objectives_map = {
         "global": define_global_objective_function,
         "confidentiality": define_confidentiality_objective_function,
@@ -472,48 +546,41 @@ def solve_optimization_problems(assets_scenarios_data, objective_type="all", bud
         "availability": define_availability_objective_function
     }
     
-    # Inicializamos el diccionario donde guardaremos todas nuestras soluciones
+    # Se almacenan las soluciones generadas por objetivo
     results = {}
     
-    # Si el usuario nos pide resolver TODOS los objetivos simultáneamente
+    # Se resuelven todos los objetivos si se solicita una comparativa completa
     if objective_type == "all":
         print("\n" + "="*80)
         print("RESOLVIENDO LOS 4 PROBLEMAS DE OPTIMIZACIÓN")
         print("="*80)
         
-        # Iteramos sobre cada uno de los 4 objetivos
         for obj_name, obj_func in objectives_map.items():
             print(f"\n>>> Resolviendo: {obj_name.upper()}")
             print("-"*80)
             
-            # Creamos NUEVAS variables de decisión para este problema específico
-            # no reutilizamos las variables, porque cada modelo necesita sus propias
+            # Se crean variables independientes para cada modelo de optimización
             decision_vars_copy = create_decision_variables(assets_scenarios_data)
             
-            # Construimos el modelo de optimización con ese objetivo específico
             model = build_optimization_problem_with_objective(
                 assets_scenarios_data, decision_vars_copy, obj_func, budget, max_time_hours
             )
             
-            # Resolvemos el problema y guardamos la solución en nuestro diccionario de resultados
             results[obj_name] = solve_optimization_problem(
                 decision_vars_copy, assets_scenarios_data, model, budget
             )
     
         
-    # Si el usuario nos pide resolver UN objetivo específico
+    # Se resuelve un único objetivo cuando se solicita uno concreto
     else:
-        # Comprobamos que el objetivo solicitado existe en nuestro mapeo de objetivos
         if objective_type not in objectives_map:
             raise ValueError(f"Objetivo no válido: {objective_type}. Opciones: {list(objectives_map.keys())}")
         
         print(f"\n Resolviendo: {objective_type.upper()}")
         print("-"*80)
         
-        # Creamos nuevas variables de decisión para nuestro problema
         decision_vars_copy = create_decision_variables(assets_scenarios_data)
         
-        # Construimos y resolvemos el modelo con el objetivo que hemos solicitado
         model = build_optimization_problem_with_objective(
             assets_scenarios_data, decision_vars_copy, objectives_map[objective_type], 
             budget, max_time_hours
@@ -524,7 +591,6 @@ def solve_optimization_problems(assets_scenarios_data, objective_type="all", bud
     
     save_solution(results)
     
-    # Devolvemos nuestros resultados al código que nos llamó
     return results
 
 
@@ -533,7 +599,10 @@ def save_solution(results):
     Guarda una comparativa de todas las soluciones en JSON.
     
     Args:
-        results: Diccionario con todas las soluciones
+        results: Diccionario con todas las soluciones calculadas.
+
+    Returns:
+        None. Se escribe el archivo optimization_solution.json.
     """
     comparison_path = Path(__file__).parent.parent / "reporting" / "optimization_solution.json"
     

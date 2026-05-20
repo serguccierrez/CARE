@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Crea una base de datos SQLite para el TFG con tablas:
+Se crea una base de datos SQLite para el TFG con tablas:
 - scenarios
 - assets
 - dependencies
@@ -20,7 +20,7 @@ from pathlib import Path
 
 #===============================================[DATABASE_SCHEMA]===============================================
 
-# Definición del esquema de la base de datos en lenguaje SQL
+# Se define el esquema de la base de datos en lenguaje SQL
 DataDefinitionLanguage = """
 PRAGMA foreign_keys = ON;
 
@@ -120,55 +120,82 @@ CREATE INDEX IF NOT EXISTS idx_runs_created_at
 """
 
 
-#===============================================[FUNCTIONS]===============================================
+#===============================================[DATABASE_CREATION]===============================================
 def create_db(db_path: Path, recreate: bool) -> None:
     """
-    Crea (o recrea) una base de datos SQLite con el esquema definido en DataDefinitionLanguage
-    - db_path: ruta del fichero .db
-    - recreate: si True, borra el fichero si existe y lo crea desde cero
+    Crea o recrea una base de datos SQLite con el esquema definido.
+    Se inicializan las tablas, claves foráneas e índices necesarios.
+
+    Args:
+        db_path: Ruta del fichero .db que se va a crear o reutilizar.
+        recreate: Indica si se elimina la base de datos existente antes de crearla.
+
+    Returns:
+        None. La base de datos queda creada en la ruta indicada.
     """
-    # Crea el directorio si no existe
+    # Se crea el directorio padre si no existe
     db_path.parent.mkdir(parents=True, exist_ok=True)
     
-    # Si se indica recrear, borra el fichero de la BD si ya existe
+    # Se elimina el fichero de la BD si se solicita recreación y ya existe
     if recreate and db_path.exists():
         db_path.unlink()
 
-    # Se intenta conectar con la base de datos (si no existe, SQLite crea el fichero automáticamente)
+    # Se establece la conexión con la base de datos; SQLite crea el fichero si no existe
     con = sqlite3.connect(str(db_path))
     try:
-        # En SQLite, las FKs se activan por conexión
+        # Se activan las claves foráneas para la conexión actual
         con.execute("PRAGMA foreign_keys = ON;")
 
-        # Ejecuta todas las sentencias del DataDefinitionLanguage (múltiples CREATE TABLE/INDEX)
+        # Se ejecutan todas las sentencias del esquema definido
         con.executescript(DataDefinitionLanguage)
 
+        # Se confirman los cambios realizados en la base de datos
         con.commit()
         
     finally:
+        # Se cierra la conexión con la base de datos
         con.close()
 
 
-#===============================================[MAIN]===============================================
+#===============================================[CLI_INTERFACE]===============================================
 def main() -> None:
+    """
+    Gestiona la ejecución del script desde línea de comandos.
+    Se procesan los argumentos y se lanza la creación de la base de datos.
+
+    Args:
+        None.
+
+    Returns:
+        None. Se crea la base de datos y se muestra confirmación por consola.
+    """
+    # Se configura el parser de argumentos de línea de comandos
     parser = argparse.ArgumentParser(description="Crea la BD SQLite (assets + dependencies).")
 
-    # Por defecto: BD en el directorio src/database
+    # Se establece la ruta por defecto de la base de datos
     default_db = Path(__file__).parent / "tfg_catalog.db"
 
+    # Se define el argumento opcional para indicar la ruta de la BD
     parser.add_argument(
         "--db",
         default=str(default_db),
         help=f"Ruta del fichero .db (por defecto: {default_db})",
     )
+
+    # Se define el argumento opcional para recrear la BD si ya existe
     parser.add_argument(
         "--recreate",
         action="store_true",
         help="Borra y recrea la BD si ya existe",
     )
 
+    # Se leen los argumentos proporcionados por consola
     args = parser.parse_args()
+
+    # Se crea la base de datos usando la configuración indicada
     create_db(Path(args.db), recreate=args.recreate)
+
+    # Se informa por consola de la ruta final de la base de datos creada
     print(f"OK: BD creada en {args.db}")
 
 #===============================================[ENTRY_POINT]===============================================
