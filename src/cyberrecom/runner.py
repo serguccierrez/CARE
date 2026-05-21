@@ -28,6 +28,7 @@ import src.risk.optimization as optimization
 #DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
 DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog.db"
 EXCEL_PATH = Path(__file__).parent.parent.parent / "data" / "asset_catalog_validado_v1.0.0_ajustado.xlsx"
+BASE_CM_STATES = ["none"]
 
 
 
@@ -227,7 +228,7 @@ def resolve_cm_states_for_ttps(ttp_ids, countermeasures_data, include_base_count
     Args:
         ttp_ids: Identificador o lista de identificadores TTP.
         countermeasures_data: Catalogo de contramedidas con CPDs asociadas.
-        include_base_countermeasures: Incluye contramedidas base del modelo global.
+        include_base_countermeasures: Incluye los estados base del modelo.
 
     Returns:
         Lista ordenada de estados CM aplicables.
@@ -236,7 +237,7 @@ def resolve_cm_states_for_ttps(ttp_ids, countermeasures_data, include_base_count
     ttp_ids = _ensure_list(ttp_ids)
     cm_states = []
 
-    base_countermeasures = ["none", "firewall", "ids"] if include_base_countermeasures else ["none"]
+    base_countermeasures = BASE_CM_STATES if include_base_countermeasures else ["none"]
     for base_cm_id in base_countermeasures:
         if base_cm_id in countermeasures_data["countermeasures"]:
             cm_states.append(base_cm_id)
@@ -287,7 +288,7 @@ def resolve_cpds_for_cm_states(bn_cpds, countermeasures_data, cm_states):
 def resolve_bn_json_construction(threat_vectors):
     """
     Construye dinámicamente las CPDs activas de la red bayesiana para la simulación.
-    Se combinan contramedidas base y mitigaciones recomendadas para las TTPs analizadas.
+    Se combina el estado base sin mitigacion con las mitigaciones recomendadas para las TTPs analizadas.
 
     Args:
         threat_vectors: Diccionario con TTPs seleccionadas o simuladas.
@@ -306,11 +307,11 @@ def resolve_bn_json_construction(threat_vectors):
 
     dynamic_bn_cpds = copy.deepcopy(bn_cpds)
 
-    # Se preparan estados de contramedidas base y específicas de las TTPs
+    # Se preparan el estado base y las mitigaciones especificas de las TTPs
     raw_mitigations = []
     cm_states = []
 
-    for base_cm_id in ["none", "firewall", "ids"]:
+    for base_cm_id in BASE_CM_STATES:
         if base_cm_id in countermeasures_data["countermeasures"]:
             cm_states.append(base_cm_id)
 
