@@ -220,6 +220,70 @@ def resolve_build_res_values(cm_states, countermeasures_data, dimension):
     return values
 
 
+def resolve_cm_states_for_ttps(ttp_ids, countermeasures_data, include_base_countermeasures=True):
+    """
+    Construye los estados de contramedida aplicables a uno o varios TTPs.
+
+    Args:
+        ttp_ids: Identificador o lista de identificadores TTP.
+        countermeasures_data: Catalogo de contramedidas con CPDs asociadas.
+        include_base_countermeasures: Incluye contramedidas base del modelo global.
+
+    Returns:
+        Lista ordenada de estados CM aplicables.
+    """
+
+    ttp_ids = _ensure_list(ttp_ids)
+    cm_states = []
+
+    base_countermeasures = ["none", "firewall", "ids"] if include_base_countermeasures else ["none"]
+    for base_cm_id in base_countermeasures:
+        if base_cm_id in countermeasures_data["countermeasures"]:
+            cm_states.append(base_cm_id)
+
+    for ttp_id in ttp_ids:
+        try:
+            mitigations = mitre.get_mitigations_for_ttp(ttp_id)
+        except ValueError:
+            continue
+
+        for cm in mitigations:
+            cm_id = cm.get("mitigation_id")
+            if (
+                cm_id
+                and cm_id in countermeasures_data["countermeasures"]
+                and cm_id not in cm_states
+            ):
+                cm_states.append(cm_id)
+
+    return cm_states
+
+
+def resolve_cpds_for_cm_states(bn_cpds, countermeasures_data, cm_states):
+    """
+    Recalcula las CPDs residuales para un conjunto concreto de estados CM.
+
+    Args:
+        bn_cpds: Plantilla o CPDs base.
+        countermeasures_data: Catalogo de contramedidas con CPDs asociadas.
+        cm_states: Estados de contramedida a incluir.
+
+    Returns:
+        Copia de CPDs ajustada al conjunto CM recibido.
+    """
+
+    dynamic_bn_cpds = copy.deepcopy(bn_cpds)
+
+    dynamic_bn_cpds["CM"]["states"] = cm_states
+    dynamic_bn_cpds["CM"]["values"] = [round(1 / len(cm_states), 6) for _ in cm_states]
+
+    dynamic_bn_cpds["C_res"]["values"] = resolve_build_res_values(cm_states, countermeasures_data, "C_res")
+    dynamic_bn_cpds["I_res"]["values"] = resolve_build_res_values(cm_states, countermeasures_data, "I_res")
+    dynamic_bn_cpds["A_res"]["values"] = resolve_build_res_values(cm_states, countermeasures_data, "A_res")
+
+    return dynamic_bn_cpds
+
+
 def resolve_bn_json_construction(threat_vectors):
     """
     Construye dinámicamente las CPDs activas de la red bayesiana para la simulación.
@@ -293,6 +357,15 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
         Diccionario del reporte con análisis por nodo incorporado.
     """
     
+    bn_cpds_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs_template.json"
+    countermeasures_path = Path(__file__).parent.parent.parent / "configs" / "countermeasures.json"
+
+    with open(bn_cpds_path, "r", encoding="utf-8") as f:
+        bn_cpds_template = json.load(f)
+
+    with open(countermeasures_path, "r", encoding="utf-8") as f:
+        countermeasures_data = json.load(f)
+
     for ttp_id, threat_vector in threat_vectors.items():
         for asset, info_asset in res_threat_prob.items():
             if ttp_id not in info_asset.get('threats_by_ttp', {}):
@@ -334,7 +407,13 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
 
 
             # Se resuelven diagramas de influencia por dimensión CIA
-            CPDS = id_test.read_constants()
+            cm_states = resolve_cm_states_for_ttps(
+                ttp_id,
+                countermeasures_data,
+                include_base_countermeasures=False
+            )
+            CPDS = resolve_cpds_for_cm_states(bn_cpds_template, countermeasures_data, cm_states)
+            print(f"Contramedidas evaluadas para {asset} - {ttp_id}: {cm_states}")
             
             influence_diagram_C, ie_C = id_test.create_and_solve_dimension("C", "C_res",  threat_vector['tactic'], info_asset['threats_by_ttp'][ttp_id]['P(Threat)'], CPDS)
             influence_diagram_I, ie_I = id_test.create_and_solve_dimension("I", "I_res",  threat_vector['tactic'], info_asset['threats_by_ttp'][ttp_id]['P(Threat)'], CPDS)
