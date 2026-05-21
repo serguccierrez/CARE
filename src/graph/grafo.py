@@ -12,7 +12,7 @@ import networkx as nx
 def load_constants() -> dict:
     """
     Carga las constantes generales desde el archivo JSON de configuración.
-    Se leen dominios, tipos de dependencias y tipos de activos.
+    Se leen tipos de dependencias y tipos de activos.
 
     Args:
         None.
@@ -20,7 +20,7 @@ def load_constants() -> dict:
     Returns:
         Diccionario con las constantes cargadas desde el archivo JSON.
     """
-    config_path = Path(__file__).parent.parent.parent / "Configs" / "constants.json"
+    config_path = Path(__file__).parent.parent.parent / "configs" / "constants.json"
     with open(config_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
     return config
@@ -36,20 +36,46 @@ def load_dependency_probabilities() -> dict:
     Returns:
         Diccionario con las probabilidades de propagación de compromisos.
     """
-    config_path = Path(__file__).parent.parent.parent / "Configs" / "dependency_matrix.json"
+    config_path = Path(__file__).parent.parent.parent / "configs" / "dependency_matrix.json"
     with open(config_path, 'r', encoding='utf-8') as f:
         config = json.load(f)
     return config
 
 # Se carga la configuración necesaria para construir y analizar grafos
 _config = load_constants()
-DOMINIOS = _config["dominios"]
 DEPENDENCIES_TYPES = _config["dependencies_types"]
 ASSET_TYPES = _config["asset_types"]
 DEPENDENCY_MATRIX = load_dependency_probabilities()
 
 
 #===============================================[DATABASE_FUNCTIONS]===============================================
+def list_domains_by_scenario(db_path: str, scenario_pk: int) -> list[str]:
+    """
+    Retorna los dominios presentes en los activos de un escenario.
+    Los dominios se obtienen dinamicamente desde la base de datos.
+
+    Args:
+        db_path: Ruta a la base de datos SQLite.
+        scenario_pk: Clave primaria del escenario analizado.
+
+    Returns:
+        Lista ordenada de dominios declarados en los activos del escenario.
+    """
+    con = sqlite3.connect(db_path)
+    try:
+        cur = con.cursor()
+        cur.execute("""
+            SELECT DISTINCT domain
+            FROM assets
+            WHERE scenario_fk = ?
+            ORDER BY domain;
+        """, (scenario_pk,))
+        rows = cur.fetchall()
+        return [row[0] for row in rows]
+    finally:
+        con.close()
+
+
 def get_domain_assets(db_path: str, scenario_pk: int, domain: str):
     """
     Obtiene y retorna los activos del dominio especificado para un escenario concreto.
@@ -486,7 +512,7 @@ def process_and_build_graph_domain(db_path: str,scenario_pk: int,domain: str,all
 def build_MDO_graph(db_path: str, scenario_name: str) -> nx.DiGraph:
     """
     Ejecuta el proceso completo de construcción del grafo MDO.
-    Se recorren todos los dominios configurados y se consolidan activos y dependencias.
+    Se recorren todos los dominios presentes en el escenario y se consolidan activos y dependencias.
 
     Args:
         db_path: Ruta a la base de datos SQLite.
@@ -501,8 +527,13 @@ def build_MDO_graph(db_path: str, scenario_name: str) -> nx.DiGraph:
     
     scenario_pk = get_scenario_pk(db_path, scenario_name)
     
-    # Se procesa cada dominio definido en la configuración
-    for dominio in DOMINIOS:
+    domains = list_domains_by_scenario(db_path, scenario_pk)
+    
+    if not domains:
+        print(f"[INFO] No hay dominios con activos en el escenario '{scenario_name}'.")
+    
+    # Se procesa cada dominio declarado en los activos del escenario
+    for dominio in domains:
         process_and_build_graph_domain(db_path, scenario_pk, dominio, all_assets, all_deps_dict)
     
     # Se convierten las dependencias acumuladas a lista sin duplicados
