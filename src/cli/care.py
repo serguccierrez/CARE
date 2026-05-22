@@ -35,10 +35,23 @@ def context_JSON_initialization():
     return context
 
 
-def dashboard_report_available() -> bool:
+def dashboard_report_available(active_scenario: str = None) -> bool:
     """Comprueba si existe un reporte de analisis listo para renderizar."""
     report_path = Path(__file__).parent.parent / "reporting" / "report.json"
-    return report_path.exists() and report_path.is_file() and report_path.stat().st_size > 0
+    if not report_path.exists() or not report_path.is_file() or report_path.stat().st_size == 0:
+        return False
+
+    if active_scenario is None:
+        return True
+
+    try:
+        with open(report_path, "r", encoding="utf-8") as f:
+            report_data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return False
+
+    report_scenario = report_data.get("metadata", {}).get("scenario_name")
+    return report_scenario == active_scenario
 
 
 def json_dump_context(context: dict):
@@ -128,6 +141,11 @@ def handle_db_delete(args):
     # Eliminarlo de la base de datos
     grafo.delete_scenario(str(DB_PATH), scenario_name)
 
+    context = json_load_context()
+    if context.get("active_scenario") == scenario_name:
+        context = context_JSON_initialization()
+        json_dump_context(context)
+
     # Rerenderizar la vista DB sin el escenario eliminado
     render_db_view(None)
 
@@ -161,6 +179,8 @@ def handle_db_create(args):
     if  source_file == None:
         # Crear un nuevo escenario vacío en la base de datos
         load_data.create_empty_scenario(DB_PATH, scenario_name, scenario_description, source_file)
+        render_db_view(scenario_name)
+        return
 
     load_data.load_and_insert_data(source_file, DB_PATH, scenario_name, scenario_description)
 
@@ -211,6 +231,9 @@ def handle_attack_run(args):
 
     if args.random:
         context["mode"] = "random"
+        context["selected_asset"] = []
+        context["selected_ttps"] = []
+        context["selected_confidences"] = []
     elif not context.get("mode"):
         context["mode"] = "controlled"
 
@@ -277,19 +300,20 @@ def render_dashboard_view(args: argparse.Namespace) -> None:
     """
     Renderiza la vista dashboard con el resumen del analisis de riesgos.
     """
-    if not dashboard_report_available():
+    context_path = Path(__file__).parent / "context.json"
+    context = json_load_context() if context_path.exists() else context_JSON_initialization()
+
+    if not dashboard_report_available(context.get("active_scenario")):
         run_blocked.main(
             title="CARE / DASHBOARD BLOCKED",
             header="No Analysis Results Found",
-            description="The dashboard needs a completed attack simulation before it can render risk data.",
+            description="The dashboard needs a completed attack simulation for the active scenario before it can render risk data.",
             action_title="Required action",
             action_text="python -m src.cli.care attack run",
             footer="Run a simulation first and then open the dashboard again.",
         )
         return
 
-    context_path = Path(__file__).parent / "context.json"
-    context = json_load_context() if context_path.exists() else context_JSON_initialization()
     dashboard.main(context=context)
 
 
@@ -370,6 +394,17 @@ def handle_optimization_run(args: argparse.Namespace) -> None:
         footer="Configure all optimization parameters and try again.",
 )
         return
+
+    if not dashboard_report_available(scenario_name):
+        run_blocked.main(
+            title="CARE / OPTIMIZATION BLOCKED",
+            header="No Analysis Results Found",
+            description="Optimization needs a completed attack simulation for the active scenario.",
+            action_title="Required action",
+            action_text="python -m src.cli.care attack run",
+            footer="Run a simulation first and then execute the optimization again.",
+        )
+        return
     
     optimization_results = runner.resolve_optimization(
         context["optimization_objective"],
@@ -429,6 +464,18 @@ def handle_report_save(args: argparse.Namespace) -> None:
     bn_cpds_json_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json" if (Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json").exists() else None
     reports_json_path = Path(__file__).parent.parent / "reporting" / "report.json" if (Path(__file__).parent.parent / "reporting" / "report.json").exists() else None
     optimization_json_path = Path(__file__).parent.parent / "reporting" / "optimization_solution.json" if (Path(__file__).parent.parent / "reporting" / "optimization_solution.json").exists() else None
+    context = json_load_context() if context_json_path is not None else context_JSON_initialization()
+
+    if not context.get("active_scenario") or not dashboard_report_available(context.get("active_scenario")):
+        run_blocked.main(
+            title="CARE / REPORT BLOCKED",
+            header="No Current Analysis Report",
+            description="Saving a run needs a completed analysis report for the active scenario.",
+            action_title="Required action",
+            action_text="python -m src.cli.care attack run",
+            footer="Run a simulation for the active scenario and save the report again.",
+        )
+        return
     
     run_name = Path(args.filename).stem
     narrative_report_path = Path(__file__).parent.parent / "reporting" / args.filename
@@ -437,6 +484,7 @@ def handle_report_save(args: argparse.Namespace) -> None:
     reports_db.save_reports_to_db(
         db_path=str(DB_PATH),
         run_name=run_name,
+        description=args.description,
         context_json_path=str(context_json_path) if context_json_path is not None else None,
         bn_cpds_json_path=str(bn_cpds_json_path) if bn_cpds_json_path is not None else None,
         reports_json_path=str(reports_json_path) if reports_json_path is not None else None,

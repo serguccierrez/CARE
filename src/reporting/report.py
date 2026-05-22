@@ -20,19 +20,20 @@ import networkx as nx
 #==============================[GLOBAL_CONFIG]===========================================#
 global_system_risk = 0.0
 
-DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog_v1.0.0.db"
+DB_PATH = Path(__file__).parent.parent / "database" / "tfg_catalog.db"
 EXCEL_PATH = Path(__file__).parent.parent.parent / "data" / "asset_catalog_validado_v1.0.0_ajustado.xlsx"
 
 
 #===============================[JSON FUNCTIONS]===========================================#
 
-def initialize_simulation_data(threat_vector):
+def initialize_simulation_data(threat_vector, scenario_name=None):
     """
     Inicializa la estructura base del reporte de simulación.
     Se añaden metadatos generales y los vectores de amenaza recibidos.
 
     Args:
         threat_vector: Diccionario con las amenazas o TTPs simuladas.
+        scenario_name: Nombre del escenario analizado.
 
     Returns:
         Diccionario inicial del reporte.
@@ -42,6 +43,7 @@ def initialize_simulation_data(threat_vector):
         "metadata": {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "version": "1.0.0",
+            "scenario_name": scenario_name,
             "db_path": str(DB_PATH),
             "excel_source": str(EXCEL_PATH)
         }
@@ -495,7 +497,7 @@ def generate_asset_scenario_combinations(report_data):
                 total_risk = 0.0
                 incidents_with_cm = {}
                 
-                # Se agregan los riesgos de los incidentes cubiertos por la contramedida
+                # Si la contramedida no cubre un incidente, se conserva su baseline.
                 for incident_key in incident_keys:
                     incident_data = incidents[incident_key]
                     
@@ -505,14 +507,14 @@ def generate_asset_scenario_combinations(report_data):
                             found_scenario = scenario_name
                             break
                     
-                    if found_scenario:
-                        scenario_data = incident_data["scenarios"][found_scenario]
-                        incidents_with_cm[incident_key] = found_scenario
-                        
-                        total_risk_c += scenario_data["incident_risk_C"]
-                        total_risk_i += scenario_data["incident_risk_I"]
-                        total_risk_a += scenario_data["incident_risk_A"]
-                        total_risk += scenario_data["total_incident_risk"]
+                    selected_scenario = found_scenario or "baseline"
+                    scenario_data = incident_data["scenarios"][selected_scenario]
+                    incidents_with_cm[incident_key] = selected_scenario
+                    
+                    total_risk_c += scenario_data["incident_risk_C"]
+                    total_risk_i += scenario_data["incident_risk_I"]
+                    total_risk_a += scenario_data["incident_risk_A"]
+                    total_risk += scenario_data["total_incident_risk"]
                 
                 # Se calculan promedios de riesgo del activo bajo el escenario global
                 num_incidents = len(incident_keys)

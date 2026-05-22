@@ -185,8 +185,12 @@ def expected_utility_per_cm(influence_diagram, cpds):
 
         EU_by_cm.append(float(ie_tmp.MEU()["mean"]))
 
-    p_cm = softmax(EU_by_cm)
-    h = entropy(p_cm, base=len(p_cm))  
+    if len(EU_by_cm) == 1:
+        p_cm = np.array([1.0])
+        h = 0.0
+    else:
+        p_cm = softmax(EU_by_cm)
+        h = entropy(p_cm, base=len(p_cm))  
     return EU_by_cm, p_cm, h
 
 #========================================[INFERENCIA PARA CADA DIMENSIÓN CIA]========================================#

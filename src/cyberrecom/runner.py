@@ -151,7 +151,10 @@ def resolve_threat_vector(G_global, context) -> None:
             }
             
     # Se inicializa el reporte con amenazas y metadatos del grafo
-    report_data = report.initialize_simulation_data(threat_vectors)
+    report_data = report.initialize_simulation_data(
+        threat_vectors,
+        scenario_name=context.get("active_scenario")
+    )
     report_data = report.add_graph_metadata(report_data, G_global)
     
     return threat_vectors, report_data

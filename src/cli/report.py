@@ -24,7 +24,7 @@ def content_panel_height(rows: list) -> int:
     Calcula la altura del panel principal en funcion del numero de elementos mostrados.
     """
     visible_rows = len(rows) if rows else 1
-    return 5 + visible_rows
+    return 6 + (visible_rows * 2)
 
 
 def render_report_header(scenario_name: str = None) -> Panel:

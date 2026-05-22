@@ -12,7 +12,7 @@ import src.graph.grafo as grafo
 
 
 #=============================================================[FUNCTIONS]===============================================
-def save_reports_to_db(db_path: str, run_name: str, context_json_path: str, bn_cpds_json_path: str, reports_json_path: str, optimization_json_path: str, narrative_report_path: str):
+def save_reports_to_db(db_path: str, run_name: str, description: str, context_json_path: str, bn_cpds_json_path: str, reports_json_path: str, optimization_json_path: str, narrative_report_path: str):
     """
     Guarda en base de datos los artefactos generados por una ejecución.
     Se leen los JSON disponibles, el informe narrativo y se asocian al escenario activo.
@@ -77,7 +77,7 @@ def save_reports_to_db(db_path: str, run_name: str, context_json_path: str, bn_c
             (
                 scenario_fk,
                 run_name,
-                None,
+                description,
                 json.dumps(context_json, ensure_ascii=False),
                 json.dumps(bn_cpds_json, ensure_ascii=False) if bn_cpds_json is not None else None,
                 json.dumps(reports_json, ensure_ascii=False) if reports_json is not None else None,
