@@ -10,7 +10,7 @@
     ],
     "filled_by": "src/cyberrecom/runner.py::resolve_bn_json_construction",
     "notes": [
-      "Las contramedidas base se inicializan en runtime con: none, firewall, ids.",
+      "El estado base se inicializa en runtime con: none. Firewall e IDS no se incorporan como estados privilegiados.",
       "Las mitigaciones adicionales se agregan segun los TTPs seleccionados.",
       "Cada matriz *_res.values se construye con columnas ordenadas por Risk={low, high} x CM.states."
     ]
