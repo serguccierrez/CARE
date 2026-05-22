@@ -1,14 +1,17 @@
 #====================================[IMPORTS]====================================#
 import argparse
 
-from src.cli import attack, dashboard, db, run_blocked, welcome
+from src.cli import attack, dashboard, db, run_blocked, welcome, report
 import src.graph.grafo as grafo
 import src.cyberrecom.mitre as mitre
 import src.database.load_data as load_data
 import src.cyberrecom.runner as runner
+import src.database.reports_db as reports_db
 from pathlib import Path
 
 import json
+
+
 
 
 #====================================[CONSTANTS]====================================#
@@ -30,6 +33,26 @@ def context_JSON_initialization():
         "optimization_time": None
     }
     return context
+
+
+def dashboard_report_available(active_scenario: str = None) -> bool:
+    """Comprueba si existe un reporte de analisis listo para renderizar."""
+    report_path = Path(__file__).parent.parent / "reporting" / "report.json"
+    if not report_path.exists() or not report_path.is_file() or report_path.stat().st_size == 0:
+        return False
+
+    if active_scenario is None:
+        return True
+
+    try:
+        with open(report_path, "r", encoding="utf-8") as f:
+            report_data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return False
+
+    report_scenario = report_data.get("metadata", {}).get("scenario_name")
+    return report_scenario == active_scenario
+
 
 def json_dump_context(context: dict):
     '''Función encargadad de recibir el dict del contexto y guardarlo en un .JSON file'''
@@ -82,7 +105,7 @@ def handle_db_load(args):
         header="Selected Scenario Not Found",
         description="The requested scenario does not exist.",
         action_title="Suggested action",
-        action_text='care db load --scenario "<valid_scenario_name>"',
+        action_text='python -m src.cli.care db load --scenario "<valid_scenario_name>"',
         footer="Verify the scenario name and try again.",
         
     )
@@ -110,13 +133,18 @@ def handle_db_delete(args):
             header="Selected Scenario Not Found",
             description="The requested scenario does not exist.",
             action_title="Suggested action",
-            action_text='care db delete --scenario "<valid_scenario_name>"',
+            action_text='python -m src.cli.care db delete --scenario "<valid_scenario_name>"',
             footer="Verify the scenario name and try again.",
         )
         return
 
     # Eliminarlo de la base de datos
     grafo.delete_scenario(str(DB_PATH), scenario_name)
+
+    context = json_load_context()
+    if context.get("active_scenario") == scenario_name:
+        context = context_JSON_initialization()
+        json_dump_context(context)
 
     # Rerenderizar la vista DB sin el escenario eliminado
     render_db_view(None)
@@ -139,7 +167,7 @@ def handle_db_create(args):
             header="Selected Scenario Already Exists",
             description="A scenario with the same name already exists.",
             action_title="Suggested action",
-            action_text='care db create --scenario "<unique_scenario_name>"',
+            action_text='python -m src.cli.care db create --scenario "<unique_scenario_name>"',
             footer="Choose a different scenario name and try again.",
         )
         return
@@ -151,6 +179,8 @@ def handle_db_create(args):
     if  source_file == None:
         # Crear un nuevo escenario vacío en la base de datos
         load_data.create_empty_scenario(DB_PATH, scenario_name, scenario_description, source_file)
+        render_db_view(scenario_name)
+        return
 
     load_data.load_and_insert_data(source_file, DB_PATH, scenario_name, scenario_description)
 
@@ -171,7 +201,7 @@ def handle_db_list(args):
             header="Selected Scenario Not Found",
             description="The requested scenario does not exist.",
             action_title="Suggested action",
-            action_text='care db asset-list --scenario "<valid_scenario_name>"',
+            action_text='python -m src.cli.care db asset-list --scenario "<valid_scenario_name>"',
             footer="Verify the scenario name and try again.",
         )
         return
@@ -201,6 +231,9 @@ def handle_attack_run(args):
 
     if args.random:
         context["mode"] = "random"
+        context["selected_asset"] = []
+        context["selected_ttps"] = []
+        context["selected_confidences"] = []
     elif not context.get("mode"):
         context["mode"] = "controlled"
 
@@ -226,7 +259,7 @@ def handle_attack_select(args):
         header="Selected Asset Not Found",
         description="The requested asset does not exist in the active scenario.",
         action_title="Suggested action",
-        action_text='care attack select --asset "<valid_asset_id>"',
+        action_text='python -m src.cli.care attack select --asset "<valid_asset_id>"',
         footer="Verify the asset ID and try again.",
 )
         return
@@ -236,7 +269,7 @@ def handle_attack_select(args):
         header="Selected TTP Not Found",
         description="The requested TTP does not exist in MITRE ATT&CK.",
         action_title="Suggested action",
-        action_text='care attack select --ttp "<valid_ttp_id>"',
+        action_text='python -m src.cli.care attack select --ttp "<valid_ttp_id>"',
         footer="Verify the TTP ID and try again.",
 )        
         return
@@ -246,7 +279,7 @@ def handle_attack_select(args):
         header="Invalid Confidence Value",
         description="The confidence value must be a float between 0.0 and 1.0.",
         action_title="Suggested action",
-        action_text='care attack select --confidence <valid_confidence_value>',
+        action_text='python -m src.cli.care attack select --confidence <valid_confidence_value>',
         footer="Verify the confidence value and try again.",
 )
         return
@@ -267,7 +300,20 @@ def render_dashboard_view(args: argparse.Namespace) -> None:
     """
     Renderiza la vista dashboard con el resumen del analisis de riesgos.
     """
-    context = json_load_context()
+    context_path = Path(__file__).parent / "context.json"
+    context = json_load_context() if context_path.exists() else context_JSON_initialization()
+
+    if not dashboard_report_available(context.get("active_scenario")):
+        run_blocked.main(
+            title="CARE / DASHBOARD BLOCKED",
+            header="No Analysis Results Found",
+            description="The dashboard needs a completed attack simulation for the active scenario before it can render risk data.",
+            action_title="Required action",
+            action_text="python -m src.cli.care attack run",
+            footer="Run a simulation first and then open the dashboard again.",
+        )
+        return
+
     dashboard.main(context=context)
 
 
@@ -289,7 +335,7 @@ def handle_optimization_select(args: argparse.Namespace) -> None:
         header="Selected Objective Not Found",
         description="The requested optimization objective is not valid.",
         action_title="Suggested action",
-        action_text='care optimize config --objective <valid_objective>',
+        action_text='python -m src.cli.care optimize config --objective <valid_objective>',
         footer="Verify the optimization objective and try again.",
 )        
         return
@@ -300,7 +346,7 @@ def handle_optimization_select(args: argparse.Namespace) -> None:
         header="Invalid Budget Value",
         description="The budget value must be a non-negative number.",
         action_title="Suggested action",
-        action_text='care optimize config --budget <valid_budget_value>',
+        action_text='python -m src.cli.care optimize config --budget <valid_budget_value>',
         footer="Verify the budget value and try again.",
 )
         return
@@ -311,7 +357,7 @@ def handle_optimization_select(args: argparse.Namespace) -> None:
         header="Invalid Time Constraint Value",
         description="The time constraint value must be a positive number.",
         action_title="Suggested action",
-        action_text='care optimize config --time <valid_time_value>',
+        action_text='python -m src.cli.care optimize config --time <valid_time_value>',
         footer="Verify the time constraint value and try again.",
 )
         return
@@ -344,9 +390,20 @@ def handle_optimization_run(args: argparse.Namespace) -> None:
         header="Missing Optimization Configuration",
         description="Please ensure that the optimization objective, budget, and time constraints are all configured before running the optimization.",
         action_title="Suggested action",
-        action_text='care optimize config --objective <objective> --budget <budget_value> --time <time_value>',
+        action_text='python -m src.cli.care optimize config --objective <objective> --budget <budget_value> --time <time_value>',
         footer="Configure all optimization parameters and try again.",
 )
+        return
+
+    if not dashboard_report_available(scenario_name):
+        run_blocked.main(
+            title="CARE / OPTIMIZATION BLOCKED",
+            header="No Analysis Results Found",
+            description="Optimization needs a completed attack simulation for the active scenario.",
+            action_title="Required action",
+            action_text="python -m src.cli.care attack run",
+            footer="Run a simulation first and then execute the optimization again.",
+        )
         return
     
     optimization_results = runner.resolve_optimization(
@@ -360,7 +417,143 @@ def handle_optimization_run(args: argparse.Namespace) -> None:
         optimization_results=optimization_results,
         context=context
     )
+    
+    
+    
+#{REPORT}#
 
+def handle_runs_view(args: argparse.Namespace):
+    
+    context = json_load_context()
+    scenario_name = args.scenario or context["active_scenario"]
+        
+    if not scenario_name:
+        run_blocked.main(
+            title="CARE / REPORT BLOCKED",
+            header="No Active Scenario Loaded",
+            description="Report listing cannot start without an active or specified scenario.",
+            action_title="Required action",
+            action_text='python -m src.cli.care reports --scenario "<scenario_name>" OR load a scenario with python -m src.cli.care db load --scenario "<scenario_name>"',
+            footer="Load a scenario first or specify one with --scenario.",
+        )
+        return
+    
+    # Validar que existe
+    scenarios = grafo.list_scenarios(str(DB_PATH))
+    scenario_names = [scenario[1] for scenario in scenarios]
+    
+    if scenario_name not in scenario_names:
+        run_blocked.main(
+            title="CARE / INVALID SCENARIO",
+            header="Selected Scenario Not Found",
+            description="The requested scenario does not exist.",
+            action_title="Suggested action",
+            action_text='python -m src.cli.care reports --scenario "<valid_scenario_name>" OR load a scenario with python -m src.cli.care db load --scenario "<valid_scenario_name>"',
+            footer="Verify the scenario name and try again.",
+        )
+        return
+    
+    # Obtenemos todas las runs del escenario activo o especificado
+    runs = reports_db.list_runs(str(DB_PATH), scenario_name=scenario_name)
+    
+    return report.main(runs=runs, scenario_name=scenario_name)
+
+def handle_report_save(args: argparse.Namespace) -> None:
+    # Buscamos las rutas de los siguientes archivos JSON el el workspace para guardarlos en la db 
+    context_json_path = Path(__file__).parent / "context.json" if (Path(__file__).parent / "context.json").exists() else None
+    bn_cpds_json_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json" if (Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json").exists() else None
+    reports_json_path = Path(__file__).parent.parent / "reporting" / "report.json" if (Path(__file__).parent.parent / "reporting" / "report.json").exists() else None
+    optimization_json_path = Path(__file__).parent.parent / "reporting" / "optimization_solution.json" if (Path(__file__).parent.parent / "reporting" / "optimization_solution.json").exists() else None
+    context = json_load_context() if context_json_path is not None else context_JSON_initialization()
+
+    if not context.get("active_scenario") or not dashboard_report_available(context.get("active_scenario")):
+        run_blocked.main(
+            title="CARE / REPORT BLOCKED",
+            header="No Current Analysis Report",
+            description="Saving a run needs a completed analysis report for the active scenario.",
+            action_title="Required action",
+            action_text="python -m src.cli.care attack run",
+            footer="Run a simulation for the active scenario and save the report again.",
+        )
+        return
+    
+    run_name = Path(args.filename).stem
+    narrative_report_path = Path(__file__).parent.parent / "reporting" / args.filename
+    reports_db.generate_report_md(output_path=str(narrative_report_path))
+    
+    reports_db.save_reports_to_db(
+        db_path=str(DB_PATH),
+        run_name=run_name,
+        description=args.description,
+        context_json_path=str(context_json_path) if context_json_path is not None else None,
+        bn_cpds_json_path=str(bn_cpds_json_path) if bn_cpds_json_path is not None else None,
+        reports_json_path=str(reports_json_path) if reports_json_path is not None else None,
+        optimization_json_path=str(optimization_json_path) if optimization_json_path is not None else None,
+        narrative_report_path=str(narrative_report_path) if narrative_report_path is not None else None
+    )
+    
+
+def handle_report_load(args: argparse.Namespace):
+    run_name = args.run_name
+    
+    # Validar que existe
+    runs = reports_db.list_runs(str(DB_PATH))
+    run_names = [run[1] for run in runs]
+    
+    if run_name not in run_names:
+        run_blocked.main(
+            title="CARE / INVALID REPORT",
+            header="Selected Report Not Found",
+            description="The requested report does not exist in the database.",
+            action_title="Suggested action",
+            action_text='python -m src.cli.care reports load --run_name "<valid_run_name>"',
+            footer="Verify the report name and try again.",
+        )
+        return
+    
+    report_data = reports_db.get_run_reports(str(DB_PATH), run_name)
+    
+    if report_data is None:
+        run_blocked.main(
+            title="CARE / INVALID REPORT",
+            header="Selected Report Not Found",
+            description="The requested report could not be loaded from the database.",
+            action_title="Suggested action",
+            action_text='python -m src.cli.care reports load --run_name "<valid_run_name>"',
+            footer="Verify the report name and try again.",
+        )
+        return
+    
+    context_json, bn_cpds_json, reports_json, optimization_json, narrative_report = report_data
+    
+    context_json_path = Path(__file__).parent / "context.json"
+    bn_cpds_json_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json"
+    reports_json_path = Path(__file__).parent.parent / "reporting" / "report.json"
+    optimization_json_path = Path(__file__).parent.parent / "reporting" / "optimization_solution.json"
+    narrative_report_path = Path(__file__).parent.parent / "reporting" / f"{run_name}.md"
+    
+    with open(context_json_path, "w", encoding="utf-8") as f:
+        json.dump(context_json, f, indent=4, ensure_ascii=False)
+        
+    with open(bn_cpds_json_path, "w", encoding="utf-8") as f:
+        json.dump(bn_cpds_json, f, indent=4, ensure_ascii=False)
+        
+    with open(reports_json_path, "w", encoding="utf-8") as f:
+        json.dump(reports_json, f, indent=4, ensure_ascii=False)
+        
+    if optimization_json is not None:
+        with open(optimization_json_path, "w", encoding="utf-8") as f:
+            json.dump(optimization_json, f, indent=4, ensure_ascii=False)
+            
+    if narrative_report is not None:
+        with open(narrative_report_path, "w", encoding="utf-8") as f:
+            f.write(narrative_report)
+    
+    return dashboard.main(context=context_json)
+
+    
+    
+    
 #====================================[COMMAND LINE ARGUMENTS]====================================#
 parser = argparse.ArgumentParser(
     description=(
@@ -563,6 +756,54 @@ optimization_run_parser = optimization_subparsers.add_parser(
 )
 
 optimization_run_parser.set_defaults(handler=handle_optimization_run)
+
+#{REPORT}#
+report_parser = subparsers.add_parser( 
+    "reports",
+    help="Generate and view narrative report",
+    description="Generate a narrative report based on the latest analysis results.",
+)
+
+report_parser.add_argument(
+    "--scenario",
+    help="Name of the scenario whose runs will be listed",
+    required=False,
+)
+
+report_parser.set_defaults(handler=handle_runs_view)
+
+report_subparsers = report_parser.add_subparsers(dest="report_command")
+
+report_select_parser = report_subparsers.add_parser(
+    "save",
+    help="Save the current report to a file",
+)
+
+report_select_parser.add_argument(
+    "--filename",
+    help="Filename for the saved report (e.g., report.md)",
+    required=True,
+)
+
+report_select_parser.add_argument(
+    "--description",
+    help="Description for the saved report",
+    required=False,
+)
+report_select_parser.set_defaults(handler=handle_report_save)
+
+
+report_load_parser = report_subparsers.add_parser(
+    "load",
+    help="Load a specific report from the database"
+)
+
+report_load_parser.add_argument(
+    "--run_name",
+    help="Name of the run whose report to load from the database",
+    required=True,
+)
+report_load_parser.set_defaults(handler=handle_report_load)
 
 def main() -> None:
     """

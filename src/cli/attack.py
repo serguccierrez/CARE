@@ -30,6 +30,21 @@ console = Console()
 ATTACK_WIDE_LAYOUT_BREAKPOINT = 150
 
 
+def confidence_color(value) -> str:
+    """
+    Devuelve el color semaforico usado para representar el nivel de confianza.
+    """
+    if 0.0 <= value < 0.5:
+        return "green"
+    if 0.5 <= value < 0.6:
+        return "yellow"
+    if 0.6 <= value <= 0.8:
+        return "orange3"
+    if 0.8 < value <= 1.0:
+        return "red"
+    return "white"
+
+
 def render_attack_header() -> Panel:
     """
     Renderiza el encabezado del modulo de ejecucion de ataques.
@@ -45,7 +60,12 @@ def render_attack_header() -> Panel:
     )
 
 
-def render_context_panel(scenario_name: str, total_assets: int, total_ttps: int) -> Panel:
+def render_context_panel(
+    scenario_name: str,
+    total_assets: int,
+    total_ttps: int,
+    panel_height: int | None = None,
+) -> Panel:
     """
     Renderiza el contexto operativo actual del escenario activo.
     """
@@ -66,6 +86,7 @@ def render_context_panel(scenario_name: str, total_assets: int, total_ttps: int)
         title="Current Operational Context",
         border_style="yellow",
         padding=(1, 2),
+        height=panel_height,
     )
 
 
@@ -97,7 +118,7 @@ def render_assets_table(assets: list, scenario_name: str, panel_height: int | No
     return Panel(
         table,
         title="Random Initial Asset Candidates",
-        subtitle=f"View full asset inventory: care asset list --scenario \"{scenario_name}\"",
+        subtitle=f"View full asset inventory: python -m src.cli.care db asset-list --scenario \"{scenario_name}\"",
         border_style="blue",
         padding=(0, 1),
         height=panel_height,
@@ -124,7 +145,7 @@ def render_ttps_table(ttps: list, panel_height: int | None = None) -> Panel:
     return Panel(
         table,
         title="Random Threat Technique Sample",
-        subtitle="View full MITRE catalogue: care ttp list --limit 50",
+        subtitle="Use attack select to inject a known MITRE TTP into the active scenario",
         border_style="red",
         padding=(0, 1),
         height=panel_height,
@@ -149,13 +170,15 @@ def render_execution_modes_panel() -> Panel:
     """
     modes_text = Text()
     modes_text.append("  [1] Random Attack Simulation\n", style="cyan")
-    modes_text.append("      Random initial asset and random TTP selection\n\n", style="dim")
+    modes_text.append("      Fully automatic run: random asset, random TTPs and random confidence values.\n", style="dim")
+    modes_text.append("      python -m src.cli.care attack run --random\n\n", style="yellow")
+
     modes_text.append("  [2] Controlled Attack Injection\n", style="cyan")
-    modes_text.append("      Operator selects an initial asset from the scenario and one or more TTPs\n\n", style="dim")
-    modes_text.append("  [3] Suggested Commands\n", style="cyan")
-    modes_text.append("      care run --random\n", style="yellow")
-    modes_text.append("      care run --asset <asset_id> --ttp <Txxxx>\n", style="yellow")
-    modes_text.append("      care run --asset <asset_id> --ttp <Txxxx> --ttp <Tyyyy>\n", style="yellow")
+    modes_text.append("      Choose asset, TTP and/or confidence before running the simulation.\n", style="dim")
+    modes_text.append("      Any value left unset is filled randomly at runtime.\n", style="dim")
+    modes_text.append("      python -m src.cli.care attack select --asset <asset_id> --ttp <Txxxx> --confidence <0.0-1.0>\n", style="yellow")
+    modes_text.append("      python -m src.cli.care attack run\n", style="yellow")
+
 
     return Panel(
         modes_text,
@@ -165,7 +188,7 @@ def render_execution_modes_panel() -> Panel:
     )
 
 
-def render_selected_vectors_panel(context: dict ) -> Panel:
+def render_selected_vectors_panel(context: dict, panel_height: int | None = None) -> Panel:
     """
     Renderiza los vectores de amenaza seleccionados en modo controlado.
     """
@@ -189,14 +212,23 @@ def render_selected_vectors_panel(context: dict ) -> Panel:
             ttp = selected_ttps[idx] if idx < len(selected_ttps) else "-"
             confidence = selected_confidences[idx] if idx < len(selected_confidences) else "-"
 
-            confidence_value = f"{float(confidence):.2f}" if isinstance(confidence, (int, float)) else str(confidence)
-            table.add_row(str(asset), str(ttp), confidence_value)
+            if isinstance(confidence, (int, float)):
+                confidence_value = f"{float(confidence):.2f}"
+                confidence_render = Text(
+                    confidence_value,
+                    style=f"bold {confidence_color(float(confidence))}",
+                )
+            else:
+                confidence_render = str(confidence)
+
+            table.add_row(str(asset), str(ttp), confidence_render)
 
     return Panel(
         table,
         title=f"Selected Vectors [{mode}]",
         border_style="magenta",
         padding=(0, 1),
+        height=panel_height,
     )
 
 
@@ -216,11 +248,12 @@ def build_attack_interface(scenario_name: str, assets: list, ttps: list, context
     """
     console.clear()
     console_width = console.size.width
+    context_section_height = 11 if console_width >= ATTACK_WIDE_LAYOUT_BREAKPOINT else 18
 
     layout = Layout()
     layout.split_column(
         Layout(name="header", size=5),
-        Layout(name="context", size=9),
+        Layout(name="context", size=context_section_height),
         Layout(name="analysis", size=15),
         Layout(name="modes", size=13),
         Layout(name="prompt", size=3),
@@ -228,8 +261,9 @@ def build_attack_interface(scenario_name: str, assets: list, ttps: list, context
 
     common_panel_height = analysis_panel_height(assets, ttps)
 
-    context_panel = render_context_panel(scenario_name, len(assets), len(ttps))
-    selected_vectors_panel = render_selected_vectors_panel(context)
+    top_panel_height = context_section_height if console_width >= ATTACK_WIDE_LAYOUT_BREAKPOINT else None
+    context_panel = render_context_panel(scenario_name, len(assets), len(ttps), top_panel_height)
+    selected_vectors_panel = render_selected_vectors_panel(context, top_panel_height)
     assets_panel = render_assets_table(assets, scenario_name, common_panel_height)
     ttps_panel = render_ttps_table(ttps, common_panel_height)
 

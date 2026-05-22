@@ -1,3 +1,8 @@
+"""
+Se construye una red bayesiana discreta para estimar impactos residuales CIA.
+También se calculan probabilidades de amenaza propagadas por dependencias entre activos.
+"""
+
 #========================================[IMPORTS]========================================#
 from pathlib import Path
 import random
@@ -11,12 +16,22 @@ import json
 confidence = 0.8
 
 def read_bn_cpds():
+    """
+    Lee las CPDs de la red bayesiana desde el archivo de configuración.
+
+    Args:
+        None.
+
+    Returns:
+        Diccionario con estados y distribuciones de probabilidad del modelo.
+    """
     bn_cpds_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs.json"
     with open(bn_cpds_path, "r") as data:
         cpd_data = json.load(data)
     return cpd_data
 
     
+# Se carga la matriz de propagación por táctica y tipo de dependencia
 dependency_type_probabilities_path = Path(__file__).parent.parent.parent / "configs" / "dependency_matrix.json"
 with open(dependency_type_probabilities_path, "r") as data:
     dependency_type_probabilities = json.load(data)    
@@ -43,6 +58,7 @@ MITRE_TACTICS = [
 def bayesian_network_construction(tactic="default", confidence=0.5):
     """
     Construye un modelo de red bayesiana discreta a partir de las CPDs definidas en el archivo JSON.
+    Se modelan amenaza, riesgo, contramedida e impactos residuales en confidencialidad, integridad y disponibilidad.
     
     La red bayesiana representa las relaciones probabilísticas entre:
     - Threat: probabilidad de que haya una amenaza
@@ -51,16 +67,17 @@ def bayesian_network_construction(tactic="default", confidence=0.5):
     - C_res, I_res, A_res: impactos residuales en las tres dimensiones CIA
     
     Args:
-    tactic (str): nombre de la táctica para seleccionar las CPDs específicas de riesgo dado amenaza.
+        tactic: Nombre de la táctica para seleccionar las CPDs específicas de riesgo dado amenaza.
+        confidence: Probabilidad inicial de amenaza usada en el nodo Threat.
     
     Returns:
-        VariableElimination: motor de inferencia para realizar consultas sobre la red
+        Motor de inferencia VariableElimination para consultar la red.
     """
-    #==================={Carga de CPDs desde JSON}========================#
+    # Se cargan las CPDs desde configuración
     cpd_data = read_bn_cpds()
     
     
-    #=================={Definición de estructura de grafo}========================#
+    # Se define la estructura acíclica de la red bayesiana
     """
     Estructura de la red bayesiana (acíclica):
     Threat -> Risk -> C_res <- CM
@@ -76,9 +93,9 @@ def bayesian_network_construction(tactic="default", confidence=0.5):
         ("CM", "I_res"),
         ("CM", "A_res"),
     ])  
-    #=================={Definición de distribuciones de probabilidad (CPDs)}========================#
+    # Se definen las distribuciones de probabilidad del modelo
     
-    #--- Threat: Probabilidad de amenaza ---
+    # Threat: probabilidad de amenaza
     cpd_threat = TabularCPD(
         variable="Threat",
         variable_card=len(cpd_data["Threat"]["states"]),
@@ -86,7 +103,7 @@ def bayesian_network_construction(tactic="default", confidence=0.5):
         state_names={"Threat": cpd_data["Threat"]["states"]}
     )
 
-    #--- CM: Distribución uniforme de contramedidas ---
+    # CM: distribución de contramedidas
     cpd_cm = TabularCPD(
         variable="CM",
         variable_card=len(cpd_data["CM"]["states"]),
@@ -94,7 +111,7 @@ def bayesian_network_construction(tactic="default", confidence=0.5):
         state_names={"CM": cpd_data["CM"]["states"]}
     )
 
-    #--- Risk: Probabilidad de riesgo dado Threat ---
+    # Risk: probabilidad de riesgo dado Threat
     cpd_risk = TabularCPD(
         variable="Risk",
         variable_card=len(cpd_data["Risk_given_Threat_by_tactic"]["states"]),
@@ -107,7 +124,7 @@ def bayesian_network_construction(tactic="default", confidence=0.5):
         }
     )
 
-    #--- C_res: Impacto residual en Confidentiality dado Risk y CM ---
+    # C_res: impacto residual en confidencialidad dado Risk y CM
     cpd_c_res = TabularCPD(
         variable="C_res",
         variable_card=len(cpd_data["C_res"]["states"]),
@@ -121,7 +138,7 @@ def bayesian_network_construction(tactic="default", confidence=0.5):
         }
     )
 
-    #--- I_res: Impacto residual en Integrity dado Risk y CM ---
+    # I_res: impacto residual en integridad dado Risk y CM
     cpd_i_res = TabularCPD(
         variable="I_res",
         variable_card=len(cpd_data["I_res"]["states"]),
@@ -138,7 +155,7 @@ def bayesian_network_construction(tactic="default", confidence=0.5):
         }
     )
 
-    #--- A_res: Impacto residual en Availability dado Risk y CM ---
+    # A_res: impacto residual en disponibilidad dado Risk y CM
     cpd_a_res = TabularCPD(
         variable="A_res",
         variable_card=len(cpd_data["A_res"]["states"]),
@@ -155,15 +172,11 @@ def bayesian_network_construction(tactic="default", confidence=0.5):
         }
     )
 
-    #=================={Configuración e inferencia del modelo}========================#
-    
-    # Añadir todas las CPDs al modelo
+    # Se agregan las CPDs, se valida el modelo y se crea el motor de inferencia
     model.add_cpds(cpd_threat, cpd_cm, cpd_risk, cpd_c_res, cpd_i_res, cpd_a_res)
 
-    # Validar que el modelo es correcto (consistencia de CPDs y estructura)
     assert model.check_model(), "Error: El modelo de red bayesiana no es correcto. Revisa las CPDs y la estructura del grafo."
 
-    # Crear motor de inferencia (Variable Elimination)
     infer = VariableElimination(model)
     
     return infer
@@ -203,10 +216,10 @@ def get_cia_res_levels(cia_res_query):
     Extrae los niveles de impacto CIA_RES (low, medium, high) desde las probabilidades inferidas.
     
     Args:
-        cia_res_query: resultado de una consulta de inferencia sobre un nodo CIA_RES
+        cia_res_query: Resultado de una consulta de inferencia sobre un nodo CIA_RES.
     
     Returns:
-        dict: diccionario con estados como claves y probabilidades como valores
+        Diccionario con estados como claves y probabilidades como valores.
     """
     probs_cia_res = cia_res_query.values
     states_names = cia_res_query.state_names[cia_res_query.variables[0]]
@@ -221,16 +234,25 @@ def get_cia_res_levels(cia_res_query):
 def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random_threat_vectors, grafo):
     """
     Calcula P(Threat) para cada nodo afectado en cada nivel.
-    P(TB) = P(TA) * P(EA→B | TA)
+    Se propaga la probabilidad inicial usando la probabilidad de transición de cada dependencia.
+
+    Args:
+        affected_edges_by_level: Aristas afectadas agrupadas por TTP y nivel.
+        affected_nodes_by_level: Nodos afectados agrupados por TTP y nivel.
+        random_threat_vectors: Vectores de amenaza con confianza y táctica asociada.
+        grafo: Grafo NetworkX con los datos de los activos.
+
+    Returns:
+        Diccionario con probabilidades de amenaza por activo y TTP.
     """
-    # Diccionario con clave nombre del nodo y valor datos de threat
+    # Se acumulan probabilidades de amenaza por nodo afectado
     nodes_threat_prob = {}
     
     for ttp_id, threat_vector in random_threat_vectors.items():
         confidence = threat_vector['confidence']
         ttp_tactic = threat_vector['tactic']
         
-        # Obtener datos para este TTP
+        # Se obtienen nodos y aristas afectados para el TTP actual
         try:
             nodes_data = affected_nodes_by_level.get(ttp_id, {})
             edges_data = affected_edges_by_level.get(ttp_id, {})
@@ -238,7 +260,7 @@ def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random
             print(f"Error: No se encontraron datos para TTP {ttp_id} en nodos o aristas afectados.")
             continue
         
-        # Procesar edges: agregar P(trans) y eliminar weight
+        # Se añade probabilidad de transición a cada arista afectada
         for level, edge_list in edges_data.items():
             for edge_info in edge_list:
                 dependency_type = edge_info['dependency_type']
@@ -246,9 +268,9 @@ def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random
                 edge_info.pop('weight', None)
                 
         
-        # NIVEL 0: P(Threat) = confidence
+        # Nivel 0: la probabilidad de amenaza coincide con la confianza del vector
         for asset in nodes_data.get(0, []):
-            if asset not in nodes_threat_prob:  # Comprobamos si es el primer TTP que ataca a este nodo
+            if asset not in nodes_threat_prob:
                 
                 nodes_threat_prob[asset] = {
                     'threats_by_ttp': {ttp_id: {'P(Threat)': confidence} },
@@ -258,20 +280,19 @@ def get_res_threat_prob(affected_edges_by_level, affected_nodes_by_level, random
 
                 nodes_threat_prob[asset]['node_data'] = grafo.nodes[asset]
                 
-            else: # No es el primer TTP que ataca al nodo
+            else:
                 
                 nodes_threat_prob[asset]['threats_by_ttp'][ttp_id] = {
                 'P(Threat)': confidence
                 }
                 
         
-        # NIVELES > 0: P(Threat asset_from {hijo}) = P(Threat asset_to {padre}) * P(dependency_type|threat=yes)
+        # Niveles superiores: se propaga amenaza desde el activo del que depende
         for level in range(1, len(nodes_data)):
             for asset_from in nodes_data.get(level, []):
-                # Buscar el edge donde este nodo es el dependiente (from) para ese nivel
                 for edge in edges_data.get(level, []):
                     if edge['from'] == asset_from:
-                        asset_to = edge['to']  # El nodo del que depende
+                        asset_to = edge['to']
                         p_trans_key = f'P(trans_{ttp_tactic}|Threat = yes)'
                         p_trans = edge.get(p_trans_key, 0)
                         
@@ -329,13 +350,21 @@ def add_noisy_or_prob(nodes_threat_prob):
 
 #========================================[INICIALIZACIÓN]========================================#
 def main():
+    """
+    Ejecuta una prueba manual de construcción e inferencia de la red bayesiana.
+    Se consulta el impacto residual para C, I y A sin aplicar contramedidas.
+
+    Args:
+        None.
+
+    Returns:
+        None. Se imprimen por consola las distribuciones consultadas.
+    """
     choice = random.choice(MITRE_TACTICS)
     print(f"Construyendo red bayesiana para táctica: {choice}")
     infer = bayesian_network_construction(choice, confidence)
 
-    #--- (Ejemplos de uso comentados) ---
-
-    # Obtener distribuciones de impacto residual
+    # Se obtienen distribuciones de impacto residual para cada dimensión CIA
     c_res = infer.query(variables=["C_res"], evidence={"CM": "none"})
     print("\nP(C_res):")
     print(c_res)

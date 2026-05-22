@@ -145,19 +145,19 @@ def render_operations_menu() -> Panel:
     operations_text = Text()
     
     # Operación 1
-    operations_text.append("  [1] python care.py db create --scenario <scenario_name> --description <description> --source <source_file>\n", style="cyan")
+    operations_text.append("  [1] python -m src.cli.care db create --scenario <scenario_name> --description <description> --source <source_file>\n", style="cyan")
     operations_text.append("      Create a new scenario from an Excel asset/dependency catalog\n\n", style="dim")
     
     # Operación 2
-    operations_text.append("  [2] python care.py db load --scenario <scenario_name>\n", style="cyan")
+    operations_text.append("  [2] python -m src.cli.care db load --scenario <scenario_name>\n", style="cyan")
     operations_text.append("      Import a new scenario from the DB catalog\n\n", style="dim")
     
     # Operación 3
-    operations_text.append("  [3] python care.py db delete --scenario <scenario_name>\n", style="cyan")
+    operations_text.append("  [3] python -m src.cli.care db delete --scenario <scenario_name>\n", style="cyan")
     operations_text.append("      Remove a stored scenario and all associated assets and dependencies\n\n", style="dim")
     
     # Operación 4
-    operations_text.append("  [4] python care.py db asset-list --scenario <scenario_name>\n", style="cyan")
+    operations_text.append("  [4] python -m src.cli.care db asset-list --scenario <scenario_name>\n", style="cyan")
     operations_text.append("      Display all registered assets for a selected scenario\n\n", style="dim")
 
     
