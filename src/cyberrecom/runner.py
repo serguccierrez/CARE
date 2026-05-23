@@ -317,6 +317,164 @@ def _top_expected_utilities(eu_by_cm, limit=3):
     return sorted(eu_by_cm.items(), key=lambda item: item[1])[:limit]
 
 
+def _format_compact_number(value, decimals=4):
+    """
+    Formatea numeros para logs compactos evitando decimales innecesarios.
+
+    Args:
+        value: Valor numerico que se desea mostrar.
+        decimals: Numero de decimales usado cuando el valor no es entero.
+
+    Returns:
+        Cadena con el valor formateado.
+    """
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "N/A"
+
+    if number.is_integer():
+        return str(int(number))
+    return f"{number:.{decimals}f}"
+
+
+def _objective_label(objective):
+    """
+    Devuelve una descripcion legible del objetivo de optimizacion.
+
+    Args:
+        objective: Identificador del objetivo usado por CARE.
+
+    Returns:
+        Texto descriptivo del objetivo.
+    """
+    labels = {
+        "global": "global risk minimization",
+        "confidentiality": "confidentiality risk minimization",
+        "integrity": "integrity risk minimization",
+        "availability": "availability risk minimization",
+    }
+    return labels.get(objective, f"{objective} optimization")
+
+
+def _select_primary_optimization_result(opt_results, optimization_objective):
+    """
+    Selecciona la solucion principal que se mostrara en el log de optimizacion.
+
+    Args:
+        opt_results: Diccionario de soluciones devuelto por el optimizador.
+        optimization_objective: Objetivo solicitado por el usuario.
+
+    Returns:
+        Tupla con el nombre del objetivo y la solucion asociada.
+    """
+    if not opt_results:
+        return None, None
+
+    if optimization_objective in opt_results and optimization_objective != "all":
+        return optimization_objective, opt_results[optimization_objective]
+
+    if "global" in opt_results:
+        return "global", opt_results["global"]
+
+    first_objective = next(iter(opt_results))
+    return first_objective, opt_results[first_objective]
+
+
+def _initial_risk_for_objective(report_data, objective, solution):
+    """
+    Obtiene el riesgo inicial comparable con el objetivo optimizado.
+
+    Args:
+        report_data: Diccionario del reporte de analisis.
+        objective: Objetivo de optimizacion considerado.
+        solution: Solucion calculada por el optimizador.
+
+    Returns:
+        Riesgo inicial asociado al objetivo.
+    """
+    global_risk = report_data.get("global_system_risk", {})
+    risk_by_objective = {
+        "global": global_risk.get("overall_risk"),
+        "confidentiality": global_risk.get("confidentiality_risk"),
+        "integrity": global_risk.get("integrity_risk"),
+        "availability": global_risk.get("availability_risk"),
+    }
+    return risk_by_objective.get(objective) or solution.get("baseline_risk", 0.0)
+
+
+def _print_optimization_validation_log(opt_results, optimization_objective, budget, max_time_hours, report_data):
+    """
+    Imprime el log compacto de validacion de la optimizacion de contramedidas.
+
+    Args:
+        opt_results: Diccionario con las soluciones calculadas.
+        optimization_objective: Objetivo de optimizacion solicitado.
+        budget: Presupuesto maximo configurado.
+        max_time_hours: Tiempo maximo de despliegue por contramedida.
+        report_data: Diccionario del reporte de analisis usado como entrada.
+
+    Returns:
+        None.
+    """
+    objective, solution = _select_primary_optimization_result(opt_results, optimization_objective)
+    scenario_name = report_data.get("metadata", {}).get("scenario_name", "unknown")
+
+    print("\n[CARE][VALIDATION][OPTIMIZATION]")
+    print(f"Scenario : {scenario_name}")
+    print("Stage    : constrained countermeasure optimization\n")
+
+    if not solution:
+        print("Solver summary")
+        print("  Optimization status : NOT_AVAILABLE")
+        print("  Result              : no optimization solution was produced\n")
+        return
+
+    decisions = solution.get("assets_decisions", {})
+    selected_countermeasures = [
+        decision.get("countermeasure")
+        for decision in decisions.values()
+        if decision.get("countermeasure") and decision.get("countermeasure") != "none"
+    ]
+
+    initial_risk = float(_initial_risk_for_objective(report_data, objective, solution) or 0.0)
+    residual_risk = float(solution.get("optimal_risk_normalized", 0.0) or 0.0)
+    risk_reduction = initial_risk - residual_risk
+    reduction_percent = (risk_reduction / initial_risk * 100) if initial_risk else 0.0
+    status = str(solution.get("status", "unknown")).upper()
+
+    print("Solver summary")
+    print(f"  Optimization status : {status}")
+    print(f"  Objective           : {_objective_label(objective)}")
+    print(f"  Budget              : {_format_compact_number(solution.get('budget', budget), 2)}")
+    print(f"  Max deployment time : {_format_compact_number(max_time_hours, 2)} h per countermeasure\n")
+
+    print("Risk reduction")
+    print(f"  Initial risk        : {initial_risk:.4f}")
+    print(f"  Residual risk       : {residual_risk:.4f}")
+    print(f"  Absolute reduction  : {risk_reduction:.4f}")
+    print(f"  Relative reduction  : {reduction_percent:.1f} %\n")
+
+    print("Solution structure")
+    print(f"  Cost used           : {_format_compact_number(solution.get('total_cost', 0.0), 2)}")
+    print(f"  Selected actions    : {len(selected_countermeasures)}")
+    print(f"  Mitigation variety  : {len(set(selected_countermeasures))}")
+
+    if optimization_objective == "all" and len(opt_results) > 1:
+        print("\nObjective comparison")
+        print("  Objective          Status    Residual risk   Reduction")
+        for obj_name, obj_solution in opt_results.items():
+            obj_initial = float(_initial_risk_for_objective(report_data, obj_name, obj_solution) or 0.0)
+            obj_residual = float(obj_solution.get("optimal_risk_normalized", 0.0) or 0.0)
+            obj_reduction = (obj_initial - obj_residual) / obj_initial * 100 if obj_initial else 0.0
+            print(
+                f"  {obj_name:<18} {str(obj_solution.get('status', 'unknown')).upper():<9} "
+                f"{obj_residual:<15.4f} {obj_reduction:.1f}%"
+            )
+
+    print("\nResult: optimization completed successfully.\n")
+
+
 def _print_influence_validation_log(report_data, scenario_name):
     """
     Imprime el log compacto de validacion del diagrama de influencia.
@@ -872,7 +1030,20 @@ def resolve_optimization(optimization_objective, budget=50000, max_time_hours=21
     
     assets_scenarios_data, decision_vars, model = optimization.setup_optimization_problem(report_data, budget)
     
-    opt_results = optimization.solve_optimization_problems(assets_scenarios_data, objective_type=optimization_objective, budget=budget, max_time_hours=max_time_hours)
+    with contextlib.redirect_stdout(io.StringIO()):
+        opt_results = optimization.solve_optimization_problems(
+            assets_scenarios_data,
+            objective_type=optimization_objective,
+            budget=budget,
+            max_time_hours=max_time_hours
+        )
+    _print_optimization_validation_log(
+        opt_results,
+        optimization_objective,
+        budget,
+        max_time_hours,
+        report_data
+    )
     
     return opt_results
 

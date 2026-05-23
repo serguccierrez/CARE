@@ -355,7 +355,7 @@ def solve_optimization_problem(decision_vars, assets_scenarios_data ,model, budg
     if report_data is None:
         report_data = load_report_data()
     
-    model.solve(pulp.PULP_CBC_CMD(msg=1))
+    model.solve(pulp.PULP_CBC_CMD(msg=0))
     
     status = pulp.LpStatus[model.status]
     print(f"Status: {status}")
