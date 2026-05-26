@@ -343,8 +343,6 @@ python -m src.cli.care reports --scenario use-case-corporativo
 python -m src.cli.care reports load --run_name informe-care
 ```
 
----
-
 ## Superficie CLI
 
 | Comando | Propósito |
@@ -451,6 +449,40 @@ Las líneas futuras planteadas en la memoria se orientan a aproximar CARE a cond
 - Enriquecer la parametrización probabilística del modelo ajustando las CPDs a partir de evidencias procedentes de históricos de incidentes, plataformas SIEM o EDR, ejercicios de red teaming o purple teaming y datos obtenidos mediante honeypots.
 - Incorporar vulnerabilidades concretas en el análisis de riesgo, considerando CVE presentes en cada activo y métricas como CVSS o EPSS.
 - Incorporar un enfoque reactivo de recomendación de contramedidas, orientado a sugerir acciones defensivas una vez identificada una amenaza concreta o detectada una técnica determinada sobre el escenario.
+
+---
+
+## Capturas de Ejecución
+
+Las siguientes capturas muestran el comportamiento esperado de la interfaz CLI durante una ejecución típica. Se incluyen al final como apoyo visual para revisar el flujo de uso, desde la inicialización del contexto hasta la generación del informe.
+
+### Inicialización del Sistema
+
+![Inicialización de CARE](./images/init.png)
+
+### Gestión de Escenarios
+
+![Gestión de escenarios en CARE](./images/db.png)
+
+### Configuración del Análisis
+
+![Configuración del análisis en CARE](./images/attack.png)
+
+### Dashboard de Riesgo
+
+![Dashboard de riesgo de CARE](./images/dashboard.png)
+
+### Optimización de Contramedidas
+
+![Optimización de contramedidas en CARE](./images/optimize.png)
+
+### Gestión de Ejecuciones e Informes
+
+![Gestión de ejecuciones e informes en CARE](./images/reports.png)
+
+### Informe Markdown Generado
+
+![Informe Markdown generado por CARE](./images/report-markdown.png)
 
 ---
 
