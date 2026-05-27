@@ -325,7 +325,7 @@
     "M1018": {
       "name": "M1018-User Account Management",
       "description": "User Account Management involves implementing and enforcing policies for the lifecycle of user accounts, in...",
-      "cost": 4000,
+      "cost": 3700,
       "time_to_deploy_hours": 16,
       "type": "mitre_attack",
       "source": "mitre-attack",
@@ -463,7 +463,7 @@
     "M1021": {
       "name": "M1021-Restrict Web-Based Content",
       "description": "Restricting web-based content involves enforcing policies and technologies that limit access to potentially...",
-      "cost": 3500,
+      "cost": 3400,
       "time_to_deploy_hours": 10,
       "type": "mitre_attack",
       "source": "mitre-attack",
@@ -509,7 +509,7 @@
     "M1022": {
       "name": "M1022-Restrict File and Directory Permissions",
       "description": "Restricting file and directory permissions involves setting access controls at the file system level to lim...",
-      "cost": 2500,
+      "cost": 3600,
       "time_to_deploy_hours": 8,
       "type": "mitre_attack",
       "source": "mitre-attack",
@@ -739,7 +739,7 @@
     "M1028": {
       "name": "M1028-Operating System Configuration",
       "description": "Operating System Configuration involves adjusting system settings and hardening the default configurations...",
-      "cost": 5000,
+      "cost": 6200,
       "time_to_deploy_hours": 20,
       "type": "mitre_attack",
       "source": "mitre-attack",
@@ -1199,7 +1199,7 @@
     "M1038": {
       "name": "M1038-Execution Prevention",
       "description": "Prevent the execution of unauthorized or malicious code on systems by implementing application control, scr...",
-      "cost": 7000,
+      "cost": 6300,
       "time_to_deploy_hours": 22,
       "type": "mitre_attack",
       "source": "mitre-attack",
@@ -1291,7 +1291,7 @@
     "M1040": {
       "name": "M1040-Behavior Prevention on Endpoint",
       "description": "Behavior Prevention on Endpoint refers to the use of technologies and strategies to detect and block potent...",
-      "cost": 10000,
+      "cost": 9300,
       "time_to_deploy_hours": 24,
       "type": "mitre_attack",
       "source": "mitre-attack",
@@ -1889,7 +1889,7 @@
     "M1053": {
       "name": "M1053-Data Backup",
       "description": "Data Backup involves taking and securely storing backups of data from end-user systems and critical servers.",
-      "cost": 7000,
+      "cost": 6400,
       "time_to_deploy_hours": 16,
       "type": "mitre_attack",
       "source": "mitre-attack",
