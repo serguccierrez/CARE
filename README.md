@@ -1,33 +1,65 @@
-# CARE - Cyber Action Recommendation Engine
+# CARE
 
-**Motor de simulacion y analisis de riesgo en ciberseguridad para evaluar estrategias de mitigacion.**
+## Cyber Action Recommendation Engine
 
-CARE es un sistema de apoyo a la decision desarrollado como Trabajo de Fin de Grado. Modela activos y dependencias, simula escenarios de amenaza basados en MITRE ATT&CK, estima riesgo residual en Confidencialidad, Integridad y Disponibilidad, y permite comparar estrategias de mitigacion bajo restricciones de coste y tiempo.
+**Motor académico para analizar riesgo en ciberseguridad y recomendar contramedidas de forma trazable.**
 
-El objetivo es proporcionar una base analitica, transparente y reproducible para explorar escenarios what-if y estudiar como distintas medidas preventivas podrian modificar el riesgo del sistema.
+CARE es un proyecto desarrollado como Trabajo de Fin de Grado. Integra modelado de activos, análisis de dependencias, MITRE ATT&CK, inferencia probabilística, evaluación de riesgo CIA y optimización de contramedidas en un flujo reproducible.
 
-> **English summary**  
-> CARE is a cybersecurity decision-support and what-if simulation engine developed as a Final Degree Project. It combines dependency graphs, MITRE ATT&CK knowledge, probabilistic inference, CIA risk assessment and constrained optimization to compare traceable mitigation strategies.
+El sistema parte de un catálogo de activos, construye un grafo dirigido de dependencias, analiza escenarios de seguridad sobre la infraestructura, estima riesgo residual y propone combinaciones de mitigación bajo restricciones de coste y tiempo.
 
----
-
-## Puntos Clave
-
-- Gestion de escenarios con activos, dependencias y ejecuciones de analisis.
-- Modelo de grafo dirigido para estudiar propagacion de impacto.
-- Inyeccion de amenazas basada en MITRE ATT&CK, en modo aleatorio o controlado.
-- Inferencia bayesiana para estimar riesgo residual.
-- Agregacion de riesgo por incidente, activo y sistema en dimensiones CIA.
-- Evaluacion y optimizacion de estrategias de mitigacion bajo restricciones de presupuesto y tiempo.
-- Interfaz CLI con paneles, tablas, dashboards y vistas operativas.
-- Generacion de informes Markdown al guardar una ejecucion.
+| Entrada | Proceso | Salida |
+| --- | --- | --- |
+| Catálogo de activos, dependencias y configuración del escenario | Construcción del grafo, análisis MITRE, inferencia de riesgo y optimización | Dashboard, JSON estructurado, solución de mitigación e informe Markdown |
 
 ---
 
-## Flujo del Sistema
+## Objetivos
+
+- Representar una infraestructura como un grafo dirigido de activos y dependencias.
+- Incorporar MITRE ATT&CK como marco estructurado para el análisis.
+- Estimar riesgo residual en Confidencialidad, Integridad y Disponibilidad.
+- Evaluar contramedidas candidatas mediante modelos probabilísticos.
+- Optimizar decisiones de mitigación bajo restricciones de presupuesto y tiempo.
+- Generar salidas reproducibles mediante dashboard, JSON e informes Markdown.
+
+---
+
+## Aportación Técnica
+
+| Área | Aportación |
+| --- | --- |
+| Modelado | Define activos, dominios, criticidad, pesos CIA y dependencias. |
+| Grafo | Representa relaciones entre activos y permite analizar propagación. |
+| MITRE ATT&CK | Relaciona referencias ATT&CK con tácticas y mitigaciones. |
+| Riesgo | Calcula riesgo residual por activo y dimensión CIA. |
+| Decisión | Selecciona contramedidas considerando coste, tiempo y objetivo. |
+| Trazabilidad | Conserva contexto, resultados y reportes de cada ejecución. |
+
+---
+
+## Criterios de Diseño
+
+| Criterio | Aplicación en CARE |
+| --- | --- |
+| Trazabilidad | Cada ejecución conserva escenario, contexto, resultados y artefactos generados. |
+| Reproducibilidad | Los análisis pueden guardarse, restaurarse y documentarse mediante informes. |
+| Modularidad | El código separa CLI, persistencia, grafo, riesgo, optimización y reporting. |
+| Explicabilidad | Las salidas permiten revisar cómo se llega desde el escenario hasta la recomendación. |
+| Flexibilidad | El usuario puede variar escenario, referencias MITRE, confianza, objetivo y restricciones. |
+
+---
+
+## Flujo de Análisis
+
+El flujo completo de CARE se resume en el siguiente flujograma:
+
+![Flujograma de CARE](./images/flow.png)
+
+De forma resumida, el proceso es:
 
 ```text
-Catalogo de activos
+Catálogo de activos
     |
     v
 Base de datos de escenarios
@@ -36,247 +68,428 @@ Base de datos de escenarios
 Grafo de dependencias
     |
     v
-Inyeccion de amenazas
+Análisis de escenario MITRE ATT&CK
     |
     v
-Propagacion de impacto
+Propagación por dependencias
     |
     v
-Estimacion bayesiana de riesgo
+Inferencia bayesiana de riesgo CIA
     |
     v
-Escenarios de mitigacion
+Evaluación de contramedidas
     |
     v
-Optimizacion con restricciones
+Optimización con restricciones
     |
     v
-Dashboard + JSON + Informe Markdown
+Dashboard + JSON + informe Markdown
 ```
-
-CARE sigue un flujo de analisis completo:
-
-1. Se carga un escenario desde un catalogo estructurado de activos y dependencias.
-2. La infraestructura se representa como un grafo dirigido.
-3. Se asocian vectores de amenaza a activos concretos mediante tecnicas MITRE ATT&CK.
-4. El impacto potencial se propaga a traves de los niveles de dependencia.
-5. Se estima el riesgo residual en Confidencialidad, Integridad y Disponibilidad.
-6. Se generan escenarios de decision con mitigaciones candidatas.
-7. Un modelo de optimizacion compara alternativas bajo limites de coste y tiempo.
-8. Los resultados se exportan como artefactos estructurados, dashboards e informes narrativos.
-
----
-
-## Capturas
-
-### Inicializacion del sistema
-
-![CARE init](./images/init.png)
-
-### Gestion de escenarios
-
-![CARE database](./images/db.png)
-
-### Inyeccion de amenazas
-
-![CARE attack](./images/attack.png)
-
-### Dashboard de riesgo
-
-![CARE dashboard](./images/dashboard.png)
-
-### Optimizacion de mitigaciones
-
-![CARE optimization](./images/optimize.png)
-
-### Runs y reportes
-
-![CARE reports](./images/reports.png)
-
-### Informe Markdown generado
-
-![CARE markdown report](./images/report-markdown.png)
 
 ---
 
 ## Arquitectura
 
-```text
-TFG_motor-contramedidas-ciberneticas/
-|-- configs/                    # CPDs, mappings MITRE y catalogo de contramedidas
-|-- data/                       # Datos de entrada y dataset local de MITRE ATT&CK
-|-- images/                     # Capturas utilizadas en este README
-|-- src/
-|   |-- cli/                    # Vistas y comandos de la CLI CARE
-|   |-- cyberrecom/             # Orquestacion del analisis end-to-end
-|   |-- database/               # Esquema SQLite, carga y persistencia de reportes
-|   |-- graph/                  # Construccion del grafo y analisis de dependencias
-|   |-- reporting/              # Generacion de reportes JSON y Markdown
-|   |-- risk/                   # Inferencia bayesiana, decision y optimizacion
-|-- README.md
-```
+La arquitectura puede leerse en dos niveles. En primer lugar, CARE recibe catálogos y configuración, ejecuta el análisis en su núcleo interno y produce resultados consultables en dashboard, JSON e informes.
 
-El repositorio separa responsabilidades de interfaz, persistencia, analisis de grafo, modelado de riesgo, reporting y optimizacion. Esta division permite seguir el proceso desde los datos de entrada hasta la comparativa final de escenarios.
+![Vista funcional de CARE](./images/architecture.png)
+
+En segundo lugar, el núcleo se organiza en módulos diferenciados. La interfaz CLI coordina las vistas de usuario, el orquestador ejecuta el flujo de análisis y los módulos especializados resuelven escenario, grafo, MITRE, riesgo, optimización y persistencia.
+
+![Arquitectura modular del núcleo CARE](./images/core-architecture.png)
+
+| Capa | Responsabilidad |
+| --- | --- |
+| CLI | Entrada de usuario, selección de escenario, análisis, dashboard, optimización y reportes. |
+| Base de datos | Persistencia de escenarios, activos, dependencias y ejecuciones. |
+| Grafo | Construcción de topología, dominios, dependencias y propagación. |
+| MITRE | Consulta de referencias, tácticas y mitigaciones ATT&CK. |
+| Riesgo | Inferencia bayesiana, diagramas de influencia y cálculo de riesgo CIA. |
+| Optimización | Selección de contramedidas bajo presupuesto y tiempo máximo. |
+| Reporting | Exportación JSON, generación Markdown y restauración de ejecuciones. |
 
 ---
 
-## Uso Rapido
+## Estructura del Proyecto
 
-Crear y activar un entorno virtual:
+```text
+CARE/
+|-- configs/
+|   |-- bn_CPDs_template.json       # Plantilla de CPDs para la red bayesiana
+|   |-- countermeasures.json        # Catálogo de contramedidas, costes y efectos esperados
+|   |-- dependency_matrix.json      # Probabilidades de propagación por táctica y dependencia
+|   |-- ttps_to_mitigations.json    # Relación entre referencias MITRE y mitigaciones candidatas
+|   |-- requirements.txt            # Dependencias Python
+|
+|-- data/
+|   |-- enterprise-attack.json      # Dataset local MITRE ATT&CK Enterprise
+|   |-- use-case-corporativo.xlsx   # Escenario de ejemplo
+|   |-- asset_catalog_*.xlsx        # Catálogos de activos de ejemplo
+|
+|-- images/
+|   |-- *.png                       # Figuras de arquitectura, flujo y capturas auxiliares
+|
+|-- src/
+|   |-- cli/
+|   |   |-- care.py                 # Entry point principal de la CLI
+|   |   |-- attack.py               # Vista operativa del análisis MITRE
+|   |   |-- dashboard.py            # Dashboard de resultados
+|   |   |-- db.py                   # Gestión de escenarios
+|   |   |-- report.py               # Vista de runs y reportes
+|   |
+|   |-- cyberrecom/
+|   |   |-- runner.py               # Orquestación end-to-end del análisis
+|   |   |-- mitre.py                # Integración con datos MITRE ATT&CK
+|   |
+|   |-- database/
+|   |   |-- tfg_catalog.db          # SQLite con escenarios, activos, dependencias y runs
+|   |   |-- load_data.py            # Carga y comprobación de Excel
+|   |   |-- reports_db.py           # Persistencia y restauración de reportes
+|   |
+|   |-- graph/
+|   |   |-- grafo.py                # Construcción del grafo y propagación
+|   |
+|   |-- reporting/
+|   |   |-- report.py               # Generación de JSON y Markdown
+|   |   |-- report.json             # Último reporte estructurado generado
+|   |   |-- optimization_solution.json
+|   |
+|   |-- risk/
+|       |-- red_bayes.py            # Red bayesiana de riesgo residual
+|       |-- id_test.py              # Diagramas de influencia
+|       |-- optimization.py         # Modelo de optimización
+|
+|-- text/                           # Memoria y documentación académica
+|-- deprecated/                     # Versiones antiguas conservadas por trazabilidad
+|-- README.md
+```
+
+---
+
+## Requisitos
+
+### Software
+
+| Requisito | Versión recomendada | Uso |
+| --- | --- | --- |
+| Python | 3.10 o superior | Ejecución del motor y la CLI. |
+| pip | Incluido con Python | Instalación de dependencias. |
+| Entorno virtual | `venv` | Aislar dependencias del sistema. |
+| Terminal | PowerShell, Windows Terminal, Bash o similar | Renderizado de la CLI Rich. |
+
+En Windows, si `python` abre el alias de Microsoft Store, usa `py -3`.
+
+### Dependencias Python
+
+Las dependencias están definidas en [configs/requirements.txt](./configs/requirements.txt):
+
+| Librería | Uso principal |
+| --- | --- |
+| `pandas`, `openpyxl` | Carga y procesamiento de catálogos Excel. |
+| `networkx` | Construcción y análisis del grafo. |
+| `mitreattack-python` | Uso local de conocimiento MITRE ATT&CK. |
+| `pgmpy`, `pyAgrum` | Inferencia bayesiana y diagramas de influencia. |
+| `pulp`, `scipy`, `numpy` | Optimización y cálculo numérico. |
+| `rich`, `tabulate`, `matplotlib` | Interfaz en terminal, tablas y visualización auxiliar. |
+
+---
+
+## Instalación
+
+### Windows PowerShell
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r configs\requirements.txt
+```
+
+### Linux / macOS
 
 ```bash
-python -m venv .venv
-.\.venv\Scripts\activate
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
 pip install -r configs/requirements.txt
 ```
 
-Inicializar CARE:
+### Comprobación
+
+```bash
+python -m src.cli.care --help
+```
+
+La CLI debe mostrar los comandos principales:
+
+```text
+init, db, attack, dashboard, optimize, reports
+```
+
+---
+
+## Cómo Se Ejecuta
+
+CARE se ejecuta desde el módulo principal:
+
+```bash
+python -m src.cli.care
+```
+
+### 1. Inicializar el contexto
 
 ```bash
 python -m src.cli.care init
 ```
 
-Cargar o crear un escenario:
+Este comando crea o reinicia el contexto de trabajo en `src/cli/context.json`.
+
+### 2. Cargar un escenario existente
 
 ```bash
-python -m src.cli.care db load --scenario "<scenario_name>"
-python -m src.cli.care db create --scenario "<scenario_name>" --description "<description>" --source "<excel_path>"
+python -m src.cli.care db load --scenario use-case-corporativo
 ```
 
-Ejecutar una simulacion aleatoria:
+Para listar los activos del escenario:
+
+```bash
+python -m src.cli.care db asset-list --scenario use-case-corporativo
+```
+
+### 3. Crear un escenario desde Excel
+
+En PowerShell:
+
+```powershell
+python -m src.cli.care db create ^
+  --scenario nuevo-escenario ^
+  --description "Escenario corporativo de ejemplo" ^
+  --source data\use-case-corporativo.xlsx
+```
+
+En Bash:
+
+```bash
+python -m src.cli.care db create \
+  --scenario nuevo-escenario \
+  --description "Escenario corporativo de ejemplo" \
+  --source data/use-case-corporativo.xlsx
+```
+
+### 4. Configurar un análisis
+
+El comando mantiene el nombre `attack` por compatibilidad con la implementación de la CLI. En el contexto del proyecto se utiliza como módulo de análisis de referencias MITRE sobre activos.
+
+```bash
+python -m src.cli.care attack select --asset <asset_id> --ttp <ttp_id> --confidence <confidence>
+```
+
+Ejemplo:
+
+```bash
+python -m src.cli.care attack select --asset ACME_IDP --ttp T1003 --confidence 0.82
+```
+
+### 5. Ejecutar el análisis
+
+```bash
+python -m src.cli.care attack run
+```
+
+También puede ejecutarse un análisis exploratorio:
 
 ```bash
 python -m src.cli.care attack run --random
 ```
 
-Ejecutar una simulacion controlada:
-
-```bash
-python -m src.cli.care attack select --asset "<asset_id>" --ttp "T1190" --confidence 0.75
-python -m src.cli.care attack run
-```
-
-Consultar resultados:
+### 6. Consultar el dashboard
 
 ```bash
 python -m src.cli.care dashboard
 ```
 
-Configurar y ejecutar la optimizacion:
+### 7. Configurar y ejecutar la optimización
+
+Objetivos admitidos:
+
+- `global`
+- `confidentiality`
+- `integrity`
+- `availability`
+
+Ejemplo:
 
 ```bash
-python -m src.cli.care optimize config --objective global --budget 50000 --time 210
+python -m src.cli.care optimize config --objective global --budget 70000 --time 30
 python -m src.cli.care optimize run
 ```
 
-Guardar una ejecucion y generar su informe Markdown:
+### 8. Guardar una ejecución y generar informe
 
 ```bash
-python -m src.cli.care reports save --filename "<report_name.md>" --description "<description>"
+python -m src.cli.care reports save --filename informe-care.md --description "Ejecución de análisis CARE"
 ```
 
-Cargar una ejecucion previa:
+El informe se genera en:
+
+```text
+src/reporting/informe-care.md
+```
+
+### 9. Listar y restaurar ejecuciones
 
 ```bash
-python -m src.cli.care reports load --run_name "<run_name>"
+python -m src.cli.care reports --scenario use-case-corporativo
+python -m src.cli.care reports load --run_name informe-care
 ```
-
----
 
 ## Superficie CLI
 
-| Comando | Proposito |
+| Comando | Propósito |
 | --- | --- |
-| `init` | Inicializa el contexto de la CLI y muestra la pantalla de bienvenida. |
-| `db` | Gestiona escenarios, activos y dependencias. |
-| `attack` | Configura y ejecuta simulaciones de amenaza. |
-| `dashboard` | Muestra el analisis de riesgo mas reciente. |
-| `optimize` | Configura restricciones y ejecuta la comparacion optimizada de mitigaciones. |
-| `reports` | Lista, guarda y restaura ejecuciones persistidas. |
+| `init` | Inicializa el contexto de ejecución. |
+| `db load` | Carga un escenario existente como escenario activo. |
+| `db create` | Crea un escenario desde un Excel de activos y dependencias. |
+| `db delete` | Elimina un escenario persistido. |
+| `db asset-list` | Lista activos de un escenario. |
+| `attack select` | Añade activo, referencia MITRE y confianza al contexto. |
+| `attack run` | Ejecuta el análisis configurado. |
+| `attack run --random` | Ejecuta un análisis exploratorio. |
+| `dashboard` | Renderiza el último análisis disponible. |
+| `optimize config` | Define objetivo, presupuesto y tiempo máximo. |
+| `optimize run` | Resuelve la selección óptima de contramedidas. |
+| `reports` | Lista ejecuciones guardadas. |
+| `reports save` | Guarda la ejecución actual y genera Markdown. |
+| `reports load` | Restaura una ejecución previa desde SQLite. |
+
+---
+
+## Formato del Catálogo Excel
+
+Para crear un escenario desde Excel, el fichero debe incluir dos hojas: `Assets` y `Dependencies`.
+
+### Hoja `Assets`
+
+| Columna | Descripción |
+| --- | --- |
+| `asset_id` | Identificador único del activo. |
+| `name` | Nombre legible del activo. |
+| `asset_type` | Tipo de activo. |
+| `domain` | Dominio funcional o tecnológico. |
+| `criticality` | Criticidad del activo. |
+| `cia_c` | Peso de Confidencialidad. |
+| `cia_i` | Peso de Integridad. |
+| `cia_a` | Peso de Disponibilidad. |
+| `operational_state` | Estado operativo. |
+
+### Hoja `Dependencies`
+
+| Columna | Descripción |
+| --- | --- |
+| `dependency_id` | Identificador único de la dependencia. |
+| `from_asset` | Activo dependiente. |
+| `to_asset` | Activo del que depende. |
+| `dependency_type` | Tipo de dependencia. |
+| `cia_couple_c` | Acoplamiento en Confidencialidad. |
+| `cia_couple_i` | Acoplamiento en Integridad. |
+| `cia_couple_a` | Acoplamiento en Disponibilidad. |
+
+Validaciones aplicadas:
+
+- No puede haber `asset_id` duplicados.
+- Cada dependencia debe apuntar a activos existentes.
+- Los pesos `cia_c + cia_i + cia_a` deben sumar aproximadamente `1.0`.
 
 ---
 
 ## Artefactos Generados
 
-| Artefacto | Descripcion |
+| Artefacto | Descripción |
 | --- | --- |
-| `src/cli/context.json` | Estado actual de la sesion CLI. |
-| `configs/bn_CPDs.json` | CPDs dinamicas utilizadas durante la inferencia bayesiana. |
-| `src/reporting/report.json` | Reporte estructurado del analisis de riesgo. |
-| `src/reporting/optimization_solution.json` | Resultado de optimizacion y mitigaciones seleccionadas en la simulacion. |
-| `src/reporting/<run_name>.md` | Informe narrativo generado al guardar una ejecucion. |
-| `src/database/tfg_catalog.db` | Base de datos SQLite con escenarios, activos, dependencias y runs. |
+| `src/cli/context.json` | Estado actual de la sesión CLI. |
+| `configs/bn_CPDs.json` | CPDs dinámicas activas para la inferencia bayesiana. |
+| `src/reporting/report.json` | Reporte estructurado de riesgo y activos afectados. |
+| `src/reporting/optimization_solution.json` | Solución de optimización y decisiones por activo. |
+| `src/reporting/<run_name>.md` | Informe narrativo generado al guardar una ejecución. |
+| `src/database/tfg_catalog.db` | SQLite con escenarios, activos, dependencias y ejecuciones. |
 
 ---
 
-## Datos y Configuracion
+## Configuración Principal
 
-| Fichero | Funcion |
+| Fichero | Función |
 | --- | --- |
+| `configs/constants.json` | Tipos de activos y dependencias reconocidos. |
+| `configs/dependency_matrix.json` | Probabilidades de propagación por táctica y tipo de dependencia. |
+| `configs/countermeasures.json` | Catálogo de controles, coste, tiempo y efecto probabilístico. |
+| `configs/ttps_to_mitigations.json` | Mapeo entre referencias ATT&CK y mitigaciones candidatas. |
+| `configs/bn_CPDs_template.json` | Plantilla base para construir CPDs dinámicas. |
 | `data/enterprise-attack.json` | Dataset local de MITRE ATT&CK Enterprise. |
-| `configs/countermeasures.json` | Catalogo de mitigaciones con coste, tiempo de despliegue y efecto esperado. |
-| `configs/ttps_to_mitigations.json` | Relacion entre tecnicas MITRE y mitigaciones candidatas. |
-| `configs/bn_CPDs_template.json` | Plantilla base de CPDs probabilisticas. |
-| `configs/requirements.txt` | Dependencias Python del proyecto. |
 
 ---
 
-## Tecnologias
+## Alcance y Limitaciones
 
-| Tecnologia | Uso |
-| --- | --- |
-| Python | Lenguaje principal de implementacion. |
-| SQLite | Persistencia de escenarios, activos, dependencias y ejecuciones. |
-| Pandas / OpenPyXL | Carga y procesamiento del catalogo Excel. |
-| NetworkX | Construccion y recorrido del grafo de dependencias. |
-| MITRE ATT&CK STIX | Fuente de conocimiento sobre tecnicas, tacticas y mitigaciones. |
-| pgmpy | Inferencia sobre redes bayesianas. |
-| pyAgrum | Modelado de diagramas de influencia. |
-| PuLP | Optimizacion lineal. |
-| Rich | Interfaz en terminal, tablas, paneles y dashboards. |
-| JSON / Markdown | Exportacion estructurada y reporting narrativo. |
+CARE es un prototipo académico orientado al análisis y a la evaluación conceptual. Sus resultados deben interpretarse dentro de las hipótesis del modelo y del escenario introducido.
+
+- La calidad del análisis depende de la calidad del catálogo de activos y dependencias.
+- Las probabilidades y efectos de mitigación son configurables y requieren calibración.
+- La salida del optimizador sirve como apoyo a la decisión, no como acción automática.
+- El proyecto prioriza trazabilidad y explicación frente a integración con sistemas reales.
 
 ---
 
-## Criterios de Diseno
+## Líneas Futuras
 
-| Criterio | Significado |
-| --- | --- |
-| Trazabilidad | Los resultados pueden vincularse con datos de escenario, amenazas, propagacion, riesgo y restricciones. |
-| Reproducibilidad | Las ejecuciones pueden exportarse, almacenarse y restaurarse. |
-| Modularidad | Datos, grafo, riesgo, optimizacion, reporting y CLI se mantienen separados. |
-| Explicabilidad | El sistema expone el contexto de riesgo que justifica cada comparativa de mitigacion. |
-| Flexibilidad analitica | Pueden variar incidentes, confianzas, objetivos, presupuesto y tiempo disponible. |
+Las líneas futuras planteadas en la memoria se orientan a aproximar CARE a condiciones de operación más realistas y reforzar su utilidad como herramienta de apoyo a la decisión:
 
----
-
-## Alcance Academico
-
-Este repositorio forma parte de un **Trabajo de Fin de Grado** del Grado en Ingenieria de Tecnologias y Servicios de Telecomunicacion en la **ETSIT - Universidad Politecnica de Madrid**.
-
-El proyecto se centra en el analisis de riesgo, la simulacion de escenarios y el apoyo a la decision en ciberseguridad. Su aportacion principal es integrar modelado estructural de dependencias, conocimiento de amenazas basado en MITRE, estimacion probabilistica de riesgo y optimizacion de mitigaciones dentro de un flujo reproducible.
+- Ampliar el motor de optimización hacia un enfoque multiobjetivo y multicriterio, incorporando criterios como reducción del riesgo, impacto operativo, tiempo de despliegue, disponibilidad y viabilidad económica.
+- Enriquecer el modelo de contramedidas para contemplar efectos secundarios, incompatibilidades y dependencias entre medidas defensivas.
+- Permitir la configuración dinámica de contramedidas por parte del operador, de forma que puedan seleccionarse, activarse o descartarse medidas y observar cómo varía el riesgo residual.
+- Enriquecer la parametrización probabilística del modelo ajustando las CPDs a partir de evidencias procedentes de históricos de incidentes, plataformas SIEM o EDR, ejercicios de red teaming o purple teaming y datos obtenidos mediante honeypots.
+- Incorporar vulnerabilidades concretas en el análisis de riesgo, considerando CVE presentes en cada activo y métricas como CVSS o EPSS.
+- Incorporar un enfoque reactivo de recomendación de contramedidas, orientado a sugerir acciones defensivas una vez identificada una amenaza concreta o detectada una técnica determinada sobre el escenario.
 
 ---
 
-## Limitaciones
+## Capturas de Ejecución
 
-CARE es un prototipo academico y analitico:
+Las siguientes capturas muestran el comportamiento esperado de la interfaz CLI durante una ejecución típica. Se incluyen al final como apoyo visual para revisar el flujo de uso, desde la inicialización del contexto hasta la generación del informe.
 
-- Los resultados dependen de la calidad del catalogo de activos y dependencias.
-- Las probabilidades y efectos de mitigacion proceden de modelos configurables.
-- Los resultados deben interpretarse como apoyo a la decision y analisis what-if, no como acciones automaticas.
-- La validacion final requiere revision experta y adaptacion al contexto real de uso.
+### Inicialización del Sistema
+
+![Inicialización de CARE](./images/init.png)
+
+### Gestión de Escenarios
+
+![Gestión de escenarios en CARE](./images/db.png)
+
+### Configuración del Análisis
+
+![Configuración del análisis en CARE](./images/attack.png)
+
+### Dashboard de Riesgo
+
+![Dashboard de riesgo de CARE](./images/dashboard.png)
+
+### Optimización de Contramedidas
+
+![Optimización de contramedidas en CARE](./images/optimize.png)
+
+### Gestión de Ejecuciones e Informes
+
+![Gestión de ejecuciones e informes en CARE](./images/reports.png)
+
+### Informe Markdown Generado
+
+![Informe Markdown generado por CARE](./images/report-markdown.png)
 
 ---
 
-## Author
+## Autor
 
-**Sergi Gutierrez**  
-Grado en Ingenieria de Tecnologias y Servicios de Telecomunicacion  
-ETSIT - Universidad Politecnica de Madrid
+**Sergio Gutierrez**  
+Grado en Ingeniería de Tecnologías y Servicios de Telecomunicación  
+ETSIT - Universidad Politécnica de Madrid
 
 GitHub: [serguccierrez](https://github.com/serguccierrez)
-
----
-
-> CARE convierte un escenario de amenaza en una comparativa trazable, cuantitativa y reproducible de estrategias de mitigacion.

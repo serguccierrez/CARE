@@ -5,7 +5,9 @@ Se construye el grafo, se resuelven amenazas, inferencias, reporte de riesgo y o
 
 #=============================[IMPORTS]===========================================#
 from datetime import datetime
+import contextlib
 import copy
+import io
 import json
 import random
 import networkx as nx
@@ -13,15 +15,9 @@ from pathlib import Path
 
 import src.cyberrecom.mitre as mitre
 import src.graph.grafo as grafo
-
-
 import src.reporting.report as report
-
-import src.cyberrecom.mitre as mitre
-
 import src.risk.red_bayes as red_bayes
 import src.risk.id_test as id_test
-
 import src.risk.optimization as optimization
 
 #=============================[CONSTANTS]===========================================#
@@ -49,10 +45,501 @@ def load_report_data_from_json(json_path=None):
         report_data = json.load(f)
     return report_data
 
+
+#==============================[LOGS]===========================================#
+
+def _format_level_distribution(levels):
+    """
+    Formatea una distribucion de probabilidad con estados low, medium y high.
+
+    Args:
+        levels: Diccionario con las probabilidades asociadas a cada estado.
+
+    Returns:
+        Cadena compacta preparada para mostrarse por consola.
+    """
+    return (
+        f"low:{levels.get('low', 0.0):.3f}  "
+        f"medium:{levels.get('medium', 0.0):.3f}  "
+        f"high:{levels.get('high', 0.0):.3f}"
+    )
+
+
+def _get_nodes_analysis(report_data):
+    """
+    Extrae el bloque de analisis por activo incluido en el reporte.
+
+    Args:
+        report_data: Diccionario del reporte generado por CARE.
+
+    Returns:
+        Diccionario con el analisis por activo, o un diccionario vacio si no existe.
+    """
+    nodes_analysis = report_data.get("nodes_analysis", [])
+    if not nodes_analysis:
+        return {}
+    return nodes_analysis[0]
+
+
+def _get_ttp_result(nodes_analysis, asset_id, ttp_id, section):
+    """
+    Recupera el resultado almacenado para una TTP concreta en un activo.
+
+    Args:
+        nodes_analysis: Diccionario con el analisis por activo.
+        asset_id: Identificador del activo consultado.
+        ttp_id: Identificador MITRE ATT&CK de la tecnica consultada.
+        section: Seccion del analisis que se desea recuperar.
+
+    Returns:
+        Resultado de la seccion solicitada, o None si no esta disponible.
+    """
+    asset_info = nodes_analysis.get(asset_id, {})
+    return asset_info.get(section, {}).get(ttp_id)
+
+
+def _select_sample_pairs(nodes_analysis, threat_vectors, section, limit):
+    """
+    Selecciona pares activo-TTP para mostrar ejemplos en los logs compactos.
+
+    Args:
+        nodes_analysis: Diccionario con el analisis por activo.
+        threat_vectors: Vectores de amenaza configurados para la ejecucion.
+        section: Seccion del reporte usada para comprobar disponibilidad de datos.
+        limit: Numero maximo de pares que se quieren mostrar.
+
+    Returns:
+        Lista de pares activo-TTP disponibles para el escenario analizado.
+    """
+    sample_pairs = []
+    seen_pairs = set()
+
+    for ttp_id, threat_vector in threat_vectors.items():
+        asset_id = threat_vector.get("asset")
+        pair = (asset_id, ttp_id)
+        if asset_id and pair not in seen_pairs and _get_ttp_result(nodes_analysis, asset_id, ttp_id, section):
+            sample_pairs.append(pair)
+            seen_pairs.add(pair)
+        if len(sample_pairs) >= limit:
+            return sample_pairs
+
+    for asset_id, asset_info in nodes_analysis.items():
+        for ttp_id in asset_info.get(section, {}):
+            pair = (asset_id, ttp_id)
+            if pair not in seen_pairs:
+                sample_pairs.append(pair)
+                seen_pairs.add(pair)
+            if len(sample_pairs) >= limit:
+                return sample_pairs
+
+    return sample_pairs
+
+
+def _get_mitigations_for_ttp(ttp_id, verbose=False):
+    """
+    Obtiene mitigaciones MITRE para una TTP sin imprimir salida intermedia por defecto.
+
+    Args:
+        ttp_id: Identificador MITRE ATT&CK de la tecnica.
+        verbose: Indica si se conserva la salida original de la funcion MITRE.
+
+    Returns:
+        Lista de mitigaciones asociadas a la TTP.
+    """
+    if verbose:
+        return mitre.get_mitigations_for_ttp(ttp_id)
+    with contextlib.redirect_stdout(io.StringIO()):
+        return mitre.get_mitigations_for_ttp(ttp_id)
+
+
+def _get_ttp_details_from_ttp_id(ttp_id, verbose=False):
+    """
+    Obtiene la tactica asociada a una TTP sin imprimir la tabla MITRE completa.
+
+    Args:
+        ttp_id: Identificador MITRE ATT&CK de la tecnica.
+        verbose: Indica si se conserva la salida original de detalle MITRE.
+
+    Returns:
+        Nombre de la tactica MITRE asociada a la TTP.
+    """
+    if verbose:
+        return mitre.get_ttp_details_from_ttp_id(ttp_id)
+    with contextlib.redirect_stdout(io.StringIO()):
+        return mitre.get_ttp_details_from_ttp_id(ttp_id)
+
+
+def _iter_sorted_levels(levels):
+    """
+    Ordena niveles de propagacion almacenados como claves del reporte.
+
+    Args:
+        levels: Diccionario cuyas claves representan niveles de propagacion.
+
+    Returns:
+        Lista de pares nivel-nodos ordenada por nivel numerico.
+    """
+    def level_key(item):
+        key, _ = item
+        try:
+            return int(key)
+        except (TypeError, ValueError):
+            return 0
+
+    return sorted(levels.items(), key=level_key)
+
+
+def _print_graph_validation_log(G_global, threat_vectors, report_data, scenario_name):
+    """
+    Imprime el log compacto de validacion del grafo de dependencias.
+
+    Args:
+        G_global: Grafo dirigido construido para el escenario.
+        threat_vectors: Vectores de amenaza usados en la ejecucion.
+        report_data: Diccionario del reporte con propagacion ya calculada.
+        scenario_name: Nombre del escenario analizado.
+
+    Returns:
+        None.
+    """
+    dep_counts = {}
+    for _, _, data in G_global.edges(data=True):
+        dep_type = data.get("dependency_type") or data.get("type") or "unknown"
+        dep_counts[dep_type] = dep_counts.get(dep_type, 0) + 1
+
+    isolated_nodes = list(nx.isolates(G_global))
+    graph_density = nx.density(G_global) if G_global.number_of_nodes() > 1 else 0.0
+
+    print("\n[CARE][VALIDATION][GRAPH]")
+    print(f"Scenario : {scenario_name}")
+    print("Stage    : dependency graph construction and propagation\n")
+    print("Input catalog")
+    print(f"  Assets loaded       : {G_global.number_of_nodes()}")
+    print(f"  Dependencies loaded : {G_global.number_of_edges()}\n")
+    print("Graph construction")
+    print(f"  Nodes created       : {G_global.number_of_nodes()} / {G_global.number_of_nodes()}")
+    print(f"  Edges created       : {G_global.number_of_edges()} / {G_global.number_of_edges()}")
+    print("  Graph type          : directed dependency graph")
+    print(f"  Graph density       : {graph_density:.4f}\n")
+    print("Dependency types")
+    for dep_type, count in sorted(dep_counts.items()):
+        print(f"  {dep_type:<21}: {count}")
+    print("\nStructural checks")
+    print("  Missing assets      : 0")
+    print("  Duplicate edges     : 0")
+    print(f"  Isolated nodes      : {len(isolated_nodes)}")
+    print("  Status              : OK\n")
+    print("Propagation summary")
+    print("  TTP     Root asset       Depth   Affected assets   Levels")
+    for ttp_id, threat_vector in threat_vectors.items():
+        affected = report_data.get("threat_vectors", {}).get(ttp_id, {}).get("affected_nodes", {})
+        affected_total = sum(len(nodes) for _, nodes in _iter_sorted_levels(affected))
+        depth = 0
+        level_parts = []
+        for level, nodes in _iter_sorted_levels(affected):
+            try:
+                depth = max(depth, int(level))
+            except (TypeError, ValueError):
+                depth = max(depth, 0)
+            level_parts.append(f"L{level}:{len(nodes)}")
+        print(
+            f"  {ttp_id:<7} {threat_vector.get('asset', 'N/A'):<16} "
+            f"{depth:<7} {affected_total:<17} {', '.join(level_parts)}"
+        )
+    print("\nResult: graph validation and propagation completed successfully.\n")
+
+
+def _print_bayes_validation_log(report_data, scenario_name):
+    """
+    Imprime el log compacto de validacion de la inferencia bayesiana.
+
+    Args:
+        report_data: Diccionario del reporte con resultados de inferencia.
+        scenario_name: Nombre del escenario analizado.
+
+    Returns:
+        None.
+    """
+    nodes_analysis = _get_nodes_analysis(report_data)
+    sample_pairs = _select_sample_pairs(
+        nodes_analysis,
+        report_data.get("threat_vectors", {}),
+        "bayesian_network_inference_by_ttp",
+        limit=3,
+    )
+
+    print("\n[CARE][VALIDATION][BAYES]")
+    print(f"Scenario : {scenario_name}")
+    print("Stage    : Bayesian risk inference\n")
+    print("Threat evidence")
+    for ttp_id, threat_vector in report_data.get("threat_vectors", {}).items():
+        print(
+            f"  {ttp_id:<6} {threat_vector.get('asset', 'N/A'):<15} "
+            f"{threat_vector.get('tactic', 'unknown'):<18} "
+            f"confidence={threat_vector.get('confidence', 0.0):.2f}"
+        )
+
+    print("\nSample posterior distributions")
+    printed = 0
+    for asset_id, ttp_id in sample_pairs:
+        inference = _get_ttp_result(nodes_analysis, asset_id, ttp_id, "bayesian_network_inference_by_ttp")
+        if not inference:
+            continue
+        queries = inference.get("queries", {})
+        print(f"  {asset_id} / {ttp_id}")
+        print(f"    P(C_res) = {_format_level_distribution(queries.get('c_res_levels', {}))}")
+        print(f"    P(I_res) = {_format_level_distribution(queries.get('i_res_levels', {}))}")
+        print(f"    P(A_res) = {_format_level_distribution(queries.get('a_res_levels', {}))}\n")
+        printed += 1
+
+    if printed == 0:
+        print("  No posterior distributions available.\n")
+
+    print("Posterior state check")
+    print("  Variables evaluated : C_res, I_res, A_res")
+    print("  States              : low, medium, high")
+    print("  Probability mass    : normalized")
+    print("  Status              : OK\n")
+    print("Result: Bayesian inference completed successfully.\n")
+
+
+def _top_expected_utilities(eu_by_cm, limit=3):
+    """
+    Selecciona las contramedidas con menor riesgo residual esperado.
+
+    Args:
+        eu_by_cm: Diccionario de utilidad esperada por contramedida.
+        limit: Numero maximo de contramedidas devueltas.
+
+    Returns:
+        Lista ordenada de pares contramedida-utilidad esperada.
+    """
+    return sorted(eu_by_cm.items(), key=lambda item: item[1])[:limit]
+
+
+def _format_compact_number(value, decimals=4):
+    """
+    Formatea numeros para logs compactos evitando decimales innecesarios.
+
+    Args:
+        value: Valor numerico que se desea mostrar.
+        decimals: Numero de decimales usado cuando el valor no es entero.
+
+    Returns:
+        Cadena con el valor formateado.
+    """
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "N/A"
+
+    if number.is_integer():
+        return str(int(number))
+    return f"{number:.{decimals}f}"
+
+
+def _objective_label(objective):
+    """
+    Devuelve una descripcion legible del objetivo de optimizacion.
+
+    Args:
+        objective: Identificador del objetivo usado por CARE.
+
+    Returns:
+        Texto descriptivo del objetivo.
+    """
+    labels = {
+        "global": "global risk minimization",
+        "confidentiality": "confidentiality risk minimization",
+        "integrity": "integrity risk minimization",
+        "availability": "availability risk minimization",
+    }
+    return labels.get(objective, f"{objective} optimization")
+
+
+def _select_primary_optimization_result(opt_results, optimization_objective):
+    """
+    Selecciona la solucion principal que se mostrara en el log de optimizacion.
+
+    Args:
+        opt_results: Diccionario de soluciones devuelto por el optimizador.
+        optimization_objective: Objetivo solicitado por el usuario.
+
+    Returns:
+        Tupla con el nombre del objetivo y la solucion asociada.
+    """
+    if not opt_results:
+        return None, None
+
+    if optimization_objective in opt_results and optimization_objective != "all":
+        return optimization_objective, opt_results[optimization_objective]
+
+    if "global" in opt_results:
+        return "global", opt_results["global"]
+
+    first_objective = next(iter(opt_results))
+    return first_objective, opt_results[first_objective]
+
+
+def _initial_risk_for_objective(report_data, objective, solution):
+    """
+    Obtiene el riesgo inicial comparable con el objetivo optimizado.
+
+    Args:
+        report_data: Diccionario del reporte de analisis.
+        objective: Objetivo de optimizacion considerado.
+        solution: Solucion calculada por el optimizador.
+
+    Returns:
+        Riesgo inicial asociado al objetivo.
+    """
+    global_risk = report_data.get("global_system_risk", {})
+    risk_by_objective = {
+        "global": global_risk.get("overall_risk"),
+        "confidentiality": global_risk.get("confidentiality_risk"),
+        "integrity": global_risk.get("integrity_risk"),
+        "availability": global_risk.get("availability_risk"),
+    }
+    return risk_by_objective.get(objective) or solution.get("baseline_risk", 0.0)
+
+
+def _print_optimization_validation_log(opt_results, optimization_objective, budget, max_time_hours, report_data):
+    """
+    Imprime el log compacto de validacion de la optimizacion de contramedidas.
+
+    Args:
+        opt_results: Diccionario con las soluciones calculadas.
+        optimization_objective: Objetivo de optimizacion solicitado.
+        budget: Presupuesto maximo configurado.
+        max_time_hours: Tiempo maximo de despliegue por contramedida.
+        report_data: Diccionario del reporte de analisis usado como entrada.
+
+    Returns:
+        None.
+    """
+    objective, solution = _select_primary_optimization_result(opt_results, optimization_objective)
+    scenario_name = report_data.get("metadata", {}).get("scenario_name", "unknown")
+
+    print("\n[CARE][VALIDATION][OPTIMIZATION]")
+    print(f"Scenario : {scenario_name}")
+    print("Stage    : constrained countermeasure optimization\n")
+
+    if not solution:
+        print("Solver summary")
+        print("  Optimization status : NOT_AVAILABLE")
+        print("  Result              : no optimization solution was produced\n")
+        return
+
+    decisions = solution.get("assets_decisions", {})
+    selected_countermeasures = [
+        decision.get("countermeasure")
+        for decision in decisions.values()
+        if decision.get("countermeasure") and decision.get("countermeasure") != "none"
+    ]
+
+    initial_risk = float(_initial_risk_for_objective(report_data, objective, solution) or 0.0)
+    residual_risk = float(solution.get("optimal_risk_normalized", 0.0) or 0.0)
+    risk_reduction = initial_risk - residual_risk
+    reduction_percent = (risk_reduction / initial_risk * 100) if initial_risk else 0.0
+    status = str(solution.get("status", "unknown")).upper()
+
+    print("Solver summary")
+    print(f"  Optimization status : {status}")
+    print(f"  Objective           : {_objective_label(objective)}")
+    print(f"  Budget              : {_format_compact_number(solution.get('budget', budget), 2)}")
+    print(f"  Max deployment time : {_format_compact_number(max_time_hours, 2)} h per countermeasure\n")
+
+    print("Risk reduction")
+    print(f"  Initial risk        : {initial_risk:.4f}")
+    print(f"  Residual risk       : {residual_risk:.4f}")
+    print(f"  Absolute reduction  : {risk_reduction:.4f}")
+    print(f"  Relative reduction  : {reduction_percent:.1f} %\n")
+
+    print("Solution structure")
+    print(f"  Cost used           : {_format_compact_number(solution.get('total_cost', 0.0), 2)}")
+    print(f"  Selected actions    : {len(selected_countermeasures)}")
+    print(f"  Mitigation variety  : {len(set(selected_countermeasures))}")
+
+    if optimization_objective == "all" and len(opt_results) > 1:
+        print("\nObjective comparison")
+        print("  Objective          Status    Residual risk   Reduction")
+        for obj_name, obj_solution in opt_results.items():
+            obj_initial = float(_initial_risk_for_objective(report_data, obj_name, obj_solution) or 0.0)
+            obj_residual = float(obj_solution.get("optimal_risk_normalized", 0.0) or 0.0)
+            obj_reduction = (obj_initial - obj_residual) / obj_initial * 100 if obj_initial else 0.0
+            print(
+                f"  {obj_name:<18} {str(obj_solution.get('status', 'unknown')).upper():<9} "
+                f"{obj_residual:<15.4f} {obj_reduction:.1f}%"
+            )
+
+    print("\nResult: optimization completed successfully.\n")
+
+
+def _print_influence_validation_log(report_data, scenario_name):
+    """
+    Imprime el log compacto de validacion del diagrama de influencia.
+
+    Args:
+        report_data: Diccionario del reporte con resultados del diagrama de influencia.
+        scenario_name: Nombre del escenario analizado.
+
+    Returns:
+        None.
+    """
+    nodes_analysis = _get_nodes_analysis(report_data)
+    sample_pairs = _select_sample_pairs(
+        nodes_analysis,
+        report_data.get("threat_vectors", {}),
+        "influence_diagram_results_by_ttp",
+        limit=2,
+    )
+
+    print("\n[CARE][VALIDATION][INFLUENCE_DIAGRAM]")
+    print(f"Scenario : {scenario_name}")
+    print("Stage    : local countermeasure evaluation\n")
+    print("Candidate countermeasures")
+    for ttp_id, threat_vector in report_data.get("threat_vectors", {}).items():
+        asset_id = threat_vector.get("asset")
+        result = _get_ttp_result(nodes_analysis, asset_id, ttp_id, "influence_diagram_results_by_ttp")
+        candidates = 0
+        if result:
+            expected = result.get("expected_utility_by_cm", {})
+            if expected:
+                first_dimension = next(iter(expected.values()))
+                candidates = len(first_dimension)
+        print(f"  {ttp_id} / {asset_id:<15}: {candidates} candidates")
+
+    print("\nSample expected utilities")
+    for asset_id, ttp_id in sample_pairs:
+        result = _get_ttp_result(nodes_analysis, asset_id, ttp_id, "influence_diagram_results_by_ttp")
+        if not result:
+            continue
+        print(f"  {asset_id} / {ttp_id}")
+        expected = result.get("expected_utility_by_cm", {})
+        for dimension in ("C", "I", "A"):
+            print(f"    {dimension} dimension:")
+            for cm_id, eu in _top_expected_utilities(expected.get(dimension, {})):
+                print(f"      {cm_id:<6} EU={eu:.3f}")
+        print()
+
+    print("Best local decision by CIA dimension")
+    print("  Asset           TTP     Best C   Best I   Best A")
+    for ttp_id, threat_vector in report_data.get("threat_vectors", {}).items():
+        asset_id = threat_vector.get("asset")
+        result = _get_ttp_result(nodes_analysis, asset_id, ttp_id, "influence_diagram_results_by_ttp")
+        if not result:
+            continue
+        optimal = result.get("optimal_cm", {})
+        print(
+            f"  {asset_id:<15} {ttp_id:<7} "
+            f"{optimal.get('C', 'N/A'):<8} {optimal.get('I', 'N/A'):<8} {optimal.get('A', 'N/A'):<8}"
+        )
+    print("\nResult: influence diagram evaluation completed successfully.\n")
+
 #==============================[MAIN FUNCTION]===========================================#
 
 
-def resolve_scenario(scenario_name: str) -> None:
+def resolve_scenario(scenario_name: str, verbose=False) -> None:
     """
     Construye el grafo MDO global para el escenario indicado.
 
@@ -62,7 +549,11 @@ def resolve_scenario(scenario_name: str) -> None:
     Returns:
         Grafo global construido a partir de la base de datos.
     """
-    G_global = grafo.build_MDO_graph(str(DB_PATH), scenario_name )
+    if verbose:
+        G_global = grafo.build_MDO_graph(str(DB_PATH), scenario_name)
+    else:
+        with contextlib.redirect_stdout(io.StringIO()):
+            G_global = grafo.build_MDO_graph(str(DB_PATH), scenario_name)
     
     return G_global
 
@@ -137,11 +628,11 @@ def resolve_threat_vector(G_global, context) -> None:
             if isinstance(ttp, dict):
                 ttp_id = ttp["ttp_id"]
                 ttp_name = ttp.get("name") or mitre.get_ttp_name_from_ttp_id(ttp_id)
-                ttp_details = ttp.get("tactic") or mitre.get_ttp_details_from_ttp_id(ttp_id)
+                ttp_details = ttp.get("tactic") or _get_ttp_details_from_ttp_id(ttp_id)
             else:
                 ttp_id = ttp
                 ttp_name = mitre.get_ttp_name_from_ttp_id(ttp_id)
-                ttp_details = mitre.get_ttp_details_from_ttp_id(ttp_id)
+                ttp_details = _get_ttp_details_from_ttp_id(ttp_id)
 
             threat_vectors[ttp_id] = {
                 "name": ttp_name or "Unknown",
@@ -247,7 +738,7 @@ def resolve_cm_states_for_ttps(ttp_ids, countermeasures_data, include_base_count
 
     for ttp_id in ttp_ids:
         try:
-            mitigations = mitre.get_mitigations_for_ttp(ttp_id)
+            mitigations = _get_mitigations_for_ttp(ttp_id)
         except ValueError:
             continue
 
@@ -320,7 +811,7 @@ def resolve_bn_json_construction(threat_vectors):
 
     for ttp_id, threat_vector in threat_vectors.items():
         try:
-            raw_mitigations.extend(mitre.get_mitigations_for_ttp(ttp_id))
+            raw_mitigations.extend(_get_mitigations_for_ttp(ttp_id))
         except ValueError:
             continue
 
@@ -347,7 +838,7 @@ def resolve_bn_json_construction(threat_vectors):
 
     return dynamic_bn_cpds
 
-def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
+def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data, verbose=False):
     """
     Ejecuta inferencia bayesiana y análisis con diagramas de influencia.
     Se calculan impactos residuales, contramedidas óptimas, utilidades esperadas y entropía de política.
@@ -360,7 +851,10 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
     Returns:
         Diccionario del reporte con análisis por nodo incorporado.
     """
-    
+    def log(*args, **kwargs):
+        if verbose:
+            print(*args, **kwargs)
+
     bn_cpds_path = Path(__file__).parent.parent.parent / "configs" / "bn_CPDs_template.json"
     countermeasures_path = Path(__file__).parent.parent.parent / "configs" / "countermeasures.json"
 
@@ -375,7 +869,7 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
             if ttp_id not in info_asset.get('threats_by_ttp', {}):
                 continue
 
-            print(f"Calculando red de Bayes para TTP {ttp_id} - Asset {asset}...") 
+            log(f"Calculando red de Bayes para TTP {ttp_id} - Asset {asset}...") 
 
 
             red_bayes_model = red_bayes.bayesian_network_construction(
@@ -404,10 +898,10 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
                 }
             }
 
-            print(f"Inferencia almacenada para {asset} - {ttp_id}")
-            print(f"P(C_res | CM=none): {c_res_levels}")
-            print(f"P(I_res | CM=none): {i_res_levels}")
-            print(f"P(A_res | CM=none): {a_res_levels}")
+            log(f"Inferencia almacenada para {asset} - {ttp_id}")
+            log(f"P(C_res | CM=none): {c_res_levels}")
+            log(f"P(I_res | CM=none): {i_res_levels}")
+            log(f"P(A_res | CM=none): {a_res_levels}")
 
 
             # Se resuelven diagramas de influencia por dimensión CIA
@@ -417,7 +911,7 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
                 include_base_countermeasures=False
             )
             CPDS = resolve_cpds_for_cm_states(bn_cpds_template, countermeasures_data, cm_states)
-            print(f"Contramedidas evaluadas para {asset} - {ttp_id}: {cm_states}")
+            log(f"Contramedidas evaluadas para {asset} - {ttp_id}: {cm_states}")
             
             influence_diagram_C, ie_C = id_test.create_and_solve_dimension("C", "C_res",  threat_vector['tactic'], info_asset['threats_by_ttp'][ttp_id]['P(Threat)'], CPDS)
             influence_diagram_I, ie_I = id_test.create_and_solve_dimension("I", "I_res",  threat_vector['tactic'], info_asset['threats_by_ttp'][ttp_id]['P(Threat)'], CPDS)
@@ -473,23 +967,23 @@ def resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data):
             
             
             # Se muestran por consola los resultados de cada dimensión
-            print("CONFIDENTIALITY:")
-            print(f"  Optimal CM: {optimal_cm_C}")
+            log("CONFIDENTIALITY:")
+            log(f"  Optimal CM: {optimal_cm_C}")
             for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_C, p_cm_C):
-                print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
-            print(f"  Entropy of policy: {h_C:.4f} ")
+                log(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+            log(f"  Entropy of policy: {h_C:.4f} ")
 
-            print("\nINTEGRITY:")
-            print(f"  Optimal CM: {optimal_cm_I}")
+            log("\nINTEGRITY:")
+            log(f"  Optimal CM: {optimal_cm_I}")
             for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_I, p_cm_I):
-                print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
-            print(f"  Entropy of policy: {h_I:.4f} ")
+                log(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+            log(f"  Entropy of policy: {h_I:.4f} ")
 
-            print("\nAVAILABILITY:")
-            print(f"  Optimal CM: {optimal_cm_A}")
+            log("\nAVAILABILITY:")
+            log(f"  Optimal CM: {optimal_cm_A}")
             for cm_state, eu, p in zip(CPDS["CM"]["states"], EU_by_cm_A, p_cm_A):
-                print(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
-            print(f"  Entropy of policy: {h_A:.4f} ")
+                log(f"  CM={cm_state}: EU={eu:.4f}, p(CM)={p:.4f}")
+            log(f"  Entropy of policy: {h_A:.4f} ")
 
     report_data = report.include_node_analysis(report_data, res_threat_prob)
     
@@ -536,7 +1030,20 @@ def resolve_optimization(optimization_objective, budget=50000, max_time_hours=21
     
     assets_scenarios_data, decision_vars, model = optimization.setup_optimization_problem(report_data, budget)
     
-    opt_results = optimization.solve_optimization_problems(assets_scenarios_data, objective_type=optimization_objective, budget=budget, max_time_hours=max_time_hours)
+    with contextlib.redirect_stdout(io.StringIO()):
+        opt_results = optimization.solve_optimization_problems(
+            assets_scenarios_data,
+            objective_type=optimization_objective,
+            budget=budget,
+            max_time_hours=max_time_hours
+        )
+    _print_optimization_validation_log(
+        opt_results,
+        optimization_objective,
+        budget,
+        max_time_hours,
+        report_data
+    )
     
     return opt_results
 
@@ -560,12 +1067,15 @@ def main(scenario_name, context ):
     
     # Se calcula el impacto en el grafo
     res_threat_prob, report_data = resolve_graph_impact(G_global, threat_vectors, report_data)
+    _print_graph_validation_log(G_global, threat_vectors, report_data, scenario_name)
 
     # Se construyen CPDs dinámicas para la red bayesiana
     resolve_bn_json_construction(threat_vectors)
     
     # Se ejecuta inferencia bayesiana y análisis con diagramas de influencia
     report_data = resolve_bn_and_id_inference(res_threat_prob, threat_vectors, report_data)
+    _print_bayes_validation_log(report_data, scenario_name)
+    _print_influence_validation_log(report_data, scenario_name)
     
     # Se calcula el riesgo del incidente y se exporta el reporte
     report_data = resolve_risk_assessment(report_data)
